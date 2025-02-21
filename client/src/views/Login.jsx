@@ -6,8 +6,19 @@ import logo from "../assets/logo.png";
 import PasswordInput from "../component/input/PasswordInput.jsx"
 // import {useform} from "react-hook-form"
 import { Link } from "react-router-dom";
+import { validateEmail } from "../utils/helper.js";
 
 const Login = () => {
+  const [email, setEmail]= useState ("");
+  const [password, setPassword]= useState ("");
+  const [error, setError]= useState ("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!validateEmail(email)){
+      setError ("Please enter a valid email address");
+      return;
+    }
+  }
   return (
     <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
       {/* Left side */}
@@ -64,15 +75,18 @@ const Login = () => {
                   backgroundColor: "#f7fbff",
                   padding: "5px 9px",
                 }}
-                // value = {email}
+                value = {email}
                 placeholder="example@email.com"
-                // onChange = {(e) => setEmail (e.target.value)}
+                onChange = {(e) => setEmail (e.target.value)}
               />
             </div>
 
             {/* Password Input */}
-            <PasswordInput/>
-
+            <PasswordInput
+            value = {password}
+            onChange={(e) => setPassword (e.target.value)}
+            />
+            
             {/* Forgot password */}
             <div className="flex items-center justify-end">
               <div className="text-sm">
