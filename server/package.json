@@ -12,7 +12,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/register": "^7.25.9",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "ignore-styles": "^5.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

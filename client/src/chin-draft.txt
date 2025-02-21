@@ -1,0 +1,338 @@
+=======================================================================================================================
+============================================   App.jsx   ============================================================
+=======================================================================================================================
+
+// import googleIcon from "./assets/google-icon.png";
+
+// const App = () => {
+//   return (
+//     <div className="login-container">
+//       <h2 className="form-title"> Log in to TaskUP</h2>
+//       <div className="social-login">
+//         <button className="social-button">
+//           <img
+//             src={googleIcon}
+//             alt="google-icon"
+//             style={{ width: "24px", height: "24px" }}
+//           />
+//           Google
+//         </button>
+//       </div>
+
+//       <p className="separator-line"><span>or</span></p>
+
+//       <form action="#" className="login-form">
+//         <div className="input-wrapper">
+//           <input type="email" className="input-field" placeholder="email@gmail.com" required />
+//         </div>
+
+//         <div className="input-wrapper">
+//           <input type="password" className="input-field" placeholder="••••••••••" required />
+//         </div>
+
+//         <a href="#" className="forgot-password">Forgot password?</a>
+
+//         <button className="login-button">Log in</button>
+//       </form>
+
+//       <p className="signup-text">Dont't have an account? <a href="#">Sign up</a></p> 
+//     </div>
+//   );
+// };
+
+// export default App;
+
+=======================================================================================================================
+============================================   Login.jsx   ============================================================
+=======================================================================================================================
+
+import { useState } from 'react';
+import googleIcon from "/src/assets/google-icon.png";
+
+const Login = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+  };
+
+  return (
+    <div className="login-container">
+      <h2 className="form-title">
+        Log in to
+        <span className="brand-name">TaskUP!</span>
+      </h2>
+
+      <form onSubmit={handleSubmit} className="login-form">
+        <div className="input-wrapper">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            className="input-field"
+            placeholder="email@gmail.com"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="input-wrapper">
+          <label htmlFor="password">Password</label>
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              className="input-field"
+              placeholder="••••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
+        </div>
+
+        <a href="#" className="forgot-password">Forgot password?</a>
+
+        <button type="submit" className="login-button">Log in</button>
+
+        <div className="separator">
+          <span>OR</span>
+        </div>
+
+        <button type="button" className="social-button">
+          <img
+            src={googleIcon}
+            alt="google-icon"
+            className="google-icon"
+          />
+          Login with Google
+        </button>
+      </form>
+
+      <p className="signup-text">
+        Don't have an account? <a href="#">Sign up</a>
+      </p> 
+    </div>
+  );
+};
+
+export default Login;
+
+=======================================================================================================================
+============================================   index.css   ============================================================
+=======================================================================================================================
+
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+} */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem;
+}
+
+.form-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.brand-name {
+  display: block;
+  color: #4361ee;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-wrapper label {
+  font-size: 0.875rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #4361ee;
+  background: white;
+}
+
+.password-field {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.forgot-password {
+  text-align: right;
+  color: #4361ee;
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-top: -0.5rem;
+}
+
+.login-button {
+  background: #4361ee;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover {
+  background: #3651d4;
+}
+
+.separator {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.separator::before {
+  left: 0;
+}
+
+.separator::after {
+  right: 0;
+}
+
+.separator span {
+  background: white;
+  padding: 0 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.social-button:hover {
+  background: #f9fafb;
+}
+
+.google-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.signup-text a {
+  color: #4361ee;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
+}
+
