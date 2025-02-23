@@ -336,3 +336,22 @@ body {
   text-decoration: underline;
 }
 
+=======================================================================================================================
+============================================   email textbox   ============================================================
+=======================================================================================================================
+<div className="flex flex-col gap-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                className="w-full border rounded-lg border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                style={{
+                  backgroundColor: "#f7fbff",
+                  padding: "5px 9px",
+                }}
+                // value = {email}
+                placeholder="example@email.com"
+                // onChange = {(e) => setEmail (e.target.value)}
+              />
+            </div>

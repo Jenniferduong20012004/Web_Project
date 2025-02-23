@@ -1,13 +1,34 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+
 import googleIcon from "/src/assets/google-icon.png";
 import bgImage from "../assets/login-signup-gradient-background.jpg";
 import userLoginImg from "../assets/user-login.svg";
 import logo from "../assets/logo.png";
-import PasswordInput from "../component/input/PasswordInput.jsx"
-// import {useform} from "react-hook-form"
-import { Link } from "react-router-dom";
+import InputField from "../component/InputField.jsx";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    mode: "onChange",
+  });
+
+  const submitHandler = (data) => {
+    console.log("Login Data:", data);
+    ////////////////////
+  };
+
   return (
     <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
       {/* Left side */}
@@ -51,33 +72,67 @@ const Login = () => {
           </div>
 
           {/* Form */}
-          <form className="w-full md:w-[400px] flex flex-col gap-y-3">
-            {/* Email Input */}
-            <div className="flex flex-col gap-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
+          <form
+            noValidate
+            onSubmit={handleSubmit(submitHandler)}
+            className="w-full md:w-[400px] flex flex-col gap-y-3"
+          >
+            <div>
+              <InputField
+                label="Email"
                 type="email"
-                className="w-full border rounded-lg border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-                style={{
-                  backgroundColor: "#f7fbff",
-                  padding: "5px 9px",
-                }}
-                // value = {email}
                 placeholder="example@email.com"
-                // onChange = {(e) => setEmail (e.target.value)}
+                register={register("email", {
+                  required: "Email is required.",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address.",
+                  },
+                })}
+                error={errors.email}
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
-
+            
             {/* Password Input */}
-            <PasswordInput/>
+            <div>
+              <InputField
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                register={register("password", {
+                  required: "Password is required.",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters.",
+                  },
+                })}
+                error={errors.password}
+                rightIcon={
+                  showPassword ? (
+                    <Eye size={20} className="text-gray-500" />
+                  ) : (
+                    <EyeOff size={20} className="text-gray-500" />
+                  )
+                }
+                onRightIconClick={togglePasswordVisibility}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
             {/* Forgot password */}
             <div className="flex items-center justify-end">
               <div className="text-sm">
                 <a
-                  href="#"
+                  href="this-is-forgot-password-page!!!"
                   className="text-blue-500 hover:text-blue-900 cursor-pointer"
                 >
                   Forgot password?
