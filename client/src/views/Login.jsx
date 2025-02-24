@@ -6,26 +6,24 @@ import googleIcon from "/src/assets/google-icon.png";
 import bgImage from "../assets/login-signup-gradient-background.jpg";
 import userLoginImg from "../assets/user-login.svg";
 import logo from "../assets/logo.png";
-import PasswordInput from "../component/input/PasswordInput.jsx";
 import InputField from "../component/input/InputField.jsx";
-// import {useform} from "react-hook-form"
 import { validateEmail } from "../utils/helper.js";
 
 const Login = () => {
-  const [email, setEmail]= useState ("");
-  const [password, setPassword]= useState ("");
-  const [error, setError]= useState ("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!validateEmail(email)){
-      setError ("Please enter a valid email address");
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
       return;
     }
-  }
+  };
   const {
     register,
     handleSubmit,
@@ -94,10 +92,9 @@ const Login = () => {
                   backgroundColor: "#f7fbff",
                   padding: "5px 9px",
                 }}
-                value = {email}
+                value={email}
                 placeholder="example@email.com"
-                onChange = {(e) => setEmail (e.target.value)}
-                placeholder="example@email.com"
+                onChange={(e) => setEmail(e.target.value)}
                 register={register("email", {
                   required: "Email is required.",
                   pattern: {
@@ -113,12 +110,21 @@ const Login = () => {
                 </p>
               )}
             </div>
-            
+
             {/* Password Input */}
-            <PasswordInput
-            value = {password}
-            onChange={(e) => setPassword (e.target.value)}
-            error={errors.password}
+            <div>
+              <InputField
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                register={register("password", {
+                  required: "Password is required.",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters.",
+                  },
+                })}
+                error={errors.password}
                 rightIcon={
                   showPassword ? (
                     <Eye size={20} className="text-gray-500" />
@@ -127,12 +133,13 @@ const Login = () => {
                   )
                 }
                 onRightIconClick={togglePasswordVisibility}
-            />
-            {errors.password && (
+              />
+              {errors.password && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.password.message}
                 </p>
               )}
+            </div>
 
             {/* Forgot password */}
             <div className="flex items-center justify-end">
@@ -189,7 +196,6 @@ const Login = () => {
       </div>
     </div>
   );
-
-}
+};
 
 export default Login;
