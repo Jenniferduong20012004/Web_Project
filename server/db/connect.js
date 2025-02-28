@@ -1,3 +1,8 @@
+
+//   host: "localhost",
+//   user: "root",
+//   password: "Thaotrinh@5536",
+
 const mysql = require('mysql2');
 
 const pool = mysql.createPool({
@@ -19,3 +24,4 @@ pool.getConnection((err, connection) => {
 });
 
 module.exports = pool; 
+

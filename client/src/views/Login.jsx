@@ -7,34 +7,30 @@ import bgImage from "../assets/login-signup-gradient-background.jpg";
 import userLoginImg from "../assets/user-login.svg";
 import logo from "../assets/logo.png";
 import InputField from "../component/input/InputField.jsx";
-import { validateEmail } from "../utils/helper.js";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-  };
+  
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
     mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    }
   });
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const submitHandler = (data) => {
     console.log("Login Data:", data);
   };
+
   return (
     <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
       {/* Left side */}
@@ -92,9 +88,7 @@ const Login = () => {
                   backgroundColor: "#f7fbff",
                   padding: "5px 9px",
                 }}
-                value={email}
-                placeholder="example@email.com"
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="username@email.com"
                 register={register("email", {
                   required: "Email is required.",
                   pattern: {

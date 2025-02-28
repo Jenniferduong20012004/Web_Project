@@ -1,357 +1,351 @@
-=======================================================================================================================
-============================================   App.jsx   ============================================================
-=======================================================================================================================
+Login with Mock data, include: src/views/Login.jsx and src/services/mockLogin.js
 
-// import googleIcon from "./assets/google-icon.png";
+mockLogin.js:
+import { toast } from "react-toastify"; 
 
-// const App = () => {
-//   return (
-//     <div className="login-container">
-//       <h2 className="form-title"> Log in to TaskUP</h2>
-//       <div className="social-login">
-//         <button className="social-button">
-//           <img
-//             src={googleIcon}
-//             alt="google-icon"
-//             style={{ width: "24px", height: "24px" }}
-//           />
-//           Google
-//         </button>
-//       </div>
+// Mock user data
+const mockUsers = [
+  { email: "admin@example.com", password: "password123", role: "admin", name: "Admin User" },
+  { email: "user@example.com", password: "user12345", role: "user", name: "Regular User" },
+  { email: "test@example.com", password: "test12345", role: "guest", name: "Test User" }
+];
 
-//       <p className="separator-line"><span>or</span></p>
-
-//       <form action="#" className="login-form">
-//         <div className="input-wrapper">
-//           <input type="email" className="input-field" placeholder="email@gmail.com" required />
-//         </div>
-
-//         <div className="input-wrapper">
-//           <input type="password" className="input-field" placeholder="••••••••••" required />
-//         </div>
-
-//         <a href="#" className="forgot-password">Forgot password?</a>
-
-//         <button className="login-button">Log in</button>
-//       </form>
-
-//       <p className="signup-text">Dont't have an account? <a href="#">Sign up</a></p> 
-//     </div>
-//   );
-// };
-
-// export default App;
-
-=======================================================================================================================
-============================================   Login.jsx   ============================================================
-=======================================================================================================================
-
-import { useState } from 'react';
-import googleIcon from "/src/assets/google-icon.png";
-
-const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+/**
+ * @param {string} email 
+ * @param {string} password 
+ * @returns {Promise} 
+ */
+export const mockLoginApi = (email, password) => {
+  return new Promise((resolve, reject) => {
+    // Giả lập độ trễ mạng là (500ms)
+    setTimeout(() => {
+      const user = mockUsers.find(
+        user => user.email === email && user.password === password
+      );
+      
+      if (user) {
+        // Đăng nhập thành công
+        const response = {
+          success: true,
+          data: {
+            user: {
+              email: user.email,
+              name: user.name,
+              role: user.role
+            },
+            token: "chin-jwt-token-" + Math.random().toString(36).substring(2)
+          },
+          message: "Login successful"
+        };
+        resolve(response);
+      } else {
+        const userExists = mockUsers.some(user => user.email === email);
+        
+        if (userExists) {
+          reject({
+            success: false,
+            message: "Invalid password. Please try again."
+          });
+        } else {
+          reject({
+            success: false,
+            message: "Email not found. Please check your email or sign up."
+          });
+        }
+      }
+    }, 700);
   });
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-  };
-
-  return (
-    <div className="login-container">
-      <h2 className="form-title">
-        Log in to
-        <span className="brand-name">TaskUP!</span>
-      </h2>
-
-      <form onSubmit={handleSubmit} className="login-form">
-        <div className="input-wrapper">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            className="input-field"
-            placeholder="email@gmail.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="input-wrapper">
-          <label htmlFor="password">Password</label>
-          <div className="password-field">
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              name="password"
-              className="input-field"
-              placeholder="••••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? "👁️" : "👁️‍🗨️"}
-            </button>
-          </div>
-        </div>
-
-        <a href="#" className="forgot-password">Forgot password?</a>
-
-        <button type="submit" className="login-button">Log in</button>
-
-        <div className="separator">
-          <span>OR</span>
-        </div>
-
-        <button type="button" className="social-button">
-          <img
-            src={googleIcon}
-            alt="google-icon"
-            className="google-icon"
-          />
-          Login with Google
-        </button>
-      </form>
-
-      <p className="signup-text">
-        Don't have an account? <a href="#">Sign up</a>
-      </p> 
-    </div>
-  );
 };
 
-export default Login;
+/**
+ * @param {Object} credentials 
+ * @returns {Promise} 
+ */
+export const handleLogin = async (credentials) => {
+  try {
+    const response = await mockLoginApi(credentials.email, credentials.password);
+    
+    // Lưu token và thông tin user vào localStorage
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    // Hiển thị thông báo thành công
+    toast.success(`Welcome back, ${response.data.user.name}!`);
+    
+    return response;
+  } catch (error) {
+    // Hiển thị thông báo lỗi
+    toast.error(error.message || "Login failed. Please try again.");
+    throw error;
+  }
+};
 
-=======================================================================================================================
-============================================   index.css   ============================================================
-=======================================================================================================================
+// Hàm kiểm tra đã đăng nhập hay chưa
+export const isAuthenticated = () => {
+  const token = localStorage.getItem('token');
+  return !!token;
+};
 
-/* @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+// Hàm lấy thông tin user hiện tại
+export const getCurrentUser = () => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    return JSON.parse(userStr);
+  }
+  return null;
+};
 
-* {
-    margin: 0;
-    padding: 0;
-    font-family: "Poppins", sans-serif;
-} */
+// Hàm đăng xuất
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  // Có thể thêm redirect đến trang login ở đây
+};
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+------------------------------------------------------------------------------
+Login.jsx
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import googleIcon from "/src/assets/google-icon.png";
+import bgImage from "../assets/login-signup-gradient-background.jpg";
+import userLoginImg from "../assets/user-login.svg";
+import logo from "../assets/logo.png";
+import InputField from "../component/input/InputField.jsx";
+// import { validateEmail } from "../utils/helper.js";
+// for mock data
+import { useNavigate } from "react-router-dom"; // Thêm useNavigate
+import { ToastContainer, toast } from "react-toastify"; // Thêm toast notifications
+import "react-toastify/dist/ReactToastify.css"; // CSS cho toast
+import { handleLogin } from "../services/mockLogin"; // Import mock service
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
 
-body {
-  background: #f5f5f5;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-.login-container {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-  margin: 1rem;
-}
+const Login = () => {
 
-.form-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
+  const navigate = useNavigate(); // Hook điều hướng
+  const [isLoading, setIsLoading] = useState(false); // Thêm state loading
 
-.brand-name {
-  display: block;
-  color: #4361ee;
-}
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
-.input-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   if (!validateEmail(email)) {
+  //     setError("Please enter a valid email address");
+  //     return;
+  //   }
+  // };
 
-.input-wrapper label {
-  font-size: 0.875rem;
-  color: #4b5563;
-  font-weight: 500;
-}
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    mode: "onChange",
+  });
 
-.input-field {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #f9fafb;
-  font-size: 0.875rem;
-  transition: border-color 0.2s;
-}
+  const submitHandler = async (data) => {
+    console.log("Login Data:", data);
+    setIsLoading(true);
 
-.input-field:focus {
-  outline: none;
-  border-color: #4361ee;
-  background: white;
-}
+    try {
+      // Gọi mock login service
+      const response = await handleLogin(data);
+      console.log("Login successful:", response);
+      
+      // Redirect sau khi đăng nhập thành công (sau 1 giây)
+      setTimeout(() => {
+        navigate("/homepage"); // Chuyển hướng đến trang dashboard
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Toast thông báo đã được xử lý trong handleLogin
+    } finally {
+      setIsLoading(false);
+    }
 
-.password-field {
-  position: relative;
-}
+  };
+  return (
+    <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
 
-.toggle-password {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
+      <ToastContainer position="bottom-right" autoClose={1000} />
 
-.forgot-password {
-  text-align: right;
-  color: #4361ee;
-  text-decoration: none;
-  font-size: 0.875rem;
-  margin-top: -0.5rem;
-}
+      {/* Left side */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-300"
+          style={{
+            backgroundImage: `url(${bgImage})`,
+            transform: "scale(1.02)",
+          }}
+        />
 
-.login-button {
-  background: #4361ee;
-  color: white;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
+        {/* Logo Container */}
+        <div className="absolute top-5 left-3 z-10">
+          <img src={logo} alt="TaskUP Logo" className="w-10 h-auto" />
+        </div>
+        {/* Image */}
+        <div className="relative h-screen flex items-center justify-center p-8">
+          <img
+            src={userLoginImg}
+            alt="Login illustration"
+            className="w-4/5 md:w-3/5 lg:w-2/3 xl:w-3/5 h-auto max-w-2xl object-contain"
+          />
+        </div>
+      </div>
 
-.login-button:hover {
-  background: #3651d4;
-}
+      {/* ///////////////////////////////////////////// */}
+      {/* Right side */}
 
-.separator {
-  position: relative;
-  text-align: center;
-  margin: 1.5rem 0;
-}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white-0">
+        <div className="w-full max-w-md flex flex-col gap-y-5">
+          {/* Title */}
+          <div className="flex flex-col gap-y-3">
+            <h2 className="text-3xl font-bold text-gray-900">Log in to</h2>
+            <h2 className="text-3xl font-bold">
+              <span className="bg-gradient-to-r from-[#435090] to-[#3885c4] text-transparent bg-clip-text inline-block">
+                TaskUP
+              </span>
+              <span className="text-black">!</span>
+            </h2>
+          </div>
 
-.separator::before,
-.separator::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 45%;
-  height: 1px;
-  background: #e5e7eb;
-}
+          {/* Mock credentials notice
+          <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
+            <p className="font-semibold">Test Credentials</p>
+            <p>Email: admin@example.com</p>
+            <p>Password: password123</p>
+          </div> */}
 
-.separator::before {
-  left: 0;
-}
-
-.separator::after {
-  right: 0;
-}
-
-.separator span {
-  background: white;
-  padding: 0 1rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.social-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.social-button:hover {
-  background: #f9fafb;
-}
-
-.google-icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.signup-text {
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.signup-text a {
-  color: #4361ee;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.signup-text a:hover {
-  text-decoration: underline;
-}
-
-=======================================================================================================================
-============================================   email textbox   ============================================================
-=======================================================================================================================
-<div className="flex flex-col gap-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
+          {/* Form */}
+          <form
+            noValidate
+            onSubmit={handleSubmit(submitHandler)}
+            className="w-full md:w-[400px] flex flex-col gap-y-3"
+          >
+            <div>
+              <InputField
+                label="Email"
                 type="email"
                 className="w-full border rounded-lg border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
                 style={{
                   backgroundColor: "#f7fbff",
                   padding: "5px 9px",
                 }}
-                // value = {email}
+                // value={email}
                 placeholder="example@email.com"
-                // onChange = {(e) => setEmail (e.target.value)}
+                // onChange={(e) => setEmail(e.target.value)}
+                register={register("email", {
+                  required: "Email is required.",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address.",
+                  }
+                })}
+                error={errors.email}
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
+
+            {/* Password Input */}
+            <div>
+              <InputField
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                register={register("password", {
+                  required: "Password is required.",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters.",
+                  },
+                })}
+                error={errors.password}
+                rightIcon={
+                  showPassword ? (
+                    <Eye size={20} className="text-gray-500" />
+                  ) : (
+                    <EyeOff size={20} className="text-gray-500" />
+                  )
+                }
+                onRightIconClick={togglePasswordVisibility}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* Forgot password */}
+            <div className="flex items-center justify-end">
+              <div className="text-sm">
+                <a
+                  href="this-is-forgot-password-page!!!"
+                  className="text-blue-500 hover:text-blue-900 cursor-pointer"
+                >
+                  Forgot password?
+                </a>
+              </div>
+            </div>
+
+            {/* Log In button */}
+            <button
+              type="submit"
+              className="w-full bg-[#435090] text-white rounded-lg hover:bg-[#353869] focus:outline-none text-sm cursor-pointer"
+              style={{
+                padding: "10px 5px",
+              }}
+            >
+              Log in
+            </button>
+
+            {/* OR divider */}
+            <div className="relative flex items-center justify-center">
+              <div className="absolute border-t border-gray-300 w-full"></div>
+              <span className="relative bg-white px-8 text-sm text-gray-500">
+                OR
+              </span>
+            </div>
+
+            {/* Google Login button */}
+            <button
+              type="button"
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none text-sm cursor-pointer"
+              style={{
+                padding: "10px 5px",
+              }}
+            >
+              <img src={googleIcon} alt="Google icon" className="w-5 h-5" />
+              Login with Google
+            </button>
+
+            {/* Sign Up link */}
+            <p className="text-center text-gray-600 text-sm">
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-blue-500 hover:text-blue-900">
+                Sign up
+              </Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
