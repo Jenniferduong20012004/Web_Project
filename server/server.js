@@ -11,7 +11,7 @@ const db = mysql.createConnection({
 })
 // create account
 app.post ("/signup", async (req, res)=>{
-    const {userName, email, passWord, confirmPassword}= req.body;\
+    const {userName, email, passWord, confirmPassword}= req.body;
     if (!fullName){
         return res.statur (400).json ({error: true, message:"User Name is required"});
         
