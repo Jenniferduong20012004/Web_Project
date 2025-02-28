@@ -1,19 +1,17 @@
+require('dotenv').config(); // load file .env
 
-//   host: "localhost",
-//   user: "root",
-//   password: "Thaotrinh@5536",
-
-const mysql = require('mysql2');
+const mysql = require("mysql2");
 
 const pool = mysql.createPool({
-    host: '127.0.0.1',
-    user: 'root',
-    password: 'Meomeo1234@',
-    database: 'taskmanagement',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT, 10),
+  queueLimit: 0
 });
+
 pool.getConnection((err, connection) => {
     if (err) {
         console.error('MySQL connection failed:', err.message);
@@ -23,5 +21,4 @@ pool.getConnection((err, connection) => {
     }
 });
 
-module.exports = pool; 
-
+module.exports = pool;
