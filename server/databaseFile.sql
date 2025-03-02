@@ -6,7 +6,7 @@ CREATE TABLE User (
     email VARCHAR(100) UNIQUE NOT NULL,
 	password varchar (100) not null   
 );
-CREATE TABLE joinWorkSpave (
+CREATE TABLE joinWorkSpace (
     joinWorkSpace INT AUTO_INCREMENT PRIMARY KEY,
     isPending bool not null,
     isManager bool not null,
