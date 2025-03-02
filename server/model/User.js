@@ -29,7 +29,12 @@ class User {
         console.error("Error finding user by email:", err);
         return callback(err, null);
       }
-      return callback(null, results.length > 0 ? results[0] : null);
+      if (results.length > 0) {
+        const userData = results[0];
+        const user = new User(userData.id, userData.email, userData.password, userData.name);
+        return callback(null, user);
+      }     
+      return callback(null, null);
     });
   }
 
