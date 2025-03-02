@@ -40,7 +40,7 @@ const SignUp = () => {
         toast.success("Sign up successfully!", { position: "top-right" });
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Lỗi khi đăng ký!", {
+      toast.error(error.response?.data?.message || "Error when signing up!", {
         position: "top-right",
       });
     }
@@ -50,9 +50,10 @@ const SignUp = () => {
     <div>
       <ToastContainer /> 
       <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
-        {/* Form */}
+
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
           <div className="w-full max-w-md flex flex-col gap-y-5">
+            
             {/* Title */}
             <div className="flex flex-col gap-y-3">
               <h2 className="text-3xl font-bold text-gray-900">Sign Up for</h2>
@@ -63,6 +64,7 @@ const SignUp = () => {
                 <span className="text-black">!</span>
               </h2>
             </div>
+
             {/* Form */}
             <form
               onSubmit={handleSubmit(submitHandler)}
@@ -122,6 +124,7 @@ const SignUp = () => {
                     },
                   })}
                   error={errors.password}
+
                   rightIcon={
                     showPassword ? (
                       <Eye size={20} className="text-gray-500" />
@@ -131,6 +134,7 @@ const SignUp = () => {
                   }
                   onRightIconClick={() => setShowPassword(!showPassword)}
                 />
+
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.password.message}
@@ -150,6 +154,7 @@ const SignUp = () => {
                       value === password || "Your password does not match.",
                   })}
                   error={errors.confirmPassword}
+
                   rightIcon={
                     showConfirmPassword ? (
                       <Eye size={20} className="text-gray-500" />
@@ -161,6 +166,7 @@ const SignUp = () => {
                     setShowConfirmPassword(!showConfirmPassword)
                   }
                 />
+
                 {errors.confirmPassword && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.confirmPassword.message}
@@ -181,6 +187,7 @@ const SignUp = () => {
               >
                 Sign up
               </button>
+
               {/* OR divider */}
               <div className="relative flex items-center justify-center">
                 <div className="absolute border-t border-gray-300 w-full"></div>
@@ -201,7 +208,7 @@ const SignUp = () => {
                 Sign up with Google
               </button>
 
-              {/* Sign Up link */}
+              {/* Log in link */}
               <p className="text-center text-gray-600 text-sm">
                 Already have an account?{" "}
                 <Link to="/login" className="text-blue-500 hover:text-blue-900">
