@@ -26,9 +26,26 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const submitHandler = (data) => {
-    console.log("Login Data:", data);
+  const submitHandler = async (data) => {
+    try {
+      const response = await axios.post("http://localhost:5000/login", {
+        email: data.email,
+        passWord: data.password,
+      });
+
+      if (response.data.success) {
+        toast.success("Log in successfully!", { position: "top-right" });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error when login!", {
+        position: "top-right",
+      });
+    }
   };
+  const [values, setValues] = useState({
+    email : '',
+    password: ''
+  })
 
   return (
     <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
@@ -95,6 +112,7 @@ const Login = () => {
                     message: "Invalid email address.",
                   },
                 })}
+                onChange = {(e => setValues({...values, email:e.target.value}))}
                 error={errors.email}
               />
               {errors.email && (
@@ -110,6 +128,7 @@ const Login = () => {
                 label="Password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
+                onChange={(e) => setValues({ ...values, password: e.target.value })}
                 register={register("password", {
                   required: "Password is required.",
                   minLength: {
