@@ -1,6 +1,6 @@
 const User = require("../model/User");
 const bcrypt = require("bcrypt");
-
+// import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 exports.signup = (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -15,6 +15,20 @@ exports.signup = (req, res) => {
       .status(400)
       .json({ error: true, message: "Passwords do not match!" });
   }
+  // User.createByGoogle( (err, user) => {
+  //   return (
+  //     <div>
+  //       <GoogleLogin
+  //       onSuccess = {(credialResponse) => {
+  //         console.log (credialResponse);
+  //       }}
+  //       onError={() => {
+  //         console.log ("Login Failed");
+  //       }}
+  //       />
+  //     </div>
+  //   )
+  // })
 
   User.findByEmail(email, (err, user) => {
     if (err) {

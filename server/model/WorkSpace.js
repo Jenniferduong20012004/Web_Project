@@ -1,5 +1,3 @@
-
-
 const pool = require("../db/connect");
 class WorkSpace {
   constructor(id, workspaceName,dateCreate) {

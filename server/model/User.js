@@ -8,6 +8,9 @@ class User {
     this.password = password;
     this.name = name;
   }
+  static createByGoogle (){
+    
+  }
   static create(userData, callback) {
     const { name, email, password } = userData;
     const query = "INSERT INTO User (name, email, password) VALUES (?, ?, ?)";
