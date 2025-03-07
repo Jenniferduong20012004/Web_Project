@@ -17,18 +17,6 @@ class WorkSpace {
       return callback(null, results);
     });
   }
-
-  // static findById(userId, callback) {
-  //   const query = "SELECT * FROM User WHERE userId = ?";
-    
-  //   pool.query(query, [userId], (err, results) => {
-  //     if (err) {
-  //       console.error("Error finding user by ID:", err);
-  //       return callback(err, null);
-  //     }
-  //     return callback(null, results.length > 0 ? results[0] : null);
-  //   });
-  // }
 }
 
 module.exports = WorkSpace;

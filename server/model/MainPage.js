@@ -1,55 +1,47 @@
 const pool = require("../db/connect");
 class MainPage {
-    constructor(id, email, password, name) {
-      this.id = id;
-      this.email = email;
-      this.password = password;
-      this.name = name;
-    }
-    static createByGoogle (){
+  constructor(id) {
+    this.id = id;
+  }
+  static findMyWorkSpaceByUserId(userId, callback) {
+    const query = "SELECT * FROM JoinWorkSpace WHERE userId = ? AND isManager = TRUE";
+    
+    pool.query(query, [userId], (err, results) => {
+      if (err) {
+        console.error("Error finding workspace of user by ID:", err);
+        return callback(err, null);
+      }
+      const workspaces = results.map(row => new WorkSpace(row.id, row.workspaceName, row.dateCreate));
+      return callback(null, workspaces);
+
+    });
+  }
+  static findMyWorkSpaceByUserId(userId, callback) {
+    const query = "SELECT * FROM JoinWorkSpace WHERE userId = ? AND isManager = TRUE";
+    
+    pool.query(query, [userId], (err, results) => {
+      if (err) {
+        console.error("Error finding workspace of user by ID:", err);
+        return callback(err, null);
+      }
+      const workspaces = results.map(row => new WorkSpace(row.id, row.workspaceName, row.dateCreate));
       
-    }
-    static create(userData, callback) {
-      const { name, email, password } = userData;
-      const query = "INSERT INTO User (name, email, password) VALUES (?, ?, ?)";
-  
-      pool.query(query, [name, email, password], (err, results) => {
-        if (err) {
-          console.error("Error creating user:", err);
-          return callback(err, null);
-        }
-        return callback(null, results);
-      });
-    }
-  
-    static findByEmail(email, callback) {
-      const query = "SELECT * FROM User WHERE email = ?";
+      return callback(null, workspaces);
+    });
+  }
+  static findMyAssignedWorkSpaceByUserId(userId, callback) {
+    const query = "SELECT * FROM JoinWorkSpace WHERE userId = ? AND isManager = TRUE";
+    
+    pool.query(query, [userId], (err, results) => {
+      if (err) {
+        console.error("Error finding workspace of user by ID:", err);
+        return callback(err, null);
+      }
+      const workspaces = results.map(row => new WorkSpace(row.id, row.workspaceName, row.dateCreate));
       
-      pool.query(query, [email], (err, results) => {
-        if (err) {
-          console.error("Error finding user by email:", err);
-          return callback(err, null);
-        }
-        if (results.length > 0) {
-          const userData = results[0];
-          const user = new User(userData.id, userData.email, userData.password, userData.name);
-          return callback(null, user);
-        }     
-        return callback(null, null);
-      });
-    }
-  
-    static findById(userId, callback) {
-      const query = "SELECT * FROM User WHERE userId = ?";
-      
-      pool.query(query, [userId], (err, results) => {
-        if (err) {
-          console.error("Error finding user by ID:", err);
-          return callback(err, null);
-        }
-        return callback(null, results.length > 0 ? results[0] : null);
-      });
-    }
+      return callback(null, workspaces);
+    });
+  }
   }
   
   module.exports = MainPage;
