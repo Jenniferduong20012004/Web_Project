@@ -4,16 +4,12 @@ import Navbar from "../component/Navbar";
 
 const Dashboard = () => {
   return (
-    <div className="w-full min-h-screen flex overflow-hidden font-sans">
-      {/* SIDEBAR */}
-      <Sidebar />
+    <div className="w-full min-h-screen flex-col overflow-hidden">
+      <Navbar />
 
-      {/* NỘI DUNG CHÍNH */}
-      <div className="flex-1 flex flex-col bg-gray-50">
-        {/* NAVBAR */}
-        <Navbar />
+      <div className="flex-1 flex bg-gray-50">
+        <Sidebar />
 
-        {/* MAIN CONTENT */}
         <div className="flex-1 p-4 md:p-6 overflow-auto">
           {/* OVERVIEW */}
           <div className="mb-6">

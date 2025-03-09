@@ -1,13 +1,12 @@
-import React from "react";
-import logo from "C:/Users/LBN/Downloads/Web_Project-Qunu/Web_Project-Qunu/client/src/assets/logo.png"; 
-import userAvatar from "C:/Users/LBN/Downloads/Web_Project-Qunu/Web_Project-Qunu/client/src/assets/user-avatar.svg";
+import logo from "../assets/logo.png";
+import userAvatar from "../assets/user-avatar.svg";
 
 const Navbar = () => {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
       {/* Bên trái: Logo + Tên trang web */}
       <div className="flex items-center gap-3">
-        <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />  
+        <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
         <h2 className="text-xl font-bold text-gray-800">TaskUP</h2>
       </div>
 
@@ -23,7 +22,7 @@ const Navbar = () => {
         </nav>
 
         {/* Hiển thị avatar user */}
-        
+
         <div className="flex items-center gap-2">
           <img
             src={userAvatar}
@@ -31,8 +30,7 @@ const Navbar = () => {
             className="w-8 h-8 rounded-full object-cover"
           />
           <span className="text-sm font-medium text-gray-700">Hello</span>
-        </div> 
-        
+        </div>
       </div>
     </div>
   );
