@@ -5,7 +5,7 @@ import Dashboard from "./views/Dashboard";
 import Sidebar from "./component/Sidebar";
 import Navbar from "./component/Navbar";
 import { Routes, Route } from "react-router-dom";
-// import React from "react";
+import React from "react";
 
 function App() {
   return (
