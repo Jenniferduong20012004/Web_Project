@@ -1,12 +1,11 @@
-import Login from "./views/Login"
+import Login from "./views/Login";
 import Signup from "./views/Signup";
 import Homepage from "./views/Homepage";
 import Dashboard from "./views/Dashboard";
-import Sidebar from "c:/Users/LBN/Downloads/Web_Project-Qunu/Web_Project-Qunu/client/src/component/input/Sidebar";
-import Navbar from "c:/Users/LBN/Downloads/Web_Project-Qunu/Web_Project-Qunu/client/src/component/input/Navbar";
-import { Routes, Route } from "react-router-dom"
-import React from "react";
-
+import Sidebar from "./component/Sidebar";
+import Navbar from "./component/Navbar";
+import { Routes, Route } from "react-router-dom";
+// import React from "react";
 
 function App() {
   return (
@@ -22,6 +21,4 @@ function App() {
   );
 }
 
-export default App
-
-
+export default App;
