@@ -49,6 +49,7 @@ const Login = () => {
       });
 
       if (response.data.success) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
         toast.success("Login successful!", { 
           position: "top-right",
           autoClose: 2000

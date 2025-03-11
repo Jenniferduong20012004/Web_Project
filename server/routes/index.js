@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const authRoutes = require("./authRoutes");
-const mainPageRoute = require ("./mainPageRoute")
+const homePageRoute = require ("./homePageRoute")
 
 router.use("/", authRoutes);
-router.use ("/mainpage", mainPageRoute);
+router.use ("/", homePageRoute);
 module.exports = router;
