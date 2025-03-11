@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "../component/Navbar";
 import WorkspaceCard from "../component/WorkspaceCard";
 import workspaceData from "../mock-data/mockWorkspaceData";
@@ -7,7 +7,6 @@ const Homepage = () => {
   const handleAddWorkspace = () => {
     // console.log("Add new workspace clicked");
   };
-
   return (
     <div className="w-[1280px] mx-auto min-h-screen flex flex-col bg-[#f4f7fa]">
       <Navbar />

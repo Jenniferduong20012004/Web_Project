@@ -1,6 +1,7 @@
 const User = require("../model/User");
 const bcrypt = require("bcrypt");
-// import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = "QunuChinNgoc";
 exports.signup = (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -116,6 +117,7 @@ exports.login = (req, res) => {
           message: "Incorrect password",
         });
       }
+      const token = jwt.sign ({id: user.id, email: user.email}, SECRET_KEY, {expiresIn: "1h"})
 
       // Log in successfully, might need JWT token later nhe Qunu
       return res.status(200).json({

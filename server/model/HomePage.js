@@ -1,5 +1,5 @@
 const pool = require("../db/connect");
-class MainPage {
+class HomePage {
   constructor(id) {
     this.id = id;
   }
@@ -44,5 +44,5 @@ class MainPage {
   }
   }
   
-  module.exports = MainPage;
+  module.exports = HomePage;
   
