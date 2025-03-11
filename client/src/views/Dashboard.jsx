@@ -4,7 +4,7 @@ import Navbar from "../component/Navbar";
 
 const Dashboard = () => {
   return (
-    <div className="w-full min-h-screen flex-col overflow-hidden">
+    <div className="w-full min-h-screen flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex bg-gray-50">

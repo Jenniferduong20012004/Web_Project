@@ -52,7 +52,12 @@ const Sidebar = () => {
         <ul className="flex flex-col text-sm">
           <li>
             <button className="w-full text-left py-3 px-4 hover:bg-gray-100 font-medium text-gray-700">
-              Overview
+              Dashboard
+            </button>
+          </li>
+          <li>
+            <button className="w-full text-left py-3 px-4 hover:bg-gray-100 font-medium text-gray-700">
+              Board
             </button>
           </li>
           <li>
@@ -69,8 +74,8 @@ const Sidebar = () => {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-gray-200">
-        <button className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+      <div className="p-6 border-t border-gray-200 flex justify-center">
+        <button className="w-3/4 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition text-center font-medium">
           Log out
         </button>
       </div>
