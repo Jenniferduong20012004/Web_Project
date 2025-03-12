@@ -6,7 +6,6 @@ const WorkspaceCard = ({ workspace }) => {
       className="flex flex-col gap-3 border border-[#e9e7f2] rounded-lg bg-white"
       style={{ width: "270px", padding: "10px" }}
     >
-      {/* bug!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */}
       <div className={`h-28 rounded-lg ${workspace.backgroundGradient}`}></div>
 
       <div className="flex items-center justify-between gap-2">
@@ -31,8 +30,6 @@ const WorkspaceCard = ({ workspace }) => {
           </svg>
         </button>
       </div>
-
-      {/* bug!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */}
 
       <div className="flex" style={{ marginBottom: "10px" }}>
         {workspace.members.map((member, idx) => (
