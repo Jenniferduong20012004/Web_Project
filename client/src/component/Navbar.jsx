@@ -7,9 +7,9 @@ const Navbar = () => {
   const isHomePage =
     location.pathname === "/" || location.pathname === "/homepage";
   return (
-    <div className="flex items-center justify-between !px-4 !py-4 bg-white border-b border-gray-300">
+    <div className="flex items-center justify-between !px-4 !py-4 bg-white border-b border-gray-300 shadow-md">
       {/* Logo + Web name */}
-      <div className="flex items-center gap-3 mr-8">
+      <div className="flex items-center gap-3 !mr-8">
         <img src={logo} alt="Logo" className="w-7 h-7 object-contain" />
         <h2 className="text-xl bg-gradient-to-r from-[#435090] to-[#3885c4] text-transparent bg-clip-text inline-block font-bold">
           TaskUP
