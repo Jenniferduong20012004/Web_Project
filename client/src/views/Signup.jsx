@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import InputField from "../component/input/InputField.jsx";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link, useNavigate } from "react-router-dom";
 
 import bgImage from "../assets/login-signup-gradient-background.jpg";
 import logo from "../assets/logo.png";
 import userSignup from "../assets/user_signup.svg";
 import googleIcon from "/src/assets/google-icon.png";
 
+
 const SignUp = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -28,27 +31,63 @@ const SignUp = () => {
   const password = watch("password");
 
   const submitHandler = async (data) => {
+    setIsLoading(true);
+    const loadingToast = toast.loading("Signing up...", {
+      position: "top-right",
+      pauseOnHover: false,
+      closeOnClick: false,
+      autoClose: false,
+    });
+  
     try {
       const response = await axios.post("http://localhost:5000/signup", {
-        userName: data.username,
+        username: data.username,
         email: data.email,
-        passWord: data.password,
+        password: data.password,
         confirmPassword: data.confirmPassword,
       });
-
+  
       if (response.data.success) {
-        toast.success("Sign up successfully!", { position: "top-right" });
+        toast.success("Sign up successful!", { 
+          position: "top-right",
+          autoClose: 2000
+        });
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+
+      } else {
+        toast.error(response.data.message || "Sign up failed", {
+          position: "top-right",
+        });
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error when signing up!", {
-        position: "top-right",
-      });
+      if (error.response) {
+        toast.error(
+          error.response.data.message || "Error when signing up!",
+          {
+            position: "top-right",
+          }
+        );
+      } else if (error.request) {
+        toast.error("Unable to connect to server. Please try again later.", {
+          position: "top-right",
+        });
+      } else {
+        toast.error("Error during signup: " + error.message, {
+          position: "top-right",
+        });
+      }
+    } finally {
+      toast.dismiss(loadingToast);
+      setIsLoading(false);
     }
   };
 
   return (
     <div>
-      <ToastContainer /> 
+      <ToastContainer pauseOnFocusLoss={false} pauseOnHover={false} draggable={false} />
       <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
 
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
@@ -185,7 +224,8 @@ const SignUp = () => {
                   padding: "10px 5px",
                 }}
               >
-                Sign up
+                {isLoading ? "Signing up..." : "Sign up"}
+                {/* Sign up */}
               </button>
 
               {/* OR divider */}

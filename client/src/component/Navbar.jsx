@@ -1,6 +1,6 @@
 import React from "react";
-import logo from "C:/Users/LBN/Downloads/Web_Project-Qunu/Web_Project-Qunu/client/src/assets/logo.png"; 
-import userAvatar from "C:/Users/LBN/Downloads/Web_Project-Qunu/Web_Project-Qunu/client/src/assets/user-avatar.svg";
+import logo from "../assets/logo.png";
+import userAvatar from "../assets/user-avatar.svg";
 import { MdNotifications } from "react-icons/md";
 
 const Navbar = () => {
@@ -22,8 +22,8 @@ const Navbar = () => {
       {/* Bên phải: Thanh search và Avatar + Chuông thông báo */}
       <div className="flex items-center gap-4">
         <div className="relative">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search..."
             className="pl-3 pr-10 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
@@ -43,7 +43,6 @@ const Navbar = () => {
         </div>
       </div>
     </div>
-
   );
 };
 
