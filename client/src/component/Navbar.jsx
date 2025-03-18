@@ -28,6 +28,8 @@ const Navbar = () => {
         </nav>
       )}
 
+
+
       {/* Avatar */}
       <div className="!ml-auto flex items-center">
         <img

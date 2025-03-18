@@ -4,5 +4,5 @@ const authRoutes = require("./authRoutes");
 const homePageRoute = require ("./homePageRoute")
 
 router.use("/", authRoutes);
-router.use ("/", homePageRoute);
+router.use ("/getAllWorkSpace", homePageRoute);
 module.exports = router;

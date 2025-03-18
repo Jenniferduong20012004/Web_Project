@@ -1,23 +1,24 @@
 const pool = require("../db/connect");
 class HomePage {
-  constructor(id) {
-    this.id = id;
-  }
   static findMyWorkSpaceByUserId(userId, callback) {
     const query = "SELECT * FROM JoinWorkSpace WHERE userId = ? AND isManager = TRUE";
     
     pool.query(query, [userId], (err, results) => {
-      if (err) {
-        console.error("Error finding workspace of user by ID:", err);
-        return callback(err, null);
-      }
-      const workspaces = results.map(row => new WorkSpace(row.id, row.workspaceName, row.dateCreate));
-      return callback(null, workspaces);
+        if (err) {
+            console.error("Error finding workspace of user by ID:", err);
+            return callback(err, null);
+        }
+        const workspaces = results.map(row => ({
+            id: row.id,
+            workspaceName: row.workspaceName,
+            dateCreate: row.dateCreate
+        }));
 
+        return callback(null, workspaces);
     });
-  }
-  static findMyWorkSpaceByUserId(userId, callback) {
-    const query = "SELECT * FROM JoinWorkSpace WHERE userId = ? AND isManager = TRUE";
+}
+  static findMyAssignedWorkSpaceByUserId(userId, callback) {
+    const query = "SELECT * FROM JoinWorkSpace WHERE userId = ? AND isManager = FALSE";
     
     pool.query(query, [userId], (err, results) => {
       if (err) {
