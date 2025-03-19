@@ -10,6 +10,7 @@ export const workspaceData = [
       { id: 2, initials: "TH", bgColor: "bg-gray-500" },
       { id: 3, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ export const workspaceData = [
       { id: 1, initials: "VN", bgColor: "bg-blue-500" },
       { id: 2, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
   },
   {
     id: 3,
@@ -32,6 +34,7 @@ export const workspaceData = [
       { id: 1, initials: "VN", bgColor: "bg-blue-500" },
       { id: 2, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
   },
   {
     id: 4,
@@ -43,6 +46,7 @@ export const workspaceData = [
       { id: 1, initials: "VN", bgColor: "bg-blue-500" },
       { id: 2, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
   },
   {
     id: 5,
@@ -54,6 +58,7 @@ export const workspaceData = [
       { id: 1, initials: "VN", bgColor: "bg-blue-500" },
       { id: 2, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
   },
   {
     id: 6,
@@ -66,6 +71,7 @@ export const workspaceData = [
       { id: 2, initials: "TH", bgColor: "bg-gray-500" },
       { id: 3, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
   },
   {
     id: 7,
@@ -77,6 +83,16 @@ export const workspaceData = [
       { id: 1, initials: "VN", bgColor: "bg-blue-500" },
       { id: 2, initials: "KT", bgColor: "bg-orange-400" },
     ],
+    isOwner: true,
+  },
+  {
+    id: "2",
+    title: "Team Project",
+    subtitle: "Assigned by Team Lead",
+    backgroundGradient:
+      "bg-gradient-to-br from-red-300 via-purple-300 to-indigo-400",
+    members: [],
+    isOwner: false,
   },
 ];
 
