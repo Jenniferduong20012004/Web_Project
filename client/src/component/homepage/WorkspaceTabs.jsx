@@ -2,27 +2,27 @@ import React from "react";
 
 const WorkspaceTabs = ({ activeTab, onTabChange }) => {
   return (
-    <div className="flex !gap-6">
+    <div className="flex gap-6 !ml-10">
       <button
-        className={`!pb-1 !px-1 ${
+        className={`!px-1 cursor-pointer ${
           activeTab === "myWorkspace"
-            ? "text-blue-800 border-b-2 border-blue-800 font-medium"
+            ? "text-[#4A92DD] font-semibold"
             : "text-gray-500 hover:text-gray-700"
         }`}
         onClick={() => onTabChange("myWorkspace")}
       >
-        My Workspace
+        My Workspaces
       </button>
 
       <button
-        className={`!pb-1 !px-1 ${
+        className={`!px-1 cursor-pointer ${
           activeTab === "assignedWorkspace"
-            ? "text-blue-800 border-b-2 border-blue-800 font-medium"
+            ? "text-[#4A92DD] font-semibold"
             : "text-gray-500 hover:text-gray-700"
         }`}
         onClick={() => onTabChange("assignedWorkspace")}
       >
-        My Assigned Workspace
+        My Assigned Workspaces
       </button>
     </div>
   );

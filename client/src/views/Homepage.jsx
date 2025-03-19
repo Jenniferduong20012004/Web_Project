@@ -26,7 +26,7 @@ const Homepage = () => {
     const workspaceWithId = {
       ...newWorkspace,
       id: `workspace-${Date.now()}`,
-      backgroundGradient: "bg-gradient-to-r from-pink-300 to-purple-400",
+      backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
       title: newWorkspace.name,
       subtitle: newWorkspace.description,
       members: [],

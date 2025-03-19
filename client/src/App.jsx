@@ -1,8 +1,8 @@
+import { Routes, Route } from "react-router-dom";
 import Login from "./views/Login";
 import Signup from "./views/Signup";
 import Homepage from "./views/Homepage";
 import Dashboard from "./views/Dashboard";
-import { Routes, Route } from "react-router-dom";
 
 function App() {
   return (

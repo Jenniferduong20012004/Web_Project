@@ -18,11 +18,7 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
   return (
     <div className="fixed inset-0 !z-50 flex items-center justify-center">
       {/* Darker backdrop */}
-      <div
-        // className="absolute inset-0 bg-white/30 backdrop-blur-sm"
-        className="absolute inset-0 bg-black/70"
-        onClick={onClose}
-      ></div>
+      <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
 
       {/* Form content */}
       <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-6 !z-10">
@@ -37,7 +33,7 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
               type="text"
               id="name"
               placeholder="Workspace name"
-              className="w-full !p-2 border border-gray-300 rounded-md"
+              className="w-full !p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6299ec] focus:border-1"
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               required
@@ -50,7 +46,7 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
             <textarea
               id="description"
               placeholder="Task description"
-              className="w-full !p-2 border border-gray-300 rounded-md"
+              className="w-full !p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6299ec] focus:border-1"
               rows="4"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
