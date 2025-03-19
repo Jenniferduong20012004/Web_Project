@@ -1,5 +1,4 @@
 
-
 const pool = require("../db/connect");
 class User {
   constructor(id, email, password, name) {
@@ -7,6 +6,9 @@ class User {
     this.email = email;
     this.password = password;
     this.name = name;
+  }
+  static createByGoogle (){
+    
   }
   static create(userData, callback) {
     const { name, email, password } = userData;
@@ -48,6 +50,9 @@ class User {
       }
       return callback(null, results.length > 0 ? results[0] : null);
     });
+  }
+  static getUserData (id, callback){
+    return {}
   }
 }
 

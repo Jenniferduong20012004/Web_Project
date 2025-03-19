@@ -1,80 +1,183 @@
-import React from "react";
-import {
-  MdDashboard,
-  MdOutlineAddTask,
-  MdOutlinePendingActions,
-  MdSettings,
-  MdTaskAlt,
-} from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers } from "react-icons/fa";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
+const Sidebar = ({ workspaceName = "TaskClick" }) => {
+  const [activeTab, setActiveTab] = useState("Dashboard");
 
-const linkData = [
-  {
-    label: "Dashboard",
-    link: "dashboard",
-    icon: <MdDashboard />,
-  },
-  {
-    label: "Tasks",
-    link: "tasks",
-    icon: <FaTasks />,
-  },
-  {
-    label: "Completed",
-    link: "completed/completed",
-    icon: <MdTaskAlt />,
-  },
-  {
-    label: "In Progress",
-    link: "in-progress/in progress",
-    icon: <MdOutlinePendingActions />,
-  },
-  {
-    label: "To Do",
-    link: "todo/todo",
-    icon: <MdOutlinePendingActions />,
-  },
-  {
-    label: "Team",
-    link: "team",
-    icon: <FaUsers />,
-  },
-  {
-    label: "Trash",
-    link: "trashed",
-    icon: <FaTrashAlt />,
-  },
-];
-const Sidebar = () => {
+  // Navigation items with their icons
+  const navItems = [
+    {
+      name: "Dashboard",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+      ),
+    },
+    {
+      name: "Board",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5z" />
+          <path d="M8 7h6" />
+          <path d="M8 11h8" />
+          <path d="M8 15h6" />
+        </svg>
+      ),
+    },
+    {
+      name: "Trash",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 6h18" />
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+        </svg>
+      ),
+    },
+    {
+      name: "Members",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+          <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
-    <div className="hidden lg:flex lg:flex-col w-64 border-r border-gray-200 bg-white">
-      {/* Menu */}
-      <nav className="flex-1 flex flex-col mt-2">
-        <ul className="flex flex-col text-sm">
-          <li>
-            <button className="w-full text-left py-3 px-4 hover:bg-gray-100 font-medium text-gray-700">
-              Overview
-            </button>
-          </li>
-          <li>
-            <button className="w-full text-left py-3 px-4 hover:bg-gray-100 font-medium text-gray-700">
-              Trash
-            </button>
-          </li>
-          <li>
-            <button className="w-full text-left py-3 px-4 hover:bg-gray-100 font-medium text-gray-700">
-              Members
-            </button>
-          </li>
-        </ul>
-      </nav>
+    <div className="w-48 min-h-screen bg-white flex flex-col border-r border-gray-200">
+      <div className="flex flex-col gap-6 !px-4 !py-6 items-center">
+        {/* Header with back button and workspace name */}
+        <div className="w-full">
+          <Link
+            to="/homepage"
+            className="flex items-center text-[#455294] !ml-3"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            <span className="!ml-3 text-xl font-bold">{workspaceName}</span>
+          </Link>
+        </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-200">
-        <button className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-          Log out
-        </button>
+        {/* Navigation Items */}
+        <nav className="flex-1 !mt-2">
+          <ul>
+            {navItems.map((item) => (
+              <li key={item.name} className="!mb-3">
+                <Link
+                  to={item.path}
+                  onClick={() => setActiveTab(item.name)}
+                  className={`flex items-center w-full !px-5 !py-3 text-sm rounded-2xl ${
+                    activeTab === item.name || location.pathname === item.path
+                      ? "bg-blue-50 text-[#4A92DD]"
+                      : "text-gray-500 hover:bg-gray-50"
+                  }`}
+                >
+                  <span
+                    className={`${
+                      activeTab === item.name
+                        ? "text-[#4A92DD]"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
+                  <span
+                    className={`!ml-3 ${
+                      activeTab === item.name || location.pathname === item.path
+                        ? "font-medium"
+                        : "font-normal"
+                    }`}
+                  >
+                    {item.name}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Logout button at bottom */}
+        <div className="!mt-33">
+          <Link
+            to="/login"
+            className="flex gap-3 items-center text-gray-500 !py-3 text-sm hover:text-gray-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+
+            <span>Log out</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

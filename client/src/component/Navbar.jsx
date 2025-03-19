@@ -5,10 +5,13 @@ import { MdNotifications } from "react-icons/md";
 
 const Navbar = () => {
   return (
-    <div className="flex items-center justify-between px-4 py-30 bg-white border-b border-gray-200 w-full">
+    <div className="flex items-center justify-between !px-4 !py-4 bg-white border-b border-gray-200 w-full">
       {/* Bên trái: Logo và Tabs */}
       <div className="flex items-center gap-6">
         <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
+        <h2 className="text-xl bg-gradient-to-r from-[#435090] to-[#3885c4] text-transparent bg-clip-text inline-block font-bold">
+          TaskUP
+        </h2>
         <nav className="flex items-center gap-4">
           <button className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-1">
             My Workspace
