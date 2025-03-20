@@ -2,6 +2,7 @@ import React from "react";
 import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import OverviewSection from "../component/dashboard/OverviewSection";
+import UpcomingTaskBoard from "../component/dashboard/UpcomingTasksBoard";
 
 const Dashboard = () => {
   return (
@@ -20,42 +21,7 @@ const Dashboard = () => {
           <OverviewSection />
 
           {/* UPCOMING TASKS */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Upcoming Tasks
-            </h2>
-            <div className="flex flex-col gap-2">
-              {/* Task 1 */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2">
-                <span className="text-sm text-gray-700">
-                  Creating Website Landing Page | TaskClick - Task Management
-                  Project
-                </span>
-                <span className="text-xs text-red-500">7 Days Left</span>
-              </div>
-              {/* Task 2 */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2">
-                <span className="text-sm text-gray-700">
-                  Creating Website Design | TaskUP - Task Management Project
-                </span>
-                <span className="text-xs text-red-500">7 Days Left</span>
-              </div>
-              {/* Task 3 */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2">
-                <span className="text-sm text-gray-700">
-                  Creating Website Design | TaskUP - Task Management Project
-                </span>
-                <span className="text-xs text-red-500">7 Days Left</span>
-              </div>
-              {/* Task 4 */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2">
-                <span className="text-sm text-gray-700">
-                  Creating Website Design | TaskUP - Task Management Project
-                </span>
-                <span className="text-xs text-red-500">7 Days Left</span>
-              </div>
-            </div>
-          </div>
+          <UpcomingTaskBoard />
         </div>
       </div>
     </div>
