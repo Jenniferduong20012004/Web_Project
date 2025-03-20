@@ -1,31 +1,41 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useEffect } from "react";
 const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
   const [workspaceName, setWorkspaceName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [userId, setUserId] = useState(null);
+    useEffect(() => {
+      const getUserId = () =>{
+        let data = JSON.parse(localStorage.getItem("user"));
+        setUserId(data.id);
+      }
+  
+      getUserId();
+    }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const dateCreate = new Date().toISOString().split('T')[0];
 
 
     setLoading(true);
-
+    alert (userId);
     try {
       const response = await axios.post("http://localhost:5000/addWorkSpace", {
           workspacename: workspaceName,
           description: description,
           dateCreate: dateCreate,
+          userId: userId,
         });
       const result = await response.data;
+      alert (result)
       onAdd(result);
       setWorkspaceName("");
       setDescription("");
       onClose();
     } catch (error) {
       alert("Error: " + (error.response ? JSON.stringify(error.response.data) : error.message));
-      alert (dateCreate)
     } finally {
       setLoading(false);
     }

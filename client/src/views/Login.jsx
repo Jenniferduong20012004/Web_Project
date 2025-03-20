@@ -49,7 +49,8 @@ const Login = () => {
       });
 
       if (response.data.success) {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("user",JSON.stringify({ id: response.data.user.userId, email: response.data.user.email }));
+        // alert(response.data.user.userId);
         toast.success("Login successful!", { 
           position: "top-right",
           autoClose: 2000
