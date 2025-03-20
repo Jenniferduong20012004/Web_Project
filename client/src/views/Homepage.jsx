@@ -21,7 +21,9 @@ const Homepage = () => {
         setUserId(data.id);
         // alert(data.id, data.email);
         if (!data) {
-          toast.error("User not found in localStorage", { position: "top-right" });
+          toast.error("User not found in localStorage", {
+            position: "top-right",
+          });
           return;
         }
         // localStorage.setItem("user", data.id);
@@ -29,13 +31,19 @@ const Homepage = () => {
         if (response.data.success) {
           setWorkspaces(response.data.workspace);
         } else {
-          toast.error(response.data.message || "Workspace fetch failed", { position: "top-right" });
+          toast.error(response.data.message || "Workspace fetch failed", {
+            position: "top-right",
+          });
         }
       } catch (error) {
         if (error.response) {
-          toast.error(error.response.data.message || "Server error", { position: "top-right" });
+          toast.error(error.response.data.message || "Server error", {
+            position: "top-right",
+          });
         } else if (error.request) {
-          toast.error("Unable to connect to server. Please try again later.", { position: "top-right" });
+          toast.error("Unable to connect to server. Please try again later.", {
+            position: "top-right",
+          });
         } else {
           toast.error("Error: " + error.message, { position: "top-right" });
         }
