@@ -1,4 +1,3 @@
-
 const pool = require("../db/connect");
 class User {
   constructor(id, email, password, name) {
