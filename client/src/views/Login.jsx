@@ -11,6 +11,7 @@ import bgImage from "../assets/login-signup-gradient-background.jpg";
 import userLoginImg from "../assets/user-login.svg";
 import logo from "../assets/logo.png";
 import InputField from "../component/input/InputField.jsx";
+
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -48,8 +49,8 @@ const Login = () => {
       });
 
       if (response.data.success) {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        
+        localStorage.setItem("user",JSON.stringify({ id: response.data.user.userId, email: response.data.user.email }));
+        // alert(response.data.user.userId);
         toast.success("Login successful!", { 
           position: "top-right",
           autoClose: 2000

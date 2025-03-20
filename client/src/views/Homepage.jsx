@@ -1,24 +1,30 @@
+import React, { useState } from "react";
 import Navbar from "../component/Navbar";
-// import workspaceData from "../mock-data/mockWorkspaceData";
+import workspaceData from "../mock-data/mockWorkspaceData";
 import AddWorkspaceForm from "../component/homepage/AddWorkspaceForm";
 import WorkspaceCard from "../component/WorkspaceCard";
-import React, { useState, useEffect } from "react"; 
-import axios from "axios"; 
+import { useEffect } from "react";
 const Homepage = () => {
-  // const [workspaces, setWorkspaces] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
   const [isAddWorkspaceFormOpen, setAddWorkspaceOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("myWorkspace");
+  const [userId, setUserId] = useState(null);
+  // const [workspaces, setWorkspaces] = useState(
+  //   workspaceData.map((workspace) => ({
+  //     ...workspace,
+  //     isOwner: true,
+  //   }))
+  // );
   useEffect(() => {
     const getData = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user) {
+        let data = JSON.parse(localStorage.getItem("user"));
+        setUserId(data.id);
+        // alert(data.id, data.email);
+        if (!data) {
           toast.error("User not found in localStorage", { position: "top-right" });
           return;
         }
-
-        const response = await axios.post("http://localhost:5000/getWorkSpace", { userId: user.id });
+        // localStorage.setItem("user", data.id);
 
         if (response.data.success) {
           setWorkspaces(response.data.workspace);
@@ -38,8 +44,7 @@ const Homepage = () => {
 
     getData();
   }, []);
-
-
+  const [workspaces, setWorkspaces] = useState([]);
   const handleAddWorkspace = () => {
     setAddWorkspaceOpen(true);
   };
@@ -52,7 +57,7 @@ const Homepage = () => {
     const workspaceWithId = {
       ...newWorkspace,
       id: `workspace-${Date.now()}`,
-      backgroundGradient: "bg-gradient-to-r from-pink-300 to-purple-400",
+      backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
       title: newWorkspace.name,
       subtitle: newWorkspace.description,
       members: [],

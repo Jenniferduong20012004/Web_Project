@@ -124,11 +124,13 @@ exports.login = (req, res) => {
         success: true,
         message: "Login successful",
         user: {
-          id: user.id,
+          userId: user.userId, // Fix: Change from user.id to user.userId
           email: user.email,
           name: user.name,
         },
+        token,
       });
+      
     });
   });
 };
