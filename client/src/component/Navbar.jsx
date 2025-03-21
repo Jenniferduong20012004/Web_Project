@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { MdNotifications } from "react-icons/md";
 import WorkspaceTabs from "./homepage/WorkspaceTabs";
+import UserAvatar from "./profile/UserAvatar";
 
 const Navbar = ({ workspaces, activeTab, onTabChange }) => {
   const location = useLocation();
@@ -34,7 +35,7 @@ const Navbar = ({ workspaces, activeTab, onTabChange }) => {
         </h2>
       </div>
 
-      {/* Workspace Tabs: Using your existing component but with enhanced onTabChange */}
+      {/* Workspace Tabs */}
       <nav className="!ml-5 flex items-center gap-10 flex-grow">
         <WorkspaceTabs activeTab={activeTab} onTabChange={handleTabChange} />
       </nav>
@@ -54,12 +55,9 @@ const Navbar = ({ workspaces, activeTab, onTabChange }) => {
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <MdNotifications className="w-6 h-6 text-gray-600" />
           </button>
+
           {/* Avatar */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium">
-              TT
-            </div>
-          </div>
+          <UserAvatar />
         </div>
       </div>
     </div>
