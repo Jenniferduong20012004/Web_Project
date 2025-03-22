@@ -21,7 +21,7 @@ const Dashboard = () => {
           <OverviewSection />
 
           {/* UPCOMING TASKS */}
-          <UpcomingTaskBoard/>
+          <UpcomingTaskBoard />
         </div>
       </div>
     </div>

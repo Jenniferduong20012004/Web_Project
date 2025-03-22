@@ -1,6 +1,5 @@
 import React from "react";
 import logo from "../assets/logo.png";
-import userAvatar from "../assets/user-avatar.svg";
 import { MdNotifications } from "react-icons/md";
 
 const Navbar = () => {
@@ -23,25 +22,24 @@ const Navbar = () => {
       </div>
 
       {/* Bên phải: Thanh search và Avatar + Chuông thông báo */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-5">
         <div className="relative">
           <input
             type="text"
             placeholder="Search..."
-            className="pl-3 pr-10 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="!pl-3 !pr-20 !py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
           />
         </div>
         <div className="flex items-center gap-3">
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <MdNotifications className="w-6 h-6 text-gray-600" />
           </button>
+
+          {/* Avatar */}
           <div className="flex items-center gap-2">
-            <img
-              src={userAvatar}
-              alt="User Avatar"
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium text-gray-700">Hello</span>
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium">
+              TT
+            </div>
           </div>
         </div>
       </div>
