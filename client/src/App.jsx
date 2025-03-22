@@ -1,7 +1,8 @@
 import Login from "./views/Login";
 import Signup from "./views/Signup";
 import Homepage from "./views/Homepage";
-import Dashboard from "./views/Dashboard";
+import Dashboard from "./views/Dashboard"; 
+import Members from "./views/Members";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/homepage" element={<Homepage />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/members" element={<Members />} />
     </Routes>
   );
 }
