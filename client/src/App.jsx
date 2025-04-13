@@ -4,6 +4,7 @@ import Signup from "./views/Signup";
 import Homepage from "./views/Homepage";
 import Dashboard from "./views/Dashboard";
 import Profile from "./views/Profile";
+import Members from "./views/Members";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path="/homepage" element={<Homepage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/members" element={<Members />} />
     </Routes>
   );
 }
