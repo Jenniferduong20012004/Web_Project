@@ -9,7 +9,7 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
   useEffect(() => {
     const getUserId = () => {
       let data = JSON.parse(localStorage.getItem("user"));
-      setUserId(data.id);
+      setUserId(data.userId); // chin2 modify to userId
     };
 
     getUserId();
