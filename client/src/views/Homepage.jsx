@@ -1,58 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import Navbar from "../component/Navbar";
-import workspaceData from "../mock-data/mockWorkspaceData";
 import AddWorkspaceForm from "../component/homepage/AddWorkspaceForm";
-import WorkspaceCard from "../component/WorkspaceCard";
-import { useEffect } from "react";
+import WorkspaceCard from "../component/homepage/WorkspaceCard";
+import api from "../services/api";
+
 const Homepage = () => {
   const [isAddWorkspaceFormOpen, setAddWorkspaceOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("myWorkspace");
   const [userId, setUserId] = useState(null);
-  // const [workspaces, setWorkspaces] = useState(
-  //   workspaceData.map((workspace) => ({
-  //     ...workspace,
-  //     isOwner: true,
-  //   }))
-  // );
+  const [adminWorkspaces, setAdminWorkspaces] = useState([]);
+  const [assignedWorkspaces, setAssignedWorkspaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const getData = async () => {
+    const fetchWorkspaces = async () => {
       try {
-        let data = JSON.parse(localStorage.getItem("user"));
-        setUserId(data.id);
-        // alert(data.id, data.email);
-        if (!data) {
-          toast.error("User not found in localStorage", {
-            position: "top-right",
-          });
+        setLoading(true);
+
+        let userData = JSON.parse(localStorage.getItem("user"));
+        if (!userData || !userData.userId) {
+          toast.error("User not found in localStorage");
+          setLoading(false);
           return;
         }
-        // localStorage.setItem("user", data.id);
+        setUserId(userData.userId);
 
-        if (response.data.success) {
-          setWorkspaces(response.data.workspace);
+        // get all ws that the current user is admin
+        const adminResponse =
+          await api.workspaces.getCurrentUserAdminWorkspaces();
+
+        if (adminResponse.success) {
+          // Thêm kiểm tra quyền admin
+          const validAdminWorkspaces = adminResponse.workspace.filter((ws) =>
+            ws.members.some(
+              (member) => member.userID === userData.userId && member.isAdmin
+            )
+          );
+          setAdminWorkspaces(validAdminWorkspaces);
         } else {
-          toast.error(response.data.message || "Workspace fetch failed", {
+          toast.error(adminResponse.message || "Admin workspace fetch failed", {
             position: "top-right",
           });
+        }
+
+        // Lấy các workspace mà user được assign (không phải admin)
+        const assignedResponse =
+          await api.workspaces.getCurrentUserAssignedWorkspaces();
+
+        if (assignedResponse.success) {
+          setAssignedWorkspaces(assignedResponse.workspace);
+        } else {
+          toast.error(
+            assignedResponse.message || "Assigned workspace fetch failed",
+            {
+              position: "top-right",
+            }
+          );
         }
       } catch (error) {
-        if (error.response) {
-          toast.error(error.response.data.message || "Server error", {
-            position: "top-right",
-          });
-        } else if (error.request) {
-          toast.error("Unable to connect to server. Please try again later.", {
-            position: "top-right",
-          });
-        } else {
-          toast.error("Error: " + error.message, { position: "top-right" });
-        }
+        console.error("Error fetching workspaces:", error);
+        toast.error("Error loading workspaces: " + error.message);
+      } finally {
+        // Thêm timeout để tránh loading vô hạn
+        setTimeout(() => {
+          setLoading(false);
+        }, 5000);
       }
     };
 
-    getData();
+    fetchWorkspaces();
   }, []);
-  const [workspaces, setWorkspaces] = useState([]);
+
   const handleAddWorkspace = () => {
     setAddWorkspaceOpen(true);
   };
@@ -61,34 +80,42 @@ const Homepage = () => {
     setAddWorkspaceOpen(false);
   };
 
-  const handleAddNewWorkspace = (newWorkspace) => {
-    const workspaceWithId = {
-      ...newWorkspace,
-      id: `workspace-${Date.now()}`,
-      backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-      title: newWorkspace.name,
-      subtitle: newWorkspace.description,
-      members: [],
-      isOwner: true,
-    };
+  const handleAddNewWorkspace = async (newWorkspace) => {
+    try {
+      const response = await api.workspaces.createWorkspace({
+        name: newWorkspace.name,
+        description: newWorkspace.description,
+        userId: userId,
+      });
 
-    setWorkspaces([...workspaces, workspaceWithId]);
-    setAddWorkspaceOpen(false);
+      if (response.success) {
+        // Thêm workspace mới vào danh sách admin workspaces
+        setAdminWorkspaces([...adminWorkspaces, response.workspace]);
+        toast.success("Workspace created successfully!", {
+          position: "top-right",
+        });
+        setAddWorkspaceOpen(false);
+      } else {
+        toast.error(response.message || "Failed to create workspace", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error creating workspace: " + error.message, {
+        position: "top-right",
+      });
+    }
   };
 
-  const filteredWorkspaces = workspaces.filter((workspace) => {
-    if (activeTab === "myWorkspace") {
-      return workspace.isOwner;
-    } else {
-      return !workspace.isOwner;
-    }
-  });
+  // Chọn danh sách workspace hiển thị dựa vào tab đang active
+  const displayedWorkspaces =
+    activeTab === "myWorkspace" ? adminWorkspaces : assignedWorkspaces;
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-[#f4f7fa]">
       <div className="fixed top-0 right-0 left-0 z-20">
         <Navbar
-          workspaces={workspaces}
+          workspaces={[...adminWorkspaces, ...assignedWorkspaces]} // Truyền tất cả workspace cho Navbar
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
@@ -106,19 +133,34 @@ const Homepage = () => {
             {activeTab === "myWorkspace" && (
               <button
                 onClick={handleAddWorkspace}
-                className="bg-blue-400 hover:bg-blue-900 text-white rounded-md text-sm font-medium !px-4 !py-2 text-base"
+                className="bg-blue-400 hover:bg-blue-900 text-white rounded-md font-medium !px-4 !py-2"
               >
                 Add Workspace
               </button>
             )}
           </div>
 
-          {/* Workspace cards grid */}
-          <div className="flex flex-wrap gap-6">
-            {filteredWorkspaces.map((workspace) => (
-              <WorkspaceCard key={workspace.id} workspace={workspace} />
-            ))}
-          </div>
+          {/* Loading state */}
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="text-xl text-gray-500">Loading workspaces...</div>
+            </div>
+          ) : (
+            /* Workspace cards grid */
+            <div className="flex flex-wrap gap-6">
+              {displayedWorkspaces.length > 0 ? (
+                displayedWorkspaces.map((workspace) => (
+                  <WorkspaceCard key={workspace.id} workspace={workspace} />
+                ))
+              ) : (
+                <div className="w-full text-center py-8 text-gray-500">
+                  {activeTab === "myWorkspace"
+                    ? "You don't have any workspaces yet. Create one to get started!"
+                    : "You're not assigned to any workspaces."}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

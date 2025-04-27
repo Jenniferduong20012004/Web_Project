@@ -1,13 +1,28 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
-const Sidebar = ({ workspaceName = "TaskClick" }) => {
+const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("Dashboard");
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes("/dashboard")) {
+      setActiveTab("Dashboard");
+    } else if (path.includes("/board")) {
+      setActiveTab("Board");
+    } else if (path.includes("/trash")) {
+      setActiveTab("Trash");
+    } else if (path.includes("/members")) {
+      setActiveTab("Members");
+    }
+  }, [location]);
 
   // Navigation items with their icons
   const navItems = [
     {
       name: "Dashboard",
+      path: `/dashboard`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -29,6 +44,7 @@ const Sidebar = ({ workspaceName = "TaskClick" }) => {
     },
     {
       name: "Board",
+      path: `/board`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -50,6 +66,7 @@ const Sidebar = ({ workspaceName = "TaskClick" }) => {
     },
     {
       name: "Trash",
+      path: `/trash`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -70,6 +87,7 @@ const Sidebar = ({ workspaceName = "TaskClick" }) => {
     },
     {
       name: "Members",
+      path: `/members`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
