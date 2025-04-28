@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Navbar from "../component/Navbar";
-import workspaceData from "../mock-data/mockWorkspaceData";
 import AddWorkspaceForm from "../component/homepage/AddWorkspaceForm";
 import WorkspaceCard from "../component/homepage/WorkspaceCard";
 
@@ -9,52 +8,104 @@ const Homepage = () => {
   const [isAddWorkspaceFormOpen, setAddWorkspaceOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("myWorkspace");
   const [userId, setUserId] = useState(null);
-  const [adminWorkspaces, setAdminWorkspaces] = useState([]);
-  const [assignedWorkspaces, setAssignedWorkspaces] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        let data = JSON.parse(localStorage.getItem("user"));
-        if (!data) {
-          toast.error("User not found in localStorage", {
-            position: "top-right",
-          });
-          return;
-        }
+  // Create a function to fetch workspaces that we can reuse
+  const fetchWorkspaces = async () => {
+    try {
+      setLoading(true);
+      let userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not found in localStorage", {
+          position: "top-right",
+        });
+        setLoading(false);
+        return;
+      }
 
-        setUserId(data.id);
+      setUserId(userData.userId);
 
-        // Using mock data instead of API call
-        const mockResponse = {
-          success: true,
-          workspace: workspaceData.map((workspace) => ({
+      // Fetch workspaces from API
+      const response = await fetch("http://localhost:5000/getWorkSpace", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userData.userId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Check if we have the updated API structure with separate workspace types
+        if (data.managedWorkspaces && data.assignedWorkspaces) {
+          // Handle updated API structure with separated workspace types
+          const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
             ...workspace,
+            id: workspace.id,
+            title: workspace.workspaceName,
+            subtitle: `Created on ${new Date(
+              workspace.dateCreate
+            ).toLocaleDateString()}`,
+            backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+            members: [],
             isOwner: true,
-          })),
-        };
+          }));
 
-        if (mockResponse.success) {
-          setWorkspaces(mockResponse.workspace);
+          const assignedWorkspaces = data.assignedWorkspaces.map(
+            (workspace) => ({
+              ...workspace,
+              id: workspace.id,
+              title: workspace.workspaceName,
+              subtitle: `Created on ${new Date(
+                workspace.dateCreate
+              ).toLocaleDateString()}`,
+              backgroundGradient:
+                "bg-gradient-to-br from-blue-300 to-purple-400",
+              members: [],
+              isOwner: false,
+            })
+          );
+
+          setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
         } else {
-          toast.error("Workspace fetch failed", {
-            position: "top-right",
-          });
-        }
+          // Handle original API structure with workspace array
+          const transformedWorkspaces = data.workspace.map((workspace) => ({
+            ...workspace,
+            id: workspace.id,
+            title: workspace.workspaceName,
+            subtitle: `Created on ${new Date(
+              workspace.dateCreate
+            ).toLocaleDateString()}`,
+            backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+            members: [],
+            // For original API structure, we don't know which are owned
+            // Assuming all are owned for backward compatibility
+            isOwner: true,
+          }));
 
-        // Set loading to false after getting data
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        toast.error("Error: " + (error.message || "Unknown error"), {
+          setWorkspaces(transformedWorkspaces);
+        }
+      } else {
+        toast.error(data.message || "Failed to fetch workspaces", {
           position: "top-right",
         });
       }
-    };
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    getData();
+  // Call fetchWorkspaces when component mounts
+  useEffect(() => {
+    fetchWorkspaces();
   }, []);
 
   const handleAddWorkspace = () => {
@@ -65,19 +116,65 @@ const Homepage = () => {
     setAddWorkspaceOpen(false);
   };
 
-  const handleAddNewWorkspace = (newWorkspace) => {
-    const workspaceWithId = {
-      ...newWorkspace,
-      id: `workspace-${Date.now()}`,
-      backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-      title: newWorkspace.name,
-      subtitle: newWorkspace.description,
-      members: [],
-      isOwner: true,
-    };
+  const handleAddNewWorkspace = async (newWorkspace) => {
+    try {
+      // Here you would normally make an API call to add the workspace to the database
+      // For example:
+      // const response = await fetch("http://localhost:5000/addWorkSpace", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     userId: userId,
+      //     workspaceName: newWorkspace.name,
+      //     description: newWorkspace.description
+      //   }),
+      // });
+      // const data = await response.json();
+      // if (data.success) {
+      //   toast.success("Workspace added successfully!", {
+      //     position: "top-right",
+      //   });
+      // } else {
+      //   toast.error(data.message || "Failed to add workspace", {
+      //     position: "top-right",
+      //   });
+      // }
 
-    setWorkspaces([...workspaces, workspaceWithId]);
-    setAddWorkspaceOpen(false);
+      // For now, we'll just add it locally as before
+      const workspaceWithId = {
+        ...newWorkspace,
+        id: `workspace-${Date.now()}`,
+        backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+        title: newWorkspace.name,
+        subtitle: newWorkspace.description,
+        members: [],
+        isOwner: true,
+      };
+
+      setWorkspaces([...workspaces, workspaceWithId]);
+
+      // Close the form
+      setAddWorkspaceOpen(false);
+
+      // Refetch workspaces from the database to get the updated list
+      // Slight delay to ensure the backend has processed the new workspace
+      setTimeout(() => {
+        fetchWorkspaces();
+      }, 500);
+
+      toast.success("Workspace added successfully!", {
+        position: "top-right",
+      });
+    } catch (error) {
+      toast.error(
+        "Error adding workspace: " + (error.message || "Unknown error"),
+        {
+          position: "top-right",
+        }
+      );
+    }
   };
 
   const filteredWorkspaces = workspaces.filter((workspace) => {
@@ -88,7 +185,6 @@ const Homepage = () => {
     }
   });
 
-  // This variable was missing in the second file but used in the UI
   const displayedWorkspaces = filteredWorkspaces;
 
   return (
