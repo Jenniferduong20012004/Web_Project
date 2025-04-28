@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const TaskForm = ({ isOpen, onClose, onSave, members }) => {
   const fileInputRef = useRef(null);
-  const [inputType, setInputType] = useState("text");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // multi-dropdown state
 
   const initialFormState = {
@@ -16,10 +17,11 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const resetForm = () => {
     setFormData({ ...initialFormState });
-    setInputType("text");
+    setSelectedDate(null);
     setIsDropdownOpen(false);
   };
 
@@ -39,6 +41,24 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
     setFormData({
       ...formData,
       [name]: value,
+    });
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+
+    // Format date as "MMM DD, YYYY" (e.g., "Apr 28, 2025")
+    const formattedDate = date
+      ? date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "";
+
+    setFormData({
+      ...formData,
+      dueDate: formattedDate,
     });
   };
 
@@ -119,6 +139,29 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [isDropdownOpen]);
+
+  // Custom input component for DatePicker
+  const CustomDateInput = forwardRef(({ value, onClick }, ref) => (
+    <div
+      className="w-full border border-gray-400 rounded-md !p-2 text-sm focus:outline-none focus:border-1 focus:border-blue-500 cursor-pointer flex items-center"
+      onClick={onClick}
+      ref={ref}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-4 w-4 text-gray-500 mr-2"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fillRule="evenodd"
+          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+          clipRule="evenodd"
+        />
+      </svg>
+      {value || "Select date"}
+    </div>
+  ));
 
   if (!isOpen) return null;
 
@@ -284,15 +327,13 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
               <label className="block text-sm font-medium !mb-1">Due to</label>
-              <input
-                type={inputType}
-                name="dueDate"
-                value={formData.dueDate}
-                onChange={handleChange}
-                placeholder="dd-mm-yyyy"
-                onFocus={() => setInputType("date")}
-                onBlur={() => !formData.dueDate && setInputType("text")}
-                className="w-full border border-gray-400 rounded-md !p-2 text-sm focus:outline-none focus:border-1 focus:border-blue-500"
+              <DatePicker
+                selected={selectedDate}
+                onChange={handleDateChange}
+                dateFormat="MMM dd, yyyy"
+                customInput={<CustomDateInput />}
+                popperClassName="z-50"
+                popperPlacement="bottom-start"
               />
             </div>
 

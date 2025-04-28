@@ -31,7 +31,7 @@ const Task = ({ task }) => {
   };
 
   const handleTaskClick = () => {
-    navigate(`/task/${task.id}`);
+    navigate(`/board/task/${task.id}`);
   };
 
   return (
