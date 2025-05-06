@@ -1,17 +1,15 @@
-import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { Toaster } from "sonner";
-
+import { Routes, Route } from "react-router-dom";
 import Login from "./views/Login";
 import Signup from "./views/Signup";
 import Homepage from "./views/Homepage";
 import Dashboard from "./views/Dashboard";
-import Board from "./views/Board";
-import TaskDetail from "./views/TaskDetail";
-import Trash from "./views/Trash";
-import Members from "./views/Members";
 import Profile from "./views/Profile";
+import Trash from "./views/Trash"; 
+import Board from "./views/Board";
+import TaskDetail from "./views/TaskDetail"; 
+import Members from "./views/Members"; 
 import ProtectedRoute from "./redux/ProtectedRoute";
+
 
 function App() {
   return (

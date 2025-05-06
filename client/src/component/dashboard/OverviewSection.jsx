@@ -44,7 +44,7 @@ const OverviewSection = () => {
 
   return (
     <div className="!mb-6">
-      <h2 className="text-xl font-bold text-gray-800 !mb-3">Overview</h2>
+      <h2 className="text-xl font-bold text-[#455294] !mb-3">Overview</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
         {cardTypes.map((card, index) => (
           <StatusCard

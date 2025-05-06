@@ -116,10 +116,10 @@ function Board() {
                 ))}
               </div>
               <button
-                className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium"
+                className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium cursor-pointer"
                 onClick={openTaskForm}
               >
-                Add task
+                + Add task
               </button>
             </div>
           </div>
