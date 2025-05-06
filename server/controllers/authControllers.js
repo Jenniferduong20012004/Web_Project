@@ -2,6 +2,7 @@ const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "QunuChinNgoc";
+
 exports.signup = (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -60,7 +61,8 @@ exports.signup = (req, res) => {
       const userData = {
         name: username,
         email: email,
-        password: hashedPassword,
+        // password: hashedPassword,
+        password: password,
       };
 
       User.create(userData, (err, result) => {
@@ -103,34 +105,45 @@ exports.login = (req, res) => {
         message: "User not found",
       });
     }
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        return res.status(500).json({
-          error: true,
-          message: "Error comparing passwords",
-        });
-      }
+    // bcrypt.compare(password, user.password, (err, isMatch) => {
+    //   if (err) {
+    //     return res.status(500).json({
+    //       error: true,
+    //       message: "Error comparing passwords",
+    //     });
+    //   }
 
-      if (!isMatch) {
-        return res.status(401).json({
-          error: true,
-          message: "Incorrect password",
-        });
-      }
-      const token = jwt.sign ({id: user.id, email: user.email}, SECRET_KEY, {expiresIn: "1h"})
+    //   if (!isMatch) {
+    //     return res.status(401).json({
+    //       error: true,
+    //       message: "Incorrect password",
+    //     });
+    //   }
 
-      // Log in successfully, might need JWT token later nhe Qunu
-      return res.status(200).json({
-        success: true,
-        message: "Login successful",
-        user: {
-          userId: user.userId, // Fix: Change from user.id to user.userId
-          email: user.email,
-          name: user.name,
-        },
-        token,
+    // Direct password comparison instead of using bcrypt
+    if (password !== user.password) {
+      return res.status(401).json({
+        error: true,
+        message: "Incorrect password",
       });
-      
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, {
+      expiresIn: "1h",
     });
+
+    // Log in successfully, might need JWT token later nhe Qunu
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        userId: user.userId, // Fix: Change from user.id to user.userId
+        email: user.email,
+        name: user.name,
+      },
+      token,
+    });
+
+    // });
   });
 };

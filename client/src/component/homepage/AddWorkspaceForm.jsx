@@ -6,36 +6,38 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
-    useEffect(() => {
-      const getUserId = () =>{
-        let data = JSON.parse(localStorage.getItem("user"));
-        setUserId(data.id);
-      }
-  
-      getUserId();
-    }, []);
+  useEffect(() => {
+    const getUserId = () => {
+      let data = JSON.parse(localStorage.getItem("user"));
+      setUserId(data.userId); // chin2 modify to userId
+    };
+
+    getUserId();
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const dateCreate = new Date().toISOString().split('T')[0];
-
+    const dateCreate = new Date().toISOString().split("T")[0];
 
     setLoading(true);
-    alert (userId);
+    alert(userId);
     try {
       const response = await axios.post("http://localhost:5000/addWorkSpace", {
-          workspacename: workspaceName,
-          description: description,
-          dateCreate: dateCreate,
-          userId: userId,
-        });
+        workspacename: workspaceName,
+        description: description,
+        dateCreate: dateCreate,
+        userId: userId,
+      });
       const result = await response.data;
-      alert (result)
+      alert(result);
       onAdd(result);
       setWorkspaceName("");
       setDescription("");
       onClose();
     } catch (error) {
-      alert("Error: " + (error.response ? JSON.stringify(error.response.data) : error.message));
+      alert(
+        "Error: " +
+          (error.response ? JSON.stringify(error.response.data) : error.message)
+      );
     } finally {
       setLoading(false);
     }
@@ -84,14 +86,14 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
             <button
               type="button"
               onClick={onClose}
-              className="!px-7 !py-2 text-[#6299ec] font-medium rounded-md hover:bg-gray-100"
+              className="!px-7 !py-2 text-[#6299ec] font-medium rounded-md hover:bg-gray-100 cursor-pointer"
               disabled={loading}
             >
               CANCEL
             </button>
             <button
               type="submit"
-              className="!px-7 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 disabled:opacity-50"
+              className="!px-7 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 cursor-pointer"
               disabled={loading}
             >
               {loading ? "ADDING..." : "ADD"}

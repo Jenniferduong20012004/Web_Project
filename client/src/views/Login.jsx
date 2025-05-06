@@ -3,7 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, EyeOff } from "lucide-react";
 import googleIcon from "/src/assets/google-icon.png";
@@ -14,6 +14,7 @@ import InputField from "../component/input/InputField.jsx";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,18 +50,24 @@ const Login = () => {
       });
 
       if (response.data.success) {
-        localStorage.setItem("user",JSON.stringify({ id: response.data.user.userId, email: response.data.user.email }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            userId: response.data.user.userId,
+            name: response.data.user.name,
+            email: response.data.user.email,
+          })
+        );
         // alert(response.data.user.userId);
-        toast.success("Login successful!", { 
+        toast.success("Login successful!", {
           position: "top-right",
-          autoClose: 2000
+          autoClose: 2000,
         });
-        
+
         setTimeout(() => {
           setIsLoading(false);
           navigate("/homepage");
         }, 2000);
-
       } else {
         toast.error(response.data.message || "Login failed", {
           position: "top-right",
@@ -90,7 +97,11 @@ const Login = () => {
 
   return (
     <div>
-      <ToastContainer pauseOnFocusLoss={false} pauseOnHover={false} draggable={false} />
+      <ToastContainer
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        draggable={false}
+      />
       <div className="w-full min-h-screen flex flex-col item-center lg:flex-row overflow-hidden">
         {/* Left side */}
         <div className="hidden lg:block lg:w-1/2 relative">
