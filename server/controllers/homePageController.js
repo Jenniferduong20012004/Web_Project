@@ -5,18 +5,23 @@ exports.signInHomePage = (req, res) => {
     return res.status(400).json({ success: false, message: "Cannot get UserId" });
   }
   
-  HomePage.findMyWorkSpaceByUserId(userId.id, (err, result) =>{
+  HomePage.findMyAssignedWorkSpaceByUserId(userId, (err, result) =>{
     if (err) {
       return res.status(500).json({
         error: true,
         message: "Error when find workspace!",
       });
     }
-    return res.status(200).json({
-      success: true,
-      message: "Get workspace successful",
-      workspace: workspaces, 
-  });
+    const joinWorkSpaces = result.map(row => ({
+      joinWorkSpace: row.joinWorkSpace,
+      isPending: row.isPending,
+      isManager: row.isManager,
+      dateJoin: row.dateJoin,
+      userId: row.userId,
+      WorkSpace: row.WorkSpace
+    }));
+
+    return res.json({ success: true, workspace: joinWorkSpaces });
   });
 
 };

@@ -10,4 +10,5 @@ router.use("/", authRoutes);
 router.use ("/getWorkSpace", homePageRoute);
 router.use ("/getDashBoard", dashBoardRoute);
 router.use ("/addWorkSpace", addWorkSpaceRoute);
+router.use ("/getHomePageMyWorkSpace", homePageRoute);
 module.exports = router;
