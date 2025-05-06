@@ -5,11 +5,53 @@ import mockUserData from "../mock-data/mockUserData";
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
-
+  const [loading, setLoading] = useState(false);
+  const fetchUser = async () => {
+      try {
+        setLoading(true);
+        let userData = JSON.parse(localStorage.getItem("user"));
+        if (!userData) {
+          toast.error("User not found in localStorage", {
+            position: "top-right",
+          });
+          setLoading(false);
+          return;
+        }
+        const response = await fetch("http://localhost:5000/getProfile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userData.userId,
+          }),
+        });
+  
+        const data = await response.json();
+        if (data.success && data.userInformation) {
+          const userInfo = {
+            username: data.userInformation.name,
+            email: data.userInformation.email,
+            password: data.userInformation.password,
+          };
+          setUserData(userInfo);
+          setFormData({...userInfo});
+        } 
+        else {
+          toast.error(data.message || "Failed to fetch user", {
+            position: "top-right",
+          });
+        }
+      } catch (error) {
+        toast.error("Error: " + (error.message || "Unknown error"), {
+          position: "top-right",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
   useEffect(() => {
-    // Fetch user data from mock data
-    setUserData(mockUserData);
-    setFormData({ ...mockUserData });
+    fetchUser();
   }, []);
 
   const handleInputChange = (e) => {

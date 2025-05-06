@@ -51,9 +51,6 @@ class User {
       return callback(null, results.length > 0 ? results[0] : null);
     });
   }
-  static getUserData (id, callback){
-    return {}
-  }
 }
 
 module.exports = User;
