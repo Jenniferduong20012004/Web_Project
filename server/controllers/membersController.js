@@ -1,11 +1,12 @@
-const workSpace = require("../model/WorkSpace");
+const DashBoard= require("../model/DashBoard");
 
 exports.member = (req, res) => {
-    const {workSpaceId} = req.body;
-    if (!workSpaceId){
+    const {workspace} = req.body;
+    if (!workspace){
         return res.status(400).json({ success: false, message: "Cannot get UserId" });
     }  
-    workSpace.getMemberFromWorkspace(workSpaceId,(err,result)=>{
+    DashBoard.getMemberFromWorkspace(workspace,(err,result)=>{
+
         if (err) {
             return res.status(500).json({
               error: true,
@@ -15,7 +16,7 @@ exports.member = (req, res) => {
           return res.status(200).json({
             success: true,
             message: "Get member successful",
-            workspace: result, 
+            members: result, 
         });
     });
 };
