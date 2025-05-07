@@ -19,8 +19,21 @@ class DashBoard {
           description: row.description,
         };
       });
+      let todo = 0, inProgress = 0, completed = 0;
+      for (let task of tasks) {
+          if (task.StateCompletion === 0) todo++;
+          else if (task.StateCompletion === 1) inProgress++;
+          else if (task.StateCompletion === 2) completed++;
+      }
       console.log (tasks);
-      return callback(null, tasks);
+      const summary = {
+        totalTasks: tasks.length,
+        todo,
+        inProgress,
+        completed,
+        tasks,
+      };
+      return callback(null, summary);
     });
   }
 }

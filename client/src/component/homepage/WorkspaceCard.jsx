@@ -7,41 +7,16 @@ const WorkspaceCard = ({ workspace }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const handleMoveToWorkSpace = async () => {
-    alert (workspace.id);
-    try {
-      setIsLoading(true);
-      const response = await fetch("http://localhost:5000/getDashBoard", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          workspace: workspace.id,
-        }),
-      });
-
-      
-      const data = await response.json();
-
-
-      if (data.success) {
-
-        setTimeout(() => {
-          setIsLoading(false);
-          navigate("/dashboard");
-        }, 2000);
-      } else {
-        toast.error(data.message || "Get into workspace fail", {
-          position: "top-right",
-        });
-      }
-    } catch (error) {
-      toast.error("Error: " + (error.message || "Unknown error"), {
-              position: "top-right",
-        });
-    } finally {
-      setLoading(false);
-    }
+    localStorage.setItem(
+      "workspace",
+      JSON.stringify({
+        workspaceId:  workspace.id,
+      })
+    );
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate("/dashboard");
+    }, 2000);
   };
   return (
     <div
