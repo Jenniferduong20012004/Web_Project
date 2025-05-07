@@ -15,11 +15,13 @@ CREATE TABLE WorkSpace (
 CREATE TABLE Task (
     TaskId INT AUTO_INCREMENT PRIMARY KEY,
     taskname varchar (100) not null,
+    WorkSpace INT not null,
     priority int not null,
     dateBegin date not null,
     dateEnd date not null,
     StateCompletion int not null,
-    description  varchar (500) not null
+    description  varchar (500) not null.
+    FOREIGN KEY (WorkSpace) REFERENCES WorkSpace(WorkSpace) ON DELETE CASCADE,
 );
 CREATE TABLE joinWorkSpace (
     joinWorkSpace INT AUTO_INCREMENT PRIMARY KEY,

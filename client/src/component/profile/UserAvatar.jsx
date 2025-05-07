@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdPerson, MdHelpCenter, MdLogout } from "react-icons/md";
+import { toast } from "sonner";
 
 const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +25,18 @@ const UserMenu = () => {
     };
   }, []);
 
+  const handleLogout = () => {
+    // Clear user data and token from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    // Show success message
+    toast.success("Logged out successfully");
+
+    // Redirect to login page
+    navigate("/login");
+  };
+
   const menuItems = [
     {
       icon: (
@@ -44,9 +57,7 @@ const UserMenu = () => {
         <MdLogout className="w-5 h-5 text-gray-400 group-hover:text-blue-900" />
       ),
       label: "Log Out",
-      onClick: () => {
-        navigate("/login");
-      },
+      onClick: handleLogout,
     },
   ];
 

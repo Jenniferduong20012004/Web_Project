@@ -4,10 +4,13 @@ const authRoutes = require("./authRoutes");
 const homePageRoute = require ("./homePageRoute")
 const dashBoardRoute = require ("./dashBoardRoute")
 const addWorkSpaceRoute = require ("./addWorkspaceRoute")
+const profileRoute = require ("./userProfileRoute")
 
 
 router.use("/", authRoutes);
-router.use ("/getWorkSpace", homePageRoute);
+router.use ("/", homePageRoute);
 router.use ("/getDashBoard", dashBoardRoute);
 router.use ("/addWorkSpace", addWorkSpaceRoute);
+router.use ("/getHomePageMyWorkSpace", homePageRoute);
+router.use ("/", profileRoute)
 module.exports = router;

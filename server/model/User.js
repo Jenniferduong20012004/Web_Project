@@ -51,8 +51,15 @@ class User {
       return callback(null, results.length > 0 ? results[0] : null);
     });
   }
-  static getUserData (id, callback){
-    return {}
+  static updateUserNameById (userId, userName, callback){
+    const query = "UPDATE user SET name = ? WHERE userId = ?";
+    pool.query (query, [userName, userId ], (err, results) => {
+      if (err) {
+        console.error("Error finding user by ID:", err);
+        return callback(err, null);
+      }
+      return callback(null, results); 
+    });
   }
 }
 

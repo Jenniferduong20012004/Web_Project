@@ -1,16 +1,109 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../component/Navbar";
-import mockUserData from "../mock-data/mockUserData";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
-
+  const [loading, setLoading] = useState(false);
+  const fetchUser = async () => {
+      try {
+        setLoading(true);
+        let userData = JSON.parse(localStorage.getItem("user"));
+        if (!userData) {
+          toast.error("User not found in localStorage", {
+            position: "top-right",
+          });
+          setLoading(false);
+          return;
+        }
+        const response = await fetch("http://localhost:5000/getProfile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userData.userId,
+          }),
+        });
+  
+        const data = await response.json();
+        if (data.success && data.userInformation) {
+          const userInfo = {
+            username: data.userInformation.name,
+            email: data.userInformation.email,
+            password: data.userInformation.password,
+          };
+          setUserData(userInfo);
+          setFormData({...userInfo});
+        } 
+        else {
+          toast.error(data.message || "Failed to fetch user", {
+            position: "top-right",
+          });
+        }
+      } catch (error) {
+        toast.error("Error: " + (error.message || "Unknown error"), {
+          position: "top-right",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
   useEffect(() => {
-    // Fetch user data from mock data
-    setUserData(mockUserData);
-    setFormData({ ...mockUserData });
+    fetchUser();
   }, []);
+  const submitHandler = async (data) => {
+    setLoading(true);
+    const loadingToast = toast.loading("Updating user name...", {
+      position: "top-right",
+      pauseOnHover: false,
+      closeOnClick: false,
+      autoClose: false,
+    });
+  
+    try {
+      let userData = JSON.parse(localStorage.getItem("user"));
+      const response = await axios.post("http://localhost:5000/updateProfile", {
+        id: userData.userId,
+        username: data.username,
+      });
+      alert 
+  
+      if (response.data.success) {
+        toast.success("Update successful!", { 
+          position: "top-right",
+          autoClose: 2000
+        });
+
+      } else {
+        toast.error(response.data.message || "Update failed", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      if (error.response) {
+        toast.error(
+          error.response.data.message || "Error when update!",
+          {
+            position: "top-right",
+          }
+        );
+      } else if (error.request) {
+        toast.error("Unable to connect to server. Please try again later.", {
+          position: "top-right",
+        });
+      } else {
+        toast.error("Error during uodate: " + error.message, {
+          position: "top-right",
+        });
+      }
+    } finally {
+      toast.dismiss(loadingToast);
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,7 +114,8 @@ const Profile = () => {
   };
 
   const handleUpdate = () => {
-    // qunu implement updating to backend
+    submitHandler(formData);
+
     setUserData({ ...formData });
     // Add notification or success message later
   };
