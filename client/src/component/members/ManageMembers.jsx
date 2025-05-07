@@ -28,31 +28,127 @@ const getAvatarColor = (email) => {
 };
 
 const ManageMembers = () => {
+  const [loading, setLoading] = useState(true);
+
   const [members, setMembers] = useState([
-    { name: "TT", email: "thaotrinh@gmail.com", role: "Manager" },
-    {
-      name: "Alex Pfeiffer",
-      email: "alex@gmail.com",
-      role: "Front end developer",
-    },
-    { name: "Mike Dean", email: "mike@gmail.com", role: "Front end developer" },
-    {
-      name: "Mateus Cunha",
-      email: "cunha@gmail.com",
-      role: "Back end developer",
-    },
-    {
-      name: "Nzola Uemo",
-      email: "nzola@gmail.com",
-      role: "Back end developer",
-    },
-    { name: "Antony Mack", email: "mack@gmail.com", role: "UI designer" },
-    {
-      name: "André da Silva",
-      email: "andré@gmail.com",
-      role: "Quality Assurance",
-    },
+    // { name: "TT", email: "thaotrinh@gmail.com", role: "Manager" },
+    // {
+    //   name: "Alex Pfeiffer",
+    //   email: "alex@gmail.com",
+    //   role: "Front end developer",
+    // },
+    // { name: "Mike Dean", email: "mike@gmail.com", role: "Front end developer" },
+    // {
+    //   name: "Mateus Cunha",
+    //   email: "cunha@gmail.com",
+    //   role: "Back end developer",
+    // },
+    // {
+    //   name: "Nzola Uemo",
+    //   email: "nzola@gmail.com",
+    //   role: "Back end developer",
+    // },
+    // { name: "Antony Mack", email: "mack@gmail.com", role: "UI designer" },
+    // {
+    //   name: "André da Silva",
+    //   email: "andré@gmail.com",
+    //   role: "Quality Assurance",
+    // },
   ]);
+    const fetchMember = async () => {
+      try {
+        setLoading(true);
+        let userData = JSON.parse(localStorage.getItem("user"));
+        if (!userData) {
+          toast.error("User not found in localStorage", {
+            position: "top-right",
+          });
+          setLoading(false);
+          return;
+        }
+  
+        setUserId(userData.userId);
+  
+        // Fetch workspaces from API
+        const response = await fetch("http://localhost:5000/getWorkSpace", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userData.userId,
+          }),
+        });
+  
+        const data = await response.json();
+  
+        if (data.success) {
+          // Check if we have the updated API structure with separate workspace types
+          if (data.managedWorkspaces && data.assignedWorkspaces) {
+            // Handle updated API structure with separated workspace types
+            const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
+              ...workspace,
+              id: workspace.id,
+              title: workspace.workspaceName,
+              subtitle: `Created on ${new Date(
+                workspace.dateCreate
+              ).toLocaleDateString()}`,
+              backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+              members: [],
+              isOwner: true,
+            }));
+  
+            const assignedWorkspaces = data.assignedWorkspaces.map(
+              (workspace) => ({
+                ...workspace,
+                id: workspace.id,
+                title: workspace.workspaceName,
+                subtitle: `Created on ${new Date(
+                  workspace.dateCreate
+                ).toLocaleDateString()}`,
+                backgroundGradient:
+                  "bg-gradient-to-br from-blue-300 to-purple-400",
+                members: [],
+                isOwner: false,
+              })
+            );
+  
+            setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
+          } else {
+            // Handle original API structure with workspace array
+            const transformedWorkspaces = data.workspace.map((workspace) => ({
+              ...workspace,
+              id: workspace.id,
+              title: workspace.workspaceName,
+              subtitle: `Created on ${new Date(
+                workspace.dateCreate
+              ).toLocaleDateString()}`,
+              backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+              members: [],
+              // For original API structure, we don't know which are owned
+              // Assuming all are owned for backward compatibility
+              isOwner: true,
+            }));
+  
+            setWorkspaces(transformedWorkspaces);
+          }
+        } else {
+          toast.error(data.message || "Failed to fetch workspaces", {
+            position: "top-right",
+          });
+        }
+      } catch (error) {
+        toast.error("Error: " + (error.message || "Unknown error"), {
+          position: "top-right",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    useEffect(() => {
+        fetchMember();
+      }, []);
+    
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);

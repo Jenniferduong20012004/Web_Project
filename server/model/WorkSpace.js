@@ -18,6 +18,16 @@ class WorkSpace {
       }
     );
   }
+  static getMemberFromWorkspace (workspaceId, callback){
+    const query = "SELECT userId FROM joinWorkSpace WHERE WorkSpace = ?";
+    pool.query (query, [workspaceId], (err, result) =>{
+      if (err) {
+        console.error("Error finding user by workSpaceId:", err);
+        return callback(err, null);
+      }
+      return callback(null, results);
+    });
+  }
 
   static createForManager(userId, workSpaceData, callback) {
     const { workspacename, description, dateCreate } = workSpaceData;
@@ -28,10 +38,10 @@ class WorkSpace {
       }
 
       const query =
-        "INSERT INTO joinWorkSpace (isPending, isManager, dateJoin, userId, WorkSpace) VALUES (?, ?, ?, ?, ?)";
+        "INSERT INTO joinWorkSpace (isPending, isManager, role, dateJoin, userId, WorkSpace) VALUES (?, ?, ?,?, ?, ?)";
       pool.query(
         query,
-        [false, true, dateCreate, userId, result.id],
+        [false, true, 'Manager',dateCreate, userId, result.id],
         (e, r) => {
           if (e) {
             console.error("Error linking workspace to manager:", e);
