@@ -33,6 +33,7 @@ class DashBoard {
         completed,
         tasks,
       };
+      console.log(todo);
       return callback(null, summary);
     });
   }

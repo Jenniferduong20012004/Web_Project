@@ -32,10 +32,10 @@ const Dashboard = () => {
       
             if (data.success) {
               setOverviewData({
-                totalTasks: data.totalTasks,
-                todo: data.todo,
-                inProgress: data.inProgress,
-                completed: data.completed,
+                totalTasks: data.workspace.totalTasks,
+                todo: data.workspace.todo,
+                inProgress: data.workspace.inProgress,
+                completed: data.workspace.completed,
               });
             } else {
               toast.error(data.message || "Get into workspace fail", {
