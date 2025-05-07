@@ -108,7 +108,7 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
 const UpcomingTaskBoard = () => {
   return (
     <div className="!pt-3">
-      <h2 className="text-xl font-bold text-gray-800">Upcoming Tasks</h2> <br />
+      <h2 className="text-xl font-bold text-[#455294] ">Upcoming Tasks</h2> <br />
       <div className="flex flex-col gap-2">
         {tasks.map((task, index) => (
           <TaskItem
