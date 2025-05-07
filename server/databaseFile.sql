@@ -20,13 +20,14 @@ CREATE TABLE Task (
     dateBegin date not null,
     dateEnd date not null,
     StateCompletion int not null,
-    description  varchar (500) not null.
+    description  varchar (500) not null,
     FOREIGN KEY (WorkSpace) REFERENCES WorkSpace(WorkSpace) ON DELETE CASCADE,
 );
 CREATE TABLE joinWorkSpace (
     joinWorkSpace INT AUTO_INCREMENT PRIMARY KEY,
     isPending bool not null,
     isManager bool not null,
+    role varchar (500) not null,
 	dateJoin date not null,
     userId INT not null,
     WorkSpace int not null,
