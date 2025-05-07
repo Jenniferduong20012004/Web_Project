@@ -6,37 +6,29 @@ import todoIcon from "../../assets/todo-icon.svg";
 import inProgressIcon from "../../assets/in-progress-icon.svg";
 import completedIcon from "../../assets/completed-icon.svg";
 
-const OverviewSection = () => {
-  // Mock data
-  const mockData = {
-    totalTasks: 5,
-    todo: 2,
-    inProgress: 2,
-    completed: 1,
-  };
-
+const OverviewSection = ({ data }) => {
   const cardTypes = [
     {
       title: "Total Tasks",
-      count: mockData.totalTasks,
+      count: data.totalTasks,
       icon: totalTaskIcon,
       bgColor: "bg-indigo-100",
     },
     {
       title: "Todos",
-      count: mockData.todo,
+      count: data.todo,
       icon: todoIcon,
       bgColor: "bg-blue-100",
     },
     {
       title: "In-Progress",
-      count: mockData.inProgress,
+      count: data.inProgress,
       icon: inProgressIcon,
       bgColor: "bg-yellow-100",
     },
     {
       title: "Completed",
-      count: mockData.completed,
+      count: data.completed,
       icon: completedIcon,
       bgColor: "bg-green-100",
     },

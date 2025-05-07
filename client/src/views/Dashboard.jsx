@@ -6,6 +6,12 @@ import UpcomingTaskBoard from "../component/dashboard/UpcomingTasksBoard";
 
 const Dashboard = () => {
     const [loading, setIsLoading] = useState(true);
+    const [overviewData, setOverviewData] = useState({
+      totalTasks: 0,
+      todo: 0,
+      inProgress: 0,
+      completed: 0,
+    });
     const fetchDashboard = async () => {
       try {
             setIsLoading(true);
@@ -25,6 +31,12 @@ const Dashboard = () => {
       
       
             if (data.success) {
+              setOverviewData({
+                totalTasks: data.totalTasks,
+                todo: data.todo,
+                inProgress: data.inProgress,
+                completed: data.completed,
+              });
             } else {
               toast.error(data.message || "Get into workspace fail", {
                 position: "top-right",
@@ -56,7 +68,7 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           {/* OVERVIEW */}
-          <OverviewSection />
+          <OverviewSection data={overviewData}/>
 
           {/* UPCOMING TASKS */}
           <UpcomingTaskBoard />
