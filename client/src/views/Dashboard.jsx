@@ -1,10 +1,48 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import OverviewSection from "../component/dashboard/OverviewSection";
 import UpcomingTaskBoard from "../component/dashboard/UpcomingTasksBoard";
 
 const Dashboard = () => {
+    const [loading, setIsLoading] = useState(true);
+    const fetchDashboard = async () => {
+      try {
+            setIsLoading(true);
+            let workspace = JSON.parse(localStorage.getItem("workspace"));          
+            const response = await fetch("http://localhost:5000/getDashBoard", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                workspace: workspace.workspaceId,
+              }),
+            });
+      
+            
+            const data = await response.json();
+      
+      
+            if (data.success) {
+            } else {
+              toast.error(data.message || "Get into workspace fail", {
+                position: "top-right",
+              });
+            }
+          } catch (error) {
+            toast.error("Error: " + (error.message || "Unknown error"), {
+                    position: "top-right",
+              });
+          } finally {
+            setIsLoading(false);
+          }
+    };
+  
+    // Call fetchWorkspaces when component mounts
+    useEffect(() => {
+      fetchDashboard();
+    }, []);
   return (
     <div className="w-full min-h-screen flex flex-col">
       <div className="fixed top-0 right-0 left-0 z-20">
