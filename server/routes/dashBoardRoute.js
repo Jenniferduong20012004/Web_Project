@@ -1,5 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const dashboardController = require ("../controllers/dashBoardController");
-router.post("/getDashBoard", dashboardController.getUserDashboard);
+const dashboardController = require("../controllers/dashBoardController");
+router.post("/getDashBoard", dashboardController.getWorkSpaceDashboard);
 module.exports = router;

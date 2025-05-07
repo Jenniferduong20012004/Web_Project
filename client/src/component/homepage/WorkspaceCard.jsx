@@ -1,8 +1,51 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useState } from "react"; 
 
 const WorkspaceCard = ({ workspace }) => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const handleMoveToWorkSpace = async () => {
+    alert (workspace.id);
+    try {
+      setIsLoading(true);
+      const response = await fetch("http://localhost:5000/getDashBoard", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workspace: workspace.id,
+        }),
+      });
+
+      
+      const data = await response.json();
+
+
+      if (data.success) {
+
+        setTimeout(() => {
+          setIsLoading(false);
+          navigate("/dashboard");
+        }, 2000);
+      } else {
+        toast.error(data.message || "Get into workspace fail", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+              position: "top-right",
+        });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div
+    onClick={handleMoveToWorkSpace}
       className="flex flex-col gap-3 border border-[#e9e7f2] rounded-lg bg-white"
       style={{ width: "270px", padding: "10px" }}
     >
