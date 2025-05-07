@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const getInitials = (name) => {
   return name
@@ -28,7 +29,7 @@ const getAvatarColor = (email) => {
 };
 
 const ManageMembers = () => {
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [members, setMembers] = useState([
     // { name: "TT", email: "thaotrinh@gmail.com", role: "Manager" },
@@ -57,83 +58,29 @@ const ManageMembers = () => {
   ]);
     const fetchMember = async () => {
       try {
-        setLoading(true);
-        let userData = JSON.parse(localStorage.getItem("user"));
-        if (!userData) {
-          toast.error("User not found in localStorage", {
-            position: "top-right",
-          });
-          setLoading(false);
-          return;
-        }
-  
-        setUserId(userData.userId);
-  
-        // Fetch workspaces from API
-        const response = await fetch("http://localhost:5000/getWorkSpace", {
+        setIsLoading(true);
+        let workspace = JSON.parse(localStorage.getItem("workspace"));          
+        const response = await fetch("http://localhost:5000/getMember", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userId: userData.userId,
+            workspace: workspace.workspaceId,
           }),
         });
-  
         const data = await response.json();
-  
+        
         if (data.success) {
-          // Check if we have the updated API structure with separate workspace types
-          if (data.managedWorkspaces && data.assignedWorkspaces) {
-            // Handle updated API structure with separated workspace types
-            const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
-              ...workspace,
-              id: workspace.id,
-              title: workspace.workspaceName,
-              subtitle: `Created on ${new Date(
-                workspace.dateCreate
-              ).toLocaleDateString()}`,
-              backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-              members: [],
-              isOwner: true,
+            const members = data.members.map((row) => ({
+              ...row,
+              name: row.userName,
+              email: row.email,
+              role: row.role,
             }));
-  
-            const assignedWorkspaces = data.assignedWorkspaces.map(
-              (workspace) => ({
-                ...workspace,
-                id: workspace.id,
-                title: workspace.workspaceName,
-                subtitle: `Created on ${new Date(
-                  workspace.dateCreate
-                ).toLocaleDateString()}`,
-                backgroundGradient:
-                  "bg-gradient-to-br from-blue-300 to-purple-400",
-                members: [],
-                isOwner: false,
-              })
-            );
-  
-            setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
-          } else {
-            // Handle original API structure with workspace array
-            const transformedWorkspaces = data.workspace.map((workspace) => ({
-              ...workspace,
-              id: workspace.id,
-              title: workspace.workspaceName,
-              subtitle: `Created on ${new Date(
-                workspace.dateCreate
-              ).toLocaleDateString()}`,
-              backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-              members: [],
-              // For original API structure, we don't know which are owned
-              // Assuming all are owned for backward compatibility
-              isOwner: true,
-            }));
-  
-            setWorkspaces(transformedWorkspaces);
-          }
+            setMembers([...members]);
         } else {
-          toast.error(data.message || "Failed to fetch workspaces", {
+          toast.error(data.message || "Get into workspace fail", {
             position: "top-right",
           });
         }
@@ -142,7 +89,7 @@ const ManageMembers = () => {
           position: "top-right",
         });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     useEffect(() => {
