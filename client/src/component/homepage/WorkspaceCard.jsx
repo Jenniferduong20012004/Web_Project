@@ -2,61 +2,45 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState } from "react"; 
-import axios from "axios";
 
 const WorkspaceCard = ({ workspace }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const handleMoveToWorkSpace = async () => {
-    setIsLoading(true);
-    const loadingToast = toast.loading("Getting in workspace...", {
-      position: "top-right",
-      pauseOnHover: false,
-      closeOnClick: false,
-      autoClose: false,
-    });
+    alert (workspace.id);
     try {
-      const data = await fetch("http://localhost:5000/getDashBoard", {
+      setIsLoading(true);
+      const response = await fetch("http://localhost:5000/getDashBoard", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: workspace.id }),
+        body: JSON.stringify({
+          workspace: workspace.id,
+        }),
       });
+
       
-      const response = await response.json();
+      const data = await response.json();
 
 
-      if (response.data.success) {
+      if (data.success) {
 
         setTimeout(() => {
           setIsLoading(false);
           navigate("/dashboard");
         }, 2000);
       } else {
-        toast.error(response.data.message || "Get into workspace fail", {
+        toast.error(data.message || "Get into workspace fail", {
           position: "top-right",
         });
       }
     } catch (error) {
-      if (error.response) {
-        toast.error(
-          error.response.data.message || "Invalid workspace credentials",
-          {
-            position: "top-right",
-          }
-        );
-      } else if (error.request) {
-        toast.error("Unable to connect to server. Please try again later.", {
-          position: "top-right",
+      toast.error("Error: " + (error.message || "Unknown error"), {
+              position: "top-right",
         });
-      } else {
-        toast.error("Error during get into workspace: " + error.message, {
-          position: "top-right",
-        });
-      }
     } finally {
-      toast.dismiss(loadingToast);
+      setLoading(false);
     }
   };
   return (
