@@ -66,6 +66,7 @@ const  Board=()=> {
         }
   };
   useEffect(() => {
+
     fetchBoard( workspacedId);
 
     // In a real app, you would fetch members and tasks from an API

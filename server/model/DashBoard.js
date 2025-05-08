@@ -11,6 +11,16 @@ function mapState(state) {
       return "UNKNOWN";
   }
 }
+const mapPriority = {
+  "High":1,
+  "Medium":2,
+  "Low":3,
+};
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toISOString().split('T')[0]; // returns 'YYYY-MM-DD'
+};
+
 class DashBoard {
   
   static getMemberFromWorkspace (workspaceId, callback){
@@ -112,7 +122,7 @@ class DashBoard {
               status: mapState(row.StateCompletion),
               title: row.taskname,
               description: row.taskDescription,
-              priority: mapPriority(row.priority),
+              priority: mapPriority[row.priority],
               assignedTo: [user],
               dueDate: formatDate(row.dateEnd),
             });
