@@ -1,22 +1,49 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { FaUndoAlt, FaTrashAlt } from "react-icons/fa";
 
-const TrashPage = () => {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Review database schema",
-      stage: "TODOS",
-      priority: "High",
-    },
-    { id: 2, title: "Alex Pfeiffer", stage: "IN-PROGRESS", priority: "Low" },
-    { id: 3, title: "Mike Dean", stage: "COMPLETED", priority: "Medium" },
-    { id: 4, title: "Mateus Cunha", stage: "IN-PROGRESS", priority: "Medium" },
-    { id: 5, title: "Nzola Uemo", stage: "TODOS", priority: "Low" },
-    { id: 6, title: "Antony Mack", stage: "TODOS", priority: "Medium" },
-    { id: 7, title: "André da Silva", stage: "IN-PROGRESS", priority: "High" },
-  ]);
-
+const TrashPage = ({ trashTask }) => {
+  const [tasks, setTasks] = useState([]);
+        useEffect(() => {
+      
+          fetchTasks(trashTask);
+  
+        }, [trashTask]);
+    const mapStage = (state) => {
+          switch (state) {
+            case 0:
+              return "TODOS";
+            case 1:
+              return "IN-PROGRESS";
+            case 2:
+              return "COMPLETED";
+            default:
+              return "TODOS";
+          }
+        };
+    const mapPriority = (priority) => {
+          switch (priority) {
+            case 3:
+              return "Low";
+            case 2:
+              return "Medium";
+            case 1:
+              return "High";
+            default:
+              return "Medium";
+          }
+        };
+    
+  const fetchTasks = async (trashTask) => {
+    const transformedTasks = trashTask.map((row) => ({
+          id: row.TaskId,
+          title: row.taskname,
+          stage: mapStage(row.StateCompletion),
+          priority: mapPriority(row.priority),
+        }));
+        // alert (transformedTasks.length);
+        setTasks(transformedTasks);
+      }
+  
   const [showConfirm, setShowConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);

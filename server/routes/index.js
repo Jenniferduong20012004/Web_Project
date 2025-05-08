@@ -11,6 +11,7 @@ const updateWorkSpaceRoute = require("./updateWorkSpaceRoute");
 const deleteWorkSpaceRoute = require("./deleteWorkSpaceRoute");
 const addTaskRoute = require ("./addTaskRoute");
 const boardRoute = require ("./boardRoute");
+const trashRoute = require ("./trashTaskRoute")
 router.use("/", authRoutes);
 router.use ("/", homePageRoute);
 router.use ("/", memberRoute);
@@ -21,5 +22,6 @@ router.use ("/", dashBoardRoute);
 router.use("/updateWorkSpace", updateWorkSpaceRoute);
 router.use("/deleteWorkSpace", deleteWorkSpaceRoute);
 router.use ("/", addTaskRoute);
+router.use ("/", trashRoute);
 router.use ("/", boardRoute);
 module.exports = router;

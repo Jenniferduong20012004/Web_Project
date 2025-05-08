@@ -33,6 +33,23 @@ class WorkSpace {
     );
   }
   static getTrashTask (workSpaceId, callback){
+    const query = "SELECT * FROM Task WHERE trash = TRUE AND WorkSpace = ?;";
+    pool.query (query, [workSpaceId], (err, result)=>{
+      if (err){
+        console.error("Error creating workspace:", err);
+        return callback(err, null);
+      }
+      const deleteTask = result.map((row) => {
+        return {
+          id: row.TaskId,
+          taskname: row.taskname,
+          priority: row.priority,
+          StateCompletionn: row.StateCompletion,
+        };
+      });
+
+      return callback(null, deleteTask);
+    })
 
   }
   static createTask (TaskData, callback){
