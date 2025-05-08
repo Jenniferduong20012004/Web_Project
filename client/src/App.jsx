@@ -37,7 +37,7 @@ function App() {
         }
       />
       <Route
-        path="/board"
+        path="/board/:workspacedId"
         element={
           <ProtectedRoute>
             <Board />
