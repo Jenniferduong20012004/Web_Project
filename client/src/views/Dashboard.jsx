@@ -31,8 +31,6 @@ const Dashboard = () => {
       
             
             const data = await response.json();
-      
-      
             if (data.success) {
               setOverviewData({
                 totalTasks: data.workspace.totalTasks,
@@ -40,6 +38,7 @@ const Dashboard = () => {
                 inProgress: data.workspace.inProgress,
                 completed: data.workspace.completed,
               });
+      
             } else {
               toast.error(data.message || "Get into workspace fail", {
                 position: "top-right",

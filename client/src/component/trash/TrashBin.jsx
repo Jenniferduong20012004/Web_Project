@@ -40,7 +40,6 @@ const TrashPage = ({ trashTask }) => {
           stage: mapStage(row.StateCompletion),
           priority: mapPriority(row.priority),
         }));
-        // alert (transformedTasks.length);
         setTasks(transformedTasks);
       }
   

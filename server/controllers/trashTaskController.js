@@ -20,3 +20,20 @@ exports.getTrashTask = (req, res) => {
         });
     });
 };
+exports.restoreTask= (req, res) => {
+  const {taskId} = req.body;
+  console.log (taskId);
+  if (!taskId){
+      return res.status(400).json({ success: false, message: "Cannot get taskId" });
+  }  
+
+  WorkSpace.restoreTrashTask(taskId,(err,result)=>{
+      if (err) {
+          return res.status(500).json({
+            error: true,
+            message: "Error when find members!",
+          });
+        }
+        res.status(200).json({ success: true });
+  });
+};
