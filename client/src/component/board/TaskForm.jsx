@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, forwardRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import { useParams } from "react-router-dom";
 const TaskForm = ({ isOpen, onClose, onSave, members }) => {
   const fileInputRef = useRef(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // multi-dropdown state
-
+  const { workspacedId } = useParams();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const initialFormState = {
     title: "",
     description: "",
@@ -15,7 +16,6 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
     dueDate: "",
     file: null,
   };
-
   const [formData, setFormData] = useState(initialFormState);
   const [selectedDate, setSelectedDate] = useState(null);
 
@@ -100,11 +100,65 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
+    const dateCreate = new Date().toISOString().split("T")[0];
+    try {
+      const response = await axios.post("http://localhost:5000/addTask", {
+        title: formData.title,
+        description: formData.description,
+        status: formData.status,
+        priority: formData.priority,
+        dueDate: formData.dueDate,
+        fileName: formData.file ? formData.file.name : null,
+        assignedTo: formData.assignedMembers.map((member) => ({
+        name: member.name,
+        initials: member.name
+          .split(" ")
+          .map((n) => n[0])
+          .join(""),
+        bgColor: member.bgColor || "bg-blue-700",
+        id: member.id,
+        email: member.email,
+      })), 
+    });
 
+      const result = response.data;
+
+      if (result.success || result.id) {
+        toast.success("Workspace created successfully!", {
+          position: "top-right",
+        });
+
+        // Pass the workspace data to the parent component
+        onAdd(result);
+
+        // Reset form fields
+        setWorkspaceName("");
+        setDescription("");
+
+        // Close the modal
+        onClose();
+      } else {
+        toast.error("Failed to create workspace", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error(
+        "Error creating workspace: " +
+          (error.response ? error.response.data.message : error.message),
+        {
+          position: "top-right",
+        }
+      );
+      console.error("Error creating workspace:", error);
+    } finally {
+      setLoading(false);
+    }
+    setLoading(true);
     const newTask = {
-      id: Date.now(), // simple unique ID
+      id: Date.now(),
       title: formData.title,
       description: formData.description,
       status: formData.status,

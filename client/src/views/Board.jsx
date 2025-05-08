@@ -5,46 +5,73 @@ import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
 import mockWorkspaceData from "../mock-data/mockTaskData";
 import { useParams } from "react-router-dom";
-
+import { toast } from "react-toastify";
 const  Board=()=> {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
-  const [members, setMembers] = useState([
-    {
-      id: 1,
-      name: "Victor Hall",
-      email: "victor@example.com",
-      bgColor: "bg-blue-700",
-    },
-    {
-      id: 2,
-      name: "Alex Gold",
-      email: "alex@example.com",
-      bgColor: "bg-orange-500",
-    },
-    {
-      id: 3,
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      bgColor: "bg-green-600",
-    },
-    {
-      id: 4,
-      name: "Mike Thompson",
-      email: "mike@example.com",
-      bgColor: "bg-purple-600",
-    },
-  ]);
-  const { workspacedId } = useParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const [members, setMembers] = useState([]);
 
+  const { workspacedId } = useParams();
+  const fetchBoard = async ( workspacedId) => {
+    try {
+          setIsLoading(true);       
+          const response = await fetch("http://localhost:5000/getBoard", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              workspace: workspacedId,
+            }),
+          });
+          
+          
+          const data = await response.json();    
+          if (data.success) {
+            const tasks = data.task.tasks.map((taski) => ({
+              ...taski,
+              id: taski.id,
+              status: taski.status,
+              title:taski.title,
+              description: taski.description,
+              priority: taski.priority,
+              backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+              assignedTo: taski.assignedTo,
+              dueDate: taski.dueDate,
+            }));
+            const members = data.task.user.map((useri)=>({
+              ...useri,
+              id: useri.id,
+              name:useri.name,
+              email: useri.email,
+              bgColor: useri.bgColor,
+            })
+          );
+            setMembers ([...members]);
+            setTasks([...tasks]);
+            
+          } else {
+            toast.error(data.message || "Get into workspace fail", {
+              position: "top-right",
+            });
+          }
+        } catch (error) {
+          toast.error("Error: " + (error.message || "Unknown error"), {
+                  position: "top-right",
+            });
+        } finally {
+          setIsLoading(false);
+        }
+  };
   useEffect(() => {
-    setTasks(mockWorkspaceData);
+    fetchBoard( workspacedId);
 
     // In a real app, you would fetch members and tasks from an API
     // fetchMembers();
     // fetchTasks();
-  }, []);
+  }, [workspacedId]);
 
   const filters = [
     { id: "ALL", label: "ALL" },
