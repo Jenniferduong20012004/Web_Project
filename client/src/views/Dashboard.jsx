@@ -16,15 +16,14 @@ const Dashboard = () => {
     // const [UpcomingTaskBoard, setUpcomingTaskBoard] = useState();
     const fetchDashboard = async () => {
       try {
-            setIsLoading(true);
-            let workspace = JSON.parse(localStorage.getItem("workspace"));         
+            setIsLoading(true);       
             const response = await fetch("http://localhost:5000/getDashBoard", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                workspace: workspace.workspaceId,
+                workspace: workspacedId ,
               }),
             });
       

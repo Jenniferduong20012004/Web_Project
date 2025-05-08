@@ -8,8 +8,8 @@ const profileRoute = require ("./userProfileRoute")
 const dashBoardRoute = require ("./dashboardRoute")
 const updateWorkSpaceRoute = require("./updateWorkSpaceRoute");
 const deleteWorkSpaceRoute = require("./deleteWorkSpaceRoute");
-
-
+const addTaskRoute = require ("./addTaskRoute");
+const boardRoute = require ("./boardRoute");
 router.use("/", authRoutes);
 router.use ("/", homePageRoute);
 router.use ("/", memberRoute);
@@ -19,5 +19,6 @@ router.use ("/", profileRoute);
 router.use ("/", dashBoardRoute);
 router.use("/updateWorkSpace", updateWorkSpaceRoute);
 router.use("/deleteWorkSpace", deleteWorkSpaceRoute);
-
+router.use ("/", addTaskRoute);
+router.use ("/", boardRoute);
 module.exports = router;
