@@ -2,7 +2,10 @@ import React, { useState, useRef, useEffect, forwardRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useParams } from "react-router-dom";
-const TaskForm = ({ isOpen, onClose, onSave, members }) => {
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
   const fileInputRef = useRef(null);
   const { workspacedId } = useParams();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -105,21 +108,16 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
     const dateCreate = new Date().toISOString().split("T")[0];
     try {
       const response = await axios.post("http://localhost:5000/addTask", {
-        title: formData.title,
+        taskname: formData.title,
         description: formData.description,
-        status: formData.status,
+        workspaceId: workspaceId,
+        StateCompletion: formData.status,
         priority: formData.priority,
-        dueDate: formData.dueDate,
+        dateBegin: dateCreate,
+        dateEnd: formData.dueDate,
         fileName: formData.file ? formData.file.name : null,
         assignedTo: formData.assignedMembers.map((member) => ({
-        name: member.name,
-        initials: member.name
-          .split(" ")
-          .map((n) => n[0])
-          .join(""),
-        bgColor: member.bgColor || "bg-blue-700",
         id: member.id,
-        email: member.email,
       })), 
     });
 
@@ -130,14 +128,6 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
           position: "top-right",
         });
 
-        // Pass the workspace data to the parent component
-        onAdd(result);
-
-        // Reset form fields
-        setWorkspaceName("");
-        setDescription("");
-
-        // Close the modal
         onClose();
       } else {
         toast.error("Failed to create workspace", {
@@ -156,28 +146,6 @@ const TaskForm = ({ isOpen, onClose, onSave, members }) => {
     } finally {
       setLoading(false);
     }
-    setLoading(true);
-    const newTask = {
-      id: Date.now(),
-      title: formData.title,
-      description: formData.description,
-      status: formData.status,
-      priority: formData.priority,
-      dueDate: formData.dueDate,
-      fileName: formData.file ? formData.file.name : null,
-      assignedTo: formData.assignedMembers.map((member) => ({
-        name: member.name,
-        initials: member.name
-          .split(" ")
-          .map((n) => n[0])
-          .join(""),
-        bgColor: member.bgColor || "bg-blue-700",
-        id: member.id,
-        email: member.email,
-      })),
-    };
-
-    onSave(newTask);
     handleClose();
   };
 

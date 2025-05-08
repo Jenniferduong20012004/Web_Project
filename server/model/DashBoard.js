@@ -47,7 +47,7 @@ class DashBoard {
         u.userId AS assignedUserId,
         u.name AS assignedUserName,
         u.email AS assignedUserEmail,
-  
+        jw.joinWorkSpace AS joinId,
         jw.isManager,
         jw.role,
         jw.dateJoin
@@ -59,7 +59,7 @@ class DashBoard {
     `;
   
     const memberQuery = `
-      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin
+      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
@@ -136,9 +136,10 @@ class DashBoard {
             "bg-red-600",
           ];
           const bgColor = bgColorOptions[row.userId % bgColorOptions.length];
+
   
           return {
-            id: row.userId,
+            id: row.joinWorkSpace,
             name: row.name,
             email: row.email,
             initials,

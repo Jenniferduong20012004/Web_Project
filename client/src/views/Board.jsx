@@ -168,6 +168,7 @@ const  Board=()=> {
         onClose={closeTaskForm}
         onSave={handleAddTask}
         members={members}
+        workspaceId = {workspacedId}
       />
     </div>
   );
