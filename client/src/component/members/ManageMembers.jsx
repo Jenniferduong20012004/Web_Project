@@ -1,9 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
-import { FaTrashAlt } from "react-icons/fa";
-import { toast } from "react-toastify";
+import React, { useState, useEffect } from "react";
+import { FaTrashAlt, FaEdit, FaCrown } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  fetchMembers,
+  addMember,
+  deleteMember,
+  updateMemberRole,
+  createWorkspace,
+} from "./membersService";
+import {
+  DeleteConfirmModal,
+  AddMemberModal,
+  UpdateRoleModal,
+  UserNotFoundModal,
+} from "./MemberModals";
 
 const getInitials = (name) => {
-  return name
+  const nameStr = String(name).trim();
+  return nameStr
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -29,242 +44,283 @@ const getAvatarColor = (email) => {
 };
 
 const ManageMembers = () => {
+  // Main states
   const [isLoading, setIsLoading] = useState(true);
-
   const [members, setMembers] = useState([]);
-    const fetchMember = async () => {
-      try {
-        setIsLoading(true);
-        let workspace = JSON.parse(localStorage.getItem("workspace"));          
-        const response = await fetch("http://localhost:5000/getMember", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            workspace: workspace.workspaceId,
-          }),
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            const members = data.members.map((row) => ({
-              ...row,
-              name: row.userName,
-              email: row.email,
-              role: row.role,
-            }));
-            setMembers([...members]);
-        } else {
-          toast.error(data.message || "Get into workspace fail", {
-            position: "top-right",
-          });
-        }
-      } catch (error) {
-        toast.error("Error: " + (error.message || "Unknown error"), {
-          position: "top-right",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    useEffect(() => {
-        fetchMember();
-      }, []);
-    
+  const [workspace, setWorkspace] = useState(null);
 
+  // Modal visibility states
   const [showConfirm, setShowConfirm] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState(null);
-
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
+  const [showUpdateRoleModal, setShowUpdateRoleModal] = useState(false);
+  const [showUserNotFoundModal, setShowUserNotFoundModal] = useState(false);
 
+  // Selected data states
+  const [memberToDelete, setMemberToDelete] = useState(null);
+  const [memberToUpdate, setMemberToUpdate] = useState(null);
+  const [updatedRole, setUpdatedRole] = useState("");
+  const [notFoundEmail, setNotFoundEmail] = useState("");
+
+  // Initialize data
+  useEffect(() => {
+    const storedWorkspace = JSON.parse(localStorage.getItem("workspace"));
+    setWorkspace(storedWorkspace);
+
+    if (storedWorkspace) {
+      loadMembers(storedWorkspace);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load members data
+  const loadMembers = async (workspace) => {
+    setIsLoading(true);
+    try {
+      const data = await fetchMembers(workspace);
+      if (data.success) {
+        // Process member data to ensure names don't have trailing numbers
+        const processedMembers = data.members.map((member) => ({
+          ...member,
+          // Remove any trailing digits from names
+          name: String(member.name).replace(/\d+$/, "").trim(),
+        }));
+        setMembers(processedMembers);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler functions
   const handleDeleteClick = (member) => {
     setMemberToDelete(member);
     setShowConfirm(true);
   };
 
-  const confirmDelete = () => {
-    setMembers(members.filter((m) => m.email !== memberToDelete.email));
-    setShowConfirm(false);
-    setMemberToDelete(null);
+  const handleConfirmDelete = async () => {
+    const success = await deleteMember(memberToDelete, members, setMembers);
+    if (success) {
+      setShowConfirm(false);
+      setMemberToDelete(null);
+    }
   };
 
-  const cancelDelete = () => {
-    setShowConfirm(false);
-    setMemberToDelete(null);
+  const handleUpdateRoleClick = (member) => {
+    setMemberToUpdate(member);
+    setUpdatedRole(member.role);
+    setShowUpdateRoleModal(true);
+  };
+
+  const handleConfirmUpdateRole = async () => {
+    if (!updatedRole.trim()) {
+      toast.error("Role cannot be empty");
+      return;
+    }
+
+    const success = await updateMemberRole(
+      memberToUpdate,
+      updatedRole,
+      members,
+      setMembers
+    );
+
+    if (success) {
+      setShowUpdateRoleModal(false);
+      setMemberToUpdate(null);
+    }
   };
 
   const handleAddClick = () => {
+    if (!workspace) {
+      toast.error("Please create a workspace first");
+      return;
+    }
     setShowAddModal(true);
   };
 
-  const handleAddMember = () => {
-    if (!newEmail.trim()) return;
-    const name = newEmail
-      .split("@")[0]
-      .replace(/\./g, " ")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-    setMembers([...members, { name, email: newEmail, role: "Member" }]);
-    setShowAddModal(false);
-    setNewEmail("");
-  };
+  const handleAddMember = async (email, role) => {
+    const result = await addMember(email, role, workspace, members, setMembers);
 
-  const cancelAdd = () => {
-    setShowAddModal(false);
-    setNewEmail("");
+    if (result === true) {
+      setShowAddModal(false);
+      return true;
+    } else if (result && result.userNotFound) {
+      setNotFoundEmail(email);
+      setShowUserNotFoundModal(true);
+      setShowAddModal(false);
+      return false;
+    }
+
+    return false;
   };
 
   return (
     <div className="bg-[#f7f8fc] min-h-screen relative">
+      <ToastContainer
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        draggable={false}
+      />
+
+      {/* Header */}
       <div className="flex justify-between items-center !mb-6">
         <h1 className="text-xl font-bold text-[#455294]">Team Members</h1>
-        <button
-          className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium cursor-pointer"
-          onClick={handleAddClick}
-        >
-          + Add member
-        </button>
-      </div>
-
-      <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-sm">
-              <th className="!py-4 !px-8 text-left font-semibold">Name</th>
-              <th className="!py-4 !px-8 text-left font-semibold">Email address</th>
-              <th className="!py-4 !px-8 text-left font-semibold">Role</th>
-              <th className="!py-4 !px-8 text-center font-semibold">Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member, index) => (
-              <tr
-                key={index}
-                className="border-t border-gray-200 hover:bg-gray-50"
-              >
-                <td className="!py-4 !px-8 text-gray-800">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold ${getAvatarColor(
-                        member.email
-                      )}`}
-                    >
-                      {getInitials(member.name)}
-                    </div>
-                    <span className="text-sm text-[#111827] font-medium">
-                      {member.name}
-                    </span>
-                  </div>
-                </td>
-                <td className="!py-4 !px-8 text-gray-700">{member.email}</td>
-                <td className="!py-4 !px-8 text-gray-700">{member.role}</td>
-                <td className="!py-4 !px-8 text-center">
-                  <button
-                    className="text-red-600 hover:scale-110 transition"
-                    onClick={() => handleDeleteClick(member)}
-                  >
-                    <FaTrashAlt size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {members.length === 0 && (
-              <tr>
-                <td colSpan="4" className="!py-16 text-center text-gray-400">
-                  No members found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Confirmation Modal */}
-      {showConfirm && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-50">
-          <div className="bg-white rounded-xl shadow-xl !p-8 max-w-md w-full animate-fade-in-scale">
-            <div className="flex flex-col items-center">
-              <div className="text-red-500 !mb-4">
-                <svg
-                  className="w-16 h-16 animate-bounce"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path fill="#FACC15" d="M12 2L1 21h22L12 2z" />
-                  <path
-                    d="M12 8v4"
-                    stroke="#000"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="12" cy="16" r="1.25" fill="#000" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-red-500 !mb-2">DELETE</h3>
-              <p className="text-center text-sm text-gray-700 !mb-2">
-                Are you sure to delete member <br />
-                <span className="text-[#f44336] font-semibold">
-                  {memberToDelete?.name} ({memberToDelete?.email})
-                </span>{" "}
-                ?
-              </p>
-              <p className="text-sm text-gray-400 !mb-6">
-                This action cannot be undone.
-              </p>
-              <div className="flex gap-4 w-full">
-                <button
-                  className="w-1/2 !py-2 border text-gray-700 font-medium rounded-md hover:bg-gray-100"
-                  onClick={cancelDelete}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="w-1/2 !py-2 bg-[#6e6cf4] text-white font-medium rounded-md hover:bg-[#4b3bbd]"
-                  onClick={confirmDelete}
-                >
-                  Yes, delete
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="flex gap-2">
+          <button
+            className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium cursor-pointer"
+            onClick={handleAddClick}
+          >
+            + Add member
+          </button>
         </div>
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      ) : workspace ? (
+        <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr className="bg-gray-100 text-gray-700 text-sm">
+                <th className="!py-4 !px-8 text-left font-semibold">Name</th>
+                <th className="!py-4 !px-8 text-left font-semibold">
+                  Email address
+                </th>
+                <th className="!py-4 !px-8 text-left font-semibold">Role</th>
+                <th className="!py-4 !px-8 text-center font-semibold">
+                  Delete
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member, index) => (
+                <tr
+                  key={index}
+                  className={`border-t border-gray-200 hover:bg-gray-50`}
+                >
+                  {/* Name */}
+                  <td className="!py-4 !px-8 text-gray-800">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold ${getAvatarColor(
+                          member.email
+                        )}`}
+                      >
+                        {getInitials(String(member.name))}
+                      </div>
+
+                      <span className=" text-[#111827] font-medium">
+                        {String(member.name)}
+                        {member.isManager ? (
+                          <span className="!ml-2 text-yellow-500 inline-block">
+                            <FaCrown size={14} />
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Email */}
+                  <td className="!py-4 !px-8 text-gray-700">
+                    {member.isManager ? (
+                      <span className="text-[#111827]">{member.email}</span>
+                    ) : (
+                      member.email
+                    )}
+                  </td>
+
+                  {/* Role with Edit button */}
+                  <td className="!py-4 !px-8 text-gray-700">
+                    <div className="flex items-center gap-2">
+                      {member.isManager ? (
+                        <span className="text-[#455294] font-semibold">
+                          Admin
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            className="text-blue-600 hover:scale-130 transition cursor-pointer"
+                            onClick={() => handleUpdateRoleClick(member)}
+                            title="Edit Role"
+                          >
+                            <FaEdit size={14} />
+                          </button>
+                          <span>{String(member.role)}</span>
+                        </>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Delete button */}
+                  <td className="!py-4 !px-8 text-center">
+                    {!member.isManager && (
+                      <button
+                        className="text-red-600 hover:scale-110 transition"
+                        onClick={() => handleDeleteClick(member)}
+                        title="Delete Member"
+                      >
+                        <FaTrashAlt size={16} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {members.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="!py-16 text-center text-gray-400">
+                    No members found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {/* Modals */}
+      {showConfirm && (
+        <DeleteConfirmModal
+          member={memberToDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setShowConfirm(false);
+            setMemberToDelete(null);
+          }}
+        />
       )}
 
-      {/* Add Member Modal */}
       {showAddModal && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-50">
-          <div className="bg-white rounded-xl shadow-xl !p-8 max-w-md w-full animate-fade-in-scale">
-            <h3 className="text-xl font-bold text-gray-800 !mb-4">
-              Add new member
-            </h3>
-            <label className="block text-sm text-gray-600 !mb-1">
-              Email address
-            </label>
-            <input
-              type="email"
-              className="w-full border rounded-md !px-3 !py-2 !mb-6 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              placeholder="Email address"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-            />
-            <div className="flex justify-end gap-4">
-              <button
-                className="text-[#6b7280] hover:underline text-sm font-semibold uppercase"
-                onClick={cancelAdd}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-[#6e6cf4] hover:bg-[#4b3bbd] text-white text-sm font-medium !px-6 !py-2 rounded-md"
-                onClick={handleAddMember}
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
+        <AddMemberModal
+          onAdd={handleAddMember}
+          onCancel={() => setShowAddModal(false)}
+        />
+      )}
+
+      {showUpdateRoleModal && (
+        <UpdateRoleModal
+          member={memberToUpdate}
+          role={updatedRole}
+          onRoleChange={(value) => setUpdatedRole(value)}
+          onUpdate={handleConfirmUpdateRole}
+          onCancel={() => {
+            setShowUpdateRoleModal(false);
+            setMemberToUpdate(null);
+          }}
+        />
+      )}
+
+      {showUserNotFoundModal && (
+        <UserNotFoundModal
+          email={notFoundEmail}
+          onClose={() => {
+            setShowUserNotFoundModal(false);
+            setNotFoundEmail("");
+          }}
+        />
       )}
     </div>
   );

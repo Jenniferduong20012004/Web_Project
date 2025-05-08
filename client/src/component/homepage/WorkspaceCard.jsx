@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+
 const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
@@ -41,6 +42,28 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
     };
   }, []);
 
+  const handleWorkspaceClick = () => {
+    // Format the workspace data for localStorage
+    const workspaceData = {
+      WorkSpace: workspace.WorkSpace || workspace.id,
+      workspacename: workspace.workspaceName || workspace.title,
+      description: workspace.description || "",
+    };
+
+    // Save to localStorage
+    localStorage.setItem("workspace", JSON.stringify(workspaceData));
+
+    console.log("Workspace selected and saved to localStorage:", workspaceData);
+
+    // If there's an onClick handler provided, call it
+    if (onClick) {
+      onClick(workspace);
+    } else {
+      // Default action - navigate to members page with workspace ID
+      navigate(`/members/${workspaceId}`);
+    }
+  };
+
   const handleUpdateWorkspace = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -74,6 +97,24 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
       if (result.success) {
         // Close the form
         setIsEditFormOpen(false);
+
+        // Update localStorage if this is the current selected workspace
+        const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
+        if (
+          currentWorkspace &&
+          (currentWorkspace.WorkSpace === workspaceId ||
+            currentWorkspace.WorkSpace === workspace.id)
+        ) {
+          const updatedWorkspaceData = {
+            WorkSpace: workspaceId,
+            workspacename: editedWorkspaceName,
+            description: editedDescription || "",
+          };
+          localStorage.setItem(
+            "workspace",
+            JSON.stringify(updatedWorkspaceData)
+          );
+        }
 
         // If there's an onUpdate callback, call it with the updated workspace
         if (onUpdate) {
@@ -138,6 +179,17 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
       const result = response.data;
 
       if (result.success) {
+        // Check if the deleted workspace is the current one in localStorage
+        const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
+        if (
+          currentWorkspace &&
+          (currentWorkspace.WorkSpace === workspaceId ||
+            currentWorkspace.WorkSpace === workspaceToDelete.id)
+        ) {
+          // Remove from localStorage if it's the current workspace
+          localStorage.removeItem("workspace");
+        }
+
         toast.success("Workspace deleted successfully!", {
           position: "top-right",
         });
@@ -195,14 +247,14 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
       <div
         className="flex flex-col gap-3 border border-[#e9e7f2] rounded-lg bg-white cursor-pointer hover:shadow-md transition-all"
         style={{ width: "270px", padding: "10px" }}
-        onClick={onClick}
+        onClick={handleWorkspaceClick}
       >
         <div
           className={`h-28 rounded-lg ${workspace.backgroundGradient}`}
         ></div>
 
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2" >
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
               TT
             </div>
@@ -371,7 +423,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal - Updated to match ManageMembers.jsx style */}
+      {/* Delete Confirmation m*/}
       {showConfirm && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-50">
           <div className="bg-white rounded-xl shadow-xl !p-8 max-w-md w-full animate-fade-in-scale">
