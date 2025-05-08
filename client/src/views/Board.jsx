@@ -66,6 +66,7 @@ const  Board=()=> {
         }
   };
   useEffect(() => {
+
     fetchBoard( workspacedId);
 
     // In a real app, you would fetch members and tasks from an API
@@ -168,6 +169,7 @@ const  Board=()=> {
         onClose={closeTaskForm}
         onSave={handleAddTask}
         members={members}
+        workspaceId = {workspacedId}
       />
     </div>
   );

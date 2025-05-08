@@ -11,6 +11,16 @@ function mapState(state) {
       return "UNKNOWN";
   }
 }
+const mapPriority = {
+  "High":1,
+  "Medium":2,
+  "Low":3,
+};
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toISOString().split('T')[0]; // returns 'YYYY-MM-DD'
+};
+
 class DashBoard {
   
   static getMemberFromWorkspace (workspaceId, callback){
@@ -47,7 +57,7 @@ class DashBoard {
         u.userId AS assignedUserId,
         u.name AS assignedUserName,
         u.email AS assignedUserEmail,
-  
+        jw.joinWorkSpace AS joinId,
         jw.isManager,
         jw.role,
         jw.dateJoin
@@ -59,7 +69,7 @@ class DashBoard {
     `;
   
     const memberQuery = `
-      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin
+      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
@@ -112,7 +122,7 @@ class DashBoard {
               status: mapState(row.StateCompletion),
               title: row.taskname,
               description: row.taskDescription,
-              priority: mapPriority(row.priority),
+              priority: mapPriority[row.priority],
               assignedTo: [user],
               dueDate: formatDate(row.dateEnd),
             });
@@ -136,9 +146,10 @@ class DashBoard {
             "bg-red-600",
           ];
           const bgColor = bgColorOptions[row.userId % bgColorOptions.length];
+
   
           return {
-            id: row.userId,
+            id: row.joinWorkSpace,
             name: row.name,
             email: row.email,
             initials,
