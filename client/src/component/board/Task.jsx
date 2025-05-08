@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const Task = ({ task }) => {
+const Task = ({ task, workspaceId }) => {
   const navigate = useNavigate();
 
   const getStatusColor = (status) => {
@@ -31,7 +31,7 @@ const Task = ({ task }) => {
   };
 
   const handleTaskClick = () => {
-    navigate(`/board/task/${task.id}`);
+    navigate(`/board/${workspaceId}/task/${task.id}`);
   };
 
   return (
