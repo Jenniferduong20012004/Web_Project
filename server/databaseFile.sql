@@ -20,6 +20,7 @@ CREATE TABLE Task (
     priority int not null,
     dateBegin date not null,
     dateEnd date not null,
+    trash bool not null,
     StateCompletion int not null,
     description  varchar (500) not null,
     FOREIGN KEY (WorkSpace) REFERENCES WorkSpace(WorkSpace) ON DELETE CASCADE

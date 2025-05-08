@@ -1,6 +1,6 @@
-const DashBoard= require("../model/DashBoard");
+const WorkSpace= require("../model/WorkSpace");
 
-exports.member = (req, res) => {
+exports.getTrashTask = (req, res) => {
     const {workspace} = req.body;
     if (!workspace){
         return res.status(400).json({ success: false, message: "Cannot get UserId" });
@@ -20,4 +20,3 @@ exports.member = (req, res) => {
         });
     });
 };
-
