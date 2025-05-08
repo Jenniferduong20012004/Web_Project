@@ -5,8 +5,8 @@ exports.getTrashTask = (req, res) => {
     if (!workspace){
         return res.status(400).json({ success: false, message: "Cannot get UserId" });
     }  
-    DashBoard.getMemberFromWorkspace(workspace,(err,result)=>{
 
+    WorkSpace.getTrashTask(workspace,(err,result)=>{
         if (err) {
             return res.status(500).json({
               error: true,
@@ -15,8 +15,8 @@ exports.getTrashTask = (req, res) => {
           }
           return res.status(200).json({
             success: true,
-            message: "Get member successful",
-            members: result, 
+            message: "Get trash task successful",
+            trashTask: result, 
         });
     });
 };
