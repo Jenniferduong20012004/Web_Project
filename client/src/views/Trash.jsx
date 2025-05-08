@@ -2,8 +2,10 @@ import React from "react";
 import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import TrashBin from "../component/trash/TrashBin";
+import { useParams } from "react-router-dom";
 
-function Trash() {
+const  Trash=() => {
+    const { workspacedId } = useParams();
     return (
         <div className="w-full min-h-screen flex flex-col">
             <div className="fixed top-0 right-0 left-0 z-20">
@@ -11,7 +13,7 @@ function Trash() {
             </div>
 
             <div className="fixed left-0 top-16 h-screen z-10">
-                <Sidebar />
+            <Sidebar workspaceId={workspacedId}/>
             </div>
 
             <div className="flex-1 flex flex-col !mt-16 bg-gray-50">

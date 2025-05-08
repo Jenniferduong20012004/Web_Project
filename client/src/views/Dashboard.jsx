@@ -3,7 +3,7 @@ import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import OverviewSection from "../component/dashboard/OverviewSection";
 import UpcomingTaskBoard from "../component/dashboard/UpcomingTasksBoard";
-
+import { useParams } from "react-router-dom";
 const Dashboard = () => {
     const [loading, setIsLoading] = useState(true);
     const [overviewData, setOverviewData] = useState({
@@ -12,11 +12,12 @@ const Dashboard = () => {
       inProgress: 0,
       completed: 0,
     });
+    const { workspacedId } = useParams();
     // const [UpcomingTaskBoard, setUpcomingTaskBoard] = useState();
     const fetchDashboard = async () => {
       try {
             setIsLoading(true);
-            let workspace = JSON.parse(localStorage.getItem("workspace"));          
+            let workspace = JSON.parse(localStorage.getItem("workspace"));         
             const response = await fetch("http://localhost:5000/getDashBoard", {
               method: "POST",
               headers: {
@@ -63,7 +64,7 @@ const Dashboard = () => {
       </div>
 
       <div className="fixed left-0 top-16 h-screen z-10">
-        <Sidebar />
+      <Sidebar workspaceId={workspacedId}/>
       </div>
 
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">

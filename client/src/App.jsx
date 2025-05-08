@@ -12,6 +12,7 @@ import ProtectedRoute from "./redux/ProtectedRoute";
 
 
 function App() {
+
   return (
     <Routes>
       <Route path="/" element={<Login />} />
@@ -28,7 +29,7 @@ function App() {
         }
       />
       <Route
-        path="/dashboard/:dashboardId"
+        path="/dashboard/:workspacedId"
         element={
           <ProtectedRoute>
             <Dashboard />
@@ -36,7 +37,7 @@ function App() {
         }
       />
       <Route
-        path="/board"
+        path="/board/:workspacedId"
         element={
           <ProtectedRoute>
             <Board />
@@ -52,7 +53,7 @@ function App() {
         }
       />
       <Route
-        path="/trash"
+        path="/trash/:workspacedId"
         element={
           <ProtectedRoute>
             <Trash />
@@ -68,7 +69,7 @@ function App() {
         }
       />
       <Route
-        path="/members"
+        path="/members/:workspacedId"
         element={
           <ProtectedRoute>
             <Members />

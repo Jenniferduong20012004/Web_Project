@@ -4,8 +4,9 @@ import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
 import mockWorkspaceData from "../mock-data/mockTaskData";
+import { useParams } from "react-router-dom";
 
-function Board() {
+const  Board=()=> {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
@@ -35,6 +36,7 @@ function Board() {
       bgColor: "bg-purple-600",
     },
   ]);
+  const { workspacedId } = useParams();
 
   useEffect(() => {
     setTasks(mockWorkspaceData);
@@ -77,7 +79,7 @@ function Board() {
       </div>
 
       <div className="fixed left-0 top-16 h-screen z-10">
-        <Sidebar />
+      <Sidebar workspaceId={workspacedId}/>
       </div>
 
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
