@@ -168,7 +168,7 @@ class DashBoard {
   }
   
   static getAllTask (workspaceId, callback){
-    const query ='select * from Task where WorkSpace = ?';
+    const query ='select * from Task where WorkSpace = ? AND trash = FALSE';
     pool.query(query, [workspaceId], (err, results) => {
       if (err) {
         console.error("Error finding task of workspace:", err);

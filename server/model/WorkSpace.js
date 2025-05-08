@@ -52,6 +52,17 @@ class WorkSpace {
     })
 
   }
+  static restoreTrashTask (taskId, callback){
+    const query = "UPDATE Task SET trash = false WHERE TaskId = ?;";
+    pool.query (query, [taskId], (err, result)=>{
+      if (err){
+        console.error("Error creating workspace:", err);
+        return callback(err, null);
+      }     
+      return callback(null, { success: true });
+    })
+
+  }
   static createTask (TaskData, callback){
     const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
     const query2 = "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
