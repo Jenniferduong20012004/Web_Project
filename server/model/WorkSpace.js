@@ -47,6 +47,97 @@ class WorkSpace {
       );
     });
   }
+
+  static update(workspaceData, callback) {
+    const { id, workspacename, description } = workspaceData;
+    const query =
+      "UPDATE WorkSpace SET workspacename = ?, description = ? WHERE WorkSpace = ?";
+
+    pool.query(query, [workspacename, description, id], (err, results) => {
+      if (err) {
+        console.error("Error updating workspace:", err);
+        return callback(err, null);
+      }
+
+      if (results.affectedRows === 0) {
+        return callback({ message: "Workspace not found" }, null);
+      }
+
+      return callback(null, { WorkSpace: id, workspacename, description });
+    });
+  }
+
+  // DELETE API
+  static delete(workspaceId, callback) {
+    // Start a transaction to ensure data integrity
+    pool.getConnection((err, connection) => {
+      if (err) {
+        console.error("Error getting database connection:", err);
+        return callback(err, null);
+      }
+
+      connection.beginTransaction((err) => {
+        if (err) {
+          connection.release();
+          console.error("Error beginning transaction:", err);
+          return callback(err, null);
+        }
+
+        // Step 1: Delete related records in joinWorkSpace table
+        const deleteJoinQuery = "DELETE FROM joinWorkSpace WHERE WorkSpace = ?";
+        connection.query(deleteJoinQuery, [workspaceId], (err, results) => {
+          if (err) {
+            return connection.rollback(() => {
+              connection.release();
+              console.error("Error deleting from joinWorkSpace:", err);
+              callback(err, null);
+            });
+          }
+
+          // Step 2: Delete the workspace itself
+          const deleteWorkspaceQuery =
+            "DELETE FROM WorkSpace WHERE WorkSpace = ?";
+          connection.query(
+            deleteWorkspaceQuery,
+            [workspaceId],
+            (err, results) => {
+              if (err) {
+                return connection.rollback(() => {
+                  connection.release();
+                  console.error("Error deleting workspace:", err);
+                  callback(err, null);
+                });
+              }
+
+              if (results.affectedRows === 0) {
+                return connection.rollback(() => {
+                  connection.release();
+                  const notFoundError = new Error("Workspace not found");
+                  console.error(notFoundError);
+                  callback(notFoundError, null);
+                });
+              }
+
+              // Commit the transaction
+              connection.commit((err) => {
+                if (err) {
+                  return connection.rollback(() => {
+                    connection.release();
+                    console.error("Error committing transaction:", err);
+                    callback(err, null);
+                  });
+                }
+
+                connection.release();
+                console.log(`Workspace ${workspaceId} deleted successfully`);
+                callback(null, { id: workspaceId });
+              });
+            }
+          );
+        });
+      });
+    });
+  }
 }
 
 module.exports = WorkSpace;

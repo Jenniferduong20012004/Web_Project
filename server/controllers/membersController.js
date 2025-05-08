@@ -20,5 +20,8 @@ exports.member = (req, res) => {
         });
     });
 };
+exports.addMember = (req, res)=>{
+  
+}
 
 

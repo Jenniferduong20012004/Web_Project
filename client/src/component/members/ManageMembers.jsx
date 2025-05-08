@@ -31,31 +31,7 @@ const getAvatarColor = (email) => {
 const ManageMembers = () => {
   const [isLoading, setIsLoading] = useState(true);
 
-  const [members, setMembers] = useState([
-    // { name: "TT", email: "thaotrinh@gmail.com", role: "Manager" },
-    // {
-    //   name: "Alex Pfeiffer",
-    //   email: "alex@gmail.com",
-    //   role: "Front end developer",
-    // },
-    // { name: "Mike Dean", email: "mike@gmail.com", role: "Front end developer" },
-    // {
-    //   name: "Mateus Cunha",
-    //   email: "cunha@gmail.com",
-    //   role: "Back end developer",
-    // },
-    // {
-    //   name: "Nzola Uemo",
-    //   email: "nzola@gmail.com",
-    //   role: "Back end developer",
-    // },
-    // { name: "Antony Mack", email: "mack@gmail.com", role: "UI designer" },
-    // {
-    //   name: "André da Silva",
-    //   email: "andré@gmail.com",
-    //   role: "Quality Assurance",
-    // },
-  ]);
+  const [members, setMembers] = useState([]);
     const fetchMember = async () => {
       try {
         setIsLoading(true);

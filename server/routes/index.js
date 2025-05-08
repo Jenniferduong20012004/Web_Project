@@ -6,6 +6,8 @@ const memberRoute = require ("./memberRoute")
 const addWorkSpaceRoute = require ("./addWorkspaceRoute")
 const profileRoute = require ("./userProfileRoute")
 const dashBoardRoute = require ("./dashboardRoute")
+const updateWorkSpaceRoute = require("./updateWorkSpaceRoute");
+const deleteWorkSpaceRoute = require("./deleteWorkSpaceRoute");
 
 
 router.use("/", authRoutes);
@@ -15,5 +17,7 @@ router.use ("/addWorkSpace", addWorkSpaceRoute);
 router.use ("/getHomePageMyWorkSpace", homePageRoute);
 router.use ("/", profileRoute);
 router.use ("/", dashBoardRoute);
+router.use("/updateWorkSpace", updateWorkSpaceRoute);
+router.use("/deleteWorkSpace", deleteWorkSpaceRoute);
 
 module.exports = router;
