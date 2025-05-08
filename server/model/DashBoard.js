@@ -65,7 +65,7 @@ class DashBoard {
       JOIN AssignTask at ON t.TaskId = at.TaskId
       JOIN joinWorkSpace jw ON at.joinWorkSpace = jw.joinWorkSpace
       JOIN User u ON jw.userId = u.userId
-      WHERE t.WorkSpace = ?;
+      WHERE t.WorkSpace = ?  AND t.trash = FALSE;
     `;
   
     const memberQuery = `

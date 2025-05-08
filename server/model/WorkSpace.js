@@ -32,13 +32,16 @@ class WorkSpace {
       }
     );
   }
+  static getTrashTask (workSpaceId, callback){
+
+  }
   static createTask (TaskData, callback){
-    const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, StateCompletion, description) values (?, ?, ?,?, ?, ?, ?)";
+    const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
     const query2 = "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
     const priority = priorityMap[TaskData.priority];
     const dateEnd = formatDate(TaskData.dateEnd);
     const status = statusMap[TaskData.StateCompletion];
-    pool.query (query, [TaskData.taskname,TaskData.workspaceId, priority, TaskData.dateBegin, dateEnd,status, TaskData.description], (err, result)=>{
+    pool.query (query, [TaskData.taskname,TaskData.workspaceId, priority, TaskData.dateBegin, dateEnd, false, status, TaskData.description], (err, result)=>{
       if (err) {
         console.error("Error creating Task:", err);
         return callback(err, null);
