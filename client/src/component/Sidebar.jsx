@@ -7,13 +7,13 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes("/dashboard")) {
+    if (path.includes(`/dashboard/${workspaceId}`)) {
       setActiveTab("Dashboard");
-    } else if (path.includes("/board")) {
+    } else if (path.includes(`/board/${workspaceId}`)) {
       setActiveTab("Board");
-    } else if (path.includes("/trash")) {
+    } else if (path.includes(`/trash/${workspaceId}`)) {
       setActiveTab("Trash");
-    } else if (path.includes("/members")) {
+    } else if (path.includes(`/members/${workspaceId}`)) {
       setActiveTab("Members");
     }
   }, [location]);
@@ -22,7 +22,7 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
   const navItems = [
     {
       name: "Dashboard",
-      path: `/dashboard`,
+      path: `/dashboard/${workspaceId}`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -44,7 +44,7 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
     },
     {
       name: "Board",
-      path: `/board`,
+      path: `/board/${workspaceId}`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +66,7 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
     },
     {
       name: "Trash",
-      path: `/trash`,
+      path: `/trash/${workspaceId}`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +87,7 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
     },
     {
       name: "Members",
-      path: `/members`,
+      path: `/members/${workspaceId}`,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
