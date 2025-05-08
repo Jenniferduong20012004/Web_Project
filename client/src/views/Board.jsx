@@ -129,7 +129,7 @@ const  Board=()=> {
           {/* TASK CONTAINER */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-10">
             {getFilteredTasks().map((task) => (
-              <Task key={task.id} task={task} />
+              <Task key={task.id} task={task} workspaceId={workspacedId}/>
             ))}
           </div>
         </div>
