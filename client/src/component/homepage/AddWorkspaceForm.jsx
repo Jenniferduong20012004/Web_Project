@@ -1,25 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useEffect } from "react";
+import { toast } from "react-toastify";
+
 const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
   const [workspaceName, setWorkspaceName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+
   useEffect(() => {
     const getUserId = () => {
       let data = JSON.parse(localStorage.getItem("user"));
-      setUserId(data.userId); // chin2 modify to userId
+      if (data && data.userId) {
+        setUserId(data.userId);
+      }
     };
 
     getUserId();
   }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!userId) {
+      toast.error("User information not found. Please log in again.", {
+        position: "top-right",
+      });
+      return;
+    }
+
     const dateCreate = new Date().toISOString().split("T")[0];
 
     setLoading(true);
-    alert(userId);
+
     try {
       const response = await axios.post("http://localhost:5000/addWorkSpace", {
         workspacename: workspaceName,
@@ -27,17 +40,37 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
         dateCreate: dateCreate,
         userId: userId,
       });
-      const result = await response.data;
-      alert(result);
-      onAdd(result);
-      setWorkspaceName("");
-      setDescription("");
-      onClose();
+
+      const result = response.data;
+
+      if (result.success || result.id) {
+        toast.success("Workspace created successfully!", {
+          position: "top-right",
+        });
+
+        // Pass the workspace data to the parent component
+        onAdd(result);
+
+        // Reset form fields
+        setWorkspaceName("");
+        setDescription("");
+
+        // Close the modal
+        onClose();
+      } else {
+        toast.error("Failed to create workspace", {
+          position: "top-right",
+        });
+      }
     } catch (error) {
-      alert(
-        "Error: " +
-          (error.response ? JSON.stringify(error.response.data) : error.message)
+      toast.error(
+        "Error creating workspace: " +
+          (error.response ? error.response.data.message : error.message),
+        {
+          position: "top-right",
+        }
       );
+      console.error("Error creating workspace:", error);
     } finally {
       setLoading(false);
     }
@@ -75,7 +108,7 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
             </label>
             <textarea
               id="description"
-              placeholder="Task description"
+              placeholder="Workspace description"
               className="w-full !p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6299ec] focus:border-1"
               rows="4"
               value={description}

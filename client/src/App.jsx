@@ -28,7 +28,7 @@ function App() {
         }
       />
       <Route
-        path="/dashboard"
+        path="/dashboard/:dashboardId"
         element={
           <ProtectedRoute>
             <Dashboard />

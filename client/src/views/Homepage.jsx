@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../component/Navbar";
 import AddWorkspaceForm from "../component/homepage/AddWorkspaceForm";
 import WorkspaceCard from "../component/homepage/WorkspaceCard";
@@ -10,8 +11,9 @@ const Homepage = () => {
   const [userId, setUserId] = useState(null);
   const [workspaces, setWorkspaces] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Create a function to fetch workspaces that we can reuse
+  // fetch workspace
   const fetchWorkspaces = async () => {
     try {
       setLoading(true);
@@ -116,6 +118,11 @@ const Homepage = () => {
     setAddWorkspaceOpen(false);
   };
 
+  const handleWorkspaceClick = (workspaceId) => {
+    // Navigate to the dashboard with the workspace ID
+    navigate(`/dashboard/${workspaceId}`);
+  };
+
   const handleAddNewWorkspace = async (newWorkspace) => {
     try {
       // Here you would normally make an API call to add the workspace to the database
@@ -159,10 +166,9 @@ const Homepage = () => {
       setAddWorkspaceOpen(false);
 
       // Refetch workspaces from the database to get the updated list
-      // Slight delay to ensure the backend has processed the new workspace
       setTimeout(() => {
         fetchWorkspaces();
-      }, 500);
+      }, 50);
 
       toast.success("Workspace added successfully!", {
         position: "top-right",
@@ -170,6 +176,41 @@ const Homepage = () => {
     } catch (error) {
       toast.error(
         "Error adding workspace: " + (error.message || "Unknown error"),
+        {
+          position: "top-right",
+        }
+      );
+    }
+  };
+
+  const handleUpdateWorkspace = async (updatedWorkspace) => {
+    try {
+      // Find the workspace in our state that matches the id
+      const workspaceIndex = workspaces.findIndex(
+        (ws) => ws.id === updatedWorkspace.id
+      );
+
+      if (workspaceIndex !== -1) {
+        // Create a new array with the updated workspace
+        const updatedWorkspaces = [...workspaces];
+        updatedWorkspaces[workspaceIndex] = {
+          ...updatedWorkspaces[workspaceIndex],
+          title: updatedWorkspace.title,
+          subtitle: updatedWorkspace.subtitle,
+        };
+
+        // Update state
+        setWorkspaces(updatedWorkspaces);
+
+        // Show success message
+        toast.success("Workspace updated successfully!", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error(
+        "Error updating workspace in state: " +
+          (error.message || "Unknown error"),
         {
           position: "top-right",
         }
@@ -226,7 +267,12 @@ const Homepage = () => {
             <div className="flex flex-wrap gap-6">
               {displayedWorkspaces.length > 0 ? (
                 displayedWorkspaces.map((workspace) => (
-                  <WorkspaceCard key={workspace.id} workspace={workspace} />
+                  <WorkspaceCard
+                    key={workspace.id}
+                    workspace={workspace}
+                    onClick={() => handleWorkspaceClick(workspace.id)}
+                    onUpdate={handleUpdateWorkspace}
+                  />
                 ))
               ) : (
                 <div className="w-full text-center py-8 text-gray-500">
