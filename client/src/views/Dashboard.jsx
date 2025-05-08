@@ -4,6 +4,8 @@ import Navbar from "../component/Navbar";
 import OverviewSection from "../component/dashboard/OverviewSection";
 import UpcomingTaskBoard from "../component/dashboard/UpcomingTasksBoard";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify"; // Added missing import
+
 const Dashboard = () => {
     const [loading, setIsLoading] = useState(true);
     const [overviewData, setOverviewData] = useState({

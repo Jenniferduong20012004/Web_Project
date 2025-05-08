@@ -84,7 +84,7 @@ const AddWorkspaceForm = ({ isOpen, onClose, onAdd }) => {
       <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
 
       {/* Form content */}
-      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-6 !z-10">
+      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-8 !z-10">
         <h2 className="text-2xl font-bold !mb-4">Add new Workspace</h2>
 
         <form onSubmit={handleSubmit}>

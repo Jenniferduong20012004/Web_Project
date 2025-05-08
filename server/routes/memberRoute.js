@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const membersController = require ("../controllers/membersController");
-router.post("/getMember", membersController.member);
-router.post ("/addMember", membersController.addMember);
+const memberController = require("../controllers/memberController");
+
+router.post("/addMember", memberController.addMember);
+router.post("/getMember", memberController.getMembers);
+router.post("/deleteMember", memberController.deleteMember);
+router.post("/updateMemberRole", memberController.updateMemberRole);
+
 module.exports = router;
