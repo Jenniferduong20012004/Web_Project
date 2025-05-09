@@ -1,4 +1,5 @@
 const pool = require("../db/connect");
+const supabase = require ("../db/superbaseClient")
 const priorityMap = {
   "High":1,
   "Medium":2,
