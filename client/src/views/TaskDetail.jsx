@@ -10,7 +10,7 @@ import mockTaskDetailData from "../mock-data/mockTaskDetailData";
 import { BackButton } from "../component/board/task-detail/Buttons";
 
 function TaskDetail() {
-  const { taskId } = useParams();
+  const {workspaceId, taskId } = useParams();
   const [task, setTask] = useState(null);
   const [originalTask, setOriginalTask] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -20,6 +20,7 @@ function TaskDetail() {
     status: false,
     priority: false,
   });
+  
 
   // Fetch task data
   useEffect(() => {

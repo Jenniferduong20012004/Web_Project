@@ -7,7 +7,7 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes(`/dashboard/${workspaceId}`)) {
+     if (path.includes(`/dashboard/${workspaceId}`)) {
       setActiveTab("Dashboard");
     } else if (path.includes(`/board/${workspaceId}`)) {
       setActiveTab("Board");

@@ -76,7 +76,6 @@ class WorkSpace {
       }
       const taskId = result.insertId;
       for (const member of TaskData.assignedTo) {
-        console.log (member.id);
         pool.query(query2, [member.id, taskId], (er, res)=>{
           if (er) {
             console.error("Error add member to task:", er);
