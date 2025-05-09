@@ -13,11 +13,20 @@ exports.signInHomePage = (req, res) => {
         message: "Error when find workspace!",
       });
     }
+    HomePage.findMyAssignedWorkSpaceByUserId(userId, (errA, resultA)=>{
+      if (errA) {
+      return res.status(500).json({
+        error: true,
+        message: "Error when find workspace!",
+      });
+    }
     return res.status(200).json({
       success: true,
       message: "Get workspace successful",
-      workspace: result, 
+      managedWorkspaces: result,
+      assignedWorkspaces: resultA, 
   });
+    })
   });
 
 };
