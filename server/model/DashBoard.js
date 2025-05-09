@@ -53,7 +53,6 @@ class DashBoard {
         t.dateEnd,
         t.StateCompletion,
         t.description AS taskDescription,
-  
         u.userId AS assignedUserId,
         u.name AS assignedUserName,
         u.email AS assignedUserEmail,
@@ -165,44 +164,93 @@ class DashBoard {
     });
   }
   
-  static getAllTask (workspaceId, callback){
-    const query ='select * from Task where WorkSpace = ? AND trash = FALSE';
-    pool.query(query, [workspaceId], (err, results) => {
-      if (err) {
-        console.error("Error finding task of workspace:", err);
-        return callback(err, null);
-      }
-      console.log("Assigned workspace query results:", results);
-      const tasksRaw = results.map(row => ({
-        id: row.TaskId,
-        taskname: row.taskname,
-        priority: row.priority,
-        dateBegin: row.dateBegin,
-        dateEnd: row.dateEnd,
-        StateCompletion: row.StateCompletion,
-        description: row.description,
-      }));
-      
-      let todo = 0, inProgress = 0, completed = 0;
-      for (let task of tasksRaw) {
-        if (task.StateCompletion === 1) todo++;
-        else if (task.StateCompletion === 2) inProgress++;
-        else if (task.StateCompletion === 3) completed++;
-      }
-    
-      
-      const summary = {
-        totalTasks: tasksRaw.length,
-        todo,
-        inProgress,
-        completed,
-        tasks,
+  static getAllTask(workspaceId, callback) {
+  const query = `
+    SELECT t.*, w.workspacename 
+    FROM Task t 
+    JOIN WorkSpace w ON t.WorkSpace = w.WorkSpace 
+    WHERE t.WorkSpace = ? AND t.trash = FALSE;
+  `;
 
-      };
-      return callback(null, summary);
+  const query2 = `
+    SELECT u.name 
+    FROM AssignTask a
+    JOIN joinWorkSpace j ON a.joinWorkSpace = j.joinWorkSpace
+    JOIN User u ON j.userId = u.userId
+    WHERE a.TaskId = ?
+  `;
+
+  pool.query(query, [workspaceId], (err, results) => {
+    if (err) {
+      console.error("Error finding task of workspace:", err);
+      return callback(err, null);
+    }
+
+    const currentDate = new Date();
+
+    const taskPromises = results.map(row => {
+      return new Promise((resolve, reject) => {
+        pool.query(query2, [row.TaskId], (err2, assignedUsersResult) => {
+          if (err2) {
+            return reject(err2);
+          }
+
+          const assignedUsers = assignedUsersResult.map(u => u.name);
+          const endDate = new Date(row.dateEnd);
+          const daysLeft = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+
+          // Count status
+          const status = row.StateCompletion;
+          // console.log (status);
+
+          resolve({
+            task: {
+              title: row.taskname,
+              project: row.workspacename,
+              daysLeft,
+              priority: row.priority === 1 ? "High" : row.priority === 2 ? "Medium" : "Low",
+              assignedUsers,
+              status,
+            },
+          });
+        });
+      });
     });
-  }
+
+    Promise.all(taskPromises)
+      .then(taskDataArray => {
+        let todo = 0, inProgress = 0, completed = 0;
+        const tasks = [];
+        taskDataArray.forEach(({ task }) => {
+          if (task.daysLeft >= 0 && task.daysLeft < 7) {
+            tasks.push(task);
+          }
+      console.log (task.daysLeft)
+          // Status counters
+          if (task.status === 1) todo++;
+          else if (task.status === 2) inProgress++;
+          else if (task.status === 3) completed++;
+        });
+        console.log (todo);
+
+        const summary = {
+          totalTasks: results.length,
+          todo,
+          inProgress,
+          completed,
+          tasks,
+        };
+
+        return callback(null, summary);
+      })
+      .catch(err => {
+        console.error("Error retrieving assigned users for tasks:", err);
+        return callback(err, null);
+      });
+  });
 }
+}
+
   
   module.exports = DashBoard;
   

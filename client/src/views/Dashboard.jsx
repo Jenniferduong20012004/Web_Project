@@ -14,6 +14,7 @@ const Dashboard = () => {
       inProgress: 0,
       completed: 0,
     });
+    const [tasks, setTask]= useState([]);
     const { workspacedId } = useParams();
     // const [UpcomingTaskBoard, setUpcomingTaskBoard] = useState();
     const fetchDashboard = async () => {
@@ -38,6 +39,7 @@ const Dashboard = () => {
                 inProgress: data.workspace.inProgress,
                 completed: data.workspace.completed,
               });
+              setTask(data.workspace.tasks);
       
             } else {
               toast.error(data.message || "Get into workspace fail", {
@@ -73,7 +75,7 @@ const Dashboard = () => {
           <OverviewSection data={overviewData}/>
 
           {/* UPCOMING TASKS */}
-          <UpcomingTaskBoard />
+          <UpcomingTaskBoard tasks ={tasks}/>
         </div>
       </div>
     </div>

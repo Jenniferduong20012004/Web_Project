@@ -7,7 +7,33 @@ const usersData = {
   User3: { initials: "U3", bgColor: "bg-purple-500" },
   User4: { initials: "U4", bgColor: "bg-pink-500" },
 };
+const bgColorPool = [
+  "bg-blue-500",
+  "bg-green-500",
+  "bg-purple-500",
+  "bg-pink-500",
+  "bg-yellow-500",
+  "bg-red-500",
+  "bg-indigo-500",
+  "bg-teal-500",
+  "bg-orange-500",
+];
+const userColors = new Map();
 
+const getUserColor = (user) => {
+  if (!userColors.has(user)) {
+    const randomColor =
+      bgColorPool[Math.floor(Math.random() * bgColorPool.length)];
+    userColors.set(user, randomColor);
+  }
+  return userColors.get(user);
+};
+const getInitials = (name) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
 // Mock data for tasks
 const tasks = [
   {
@@ -41,6 +67,7 @@ const tasks = [
 ];
 
 const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
+      
   return (
     <div className="bg-white rounded-lg !p-5 shadow-lg hover:shadow-xl transition-all duration-200">
       <div className="flex justify-between items-center !mb-2">
@@ -91,12 +118,12 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
           {assignedUsers.map((user, index) => (
             <div
               key={index}
-              className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${usersData[user].bgColor}`}
+              className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getUserColor(user)}`}
               style={{
                 marginLeft: index > 0 ? "-5px" : "0",
               }}
             >
-              {usersData[user].initials}
+              {getInitials(user)}
             </div>
           ))}
         </div>
@@ -105,7 +132,8 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
   );
 };
 
-const UpcomingTaskBoard = () => {
+const UpcomingTaskBoard = ({tasks}) => {
+
   return (
     <div className="!pt-3">
       <h2 className="text-xl font-bold text-[#455294] ">Upcoming Tasks</h2> <br />
