@@ -42,9 +42,7 @@ const Homepage = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Check if we have the updated API structure with separate workspace types
         if (data.managedWorkspaces && data.assignedWorkspaces) {
-          // Handle updated API structure with separated workspace types
           const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
             ...workspace,
             id: workspace.id,
