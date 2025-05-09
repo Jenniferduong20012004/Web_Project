@@ -1,11 +1,11 @@
 const pool = require("../db/connect");
 function mapState(state) {
   switch (state) {
-    case 0:
-      return "TODO";
     case 1:
-      return "IN-PROGRESS";
+      return "TODO";
     case 2:
+      return "IN-PROGRESS";
+    case 3:
       return "COMPLETED";
     default:
       return "UNKNOWN";
@@ -75,23 +75,20 @@ class DashBoard {
       WHERE j.WorkSpace = ?;
     `;
   
-    // First: run task query
     pool.query(taskQuery, [workspaceId], (err, taskResult) => {
       if (err) {
         console.error("Error fetching tasks for workspace:", err);
         return callback(err, null);
       }
-  
-      // Then: run member query
       pool.query(memberQuery, [workspaceId], (memberErr, memberResult) => {
         if (memberErr) {
           console.error("Error fetching members for workspace:", memberErr);
           return callback(memberErr, null);
         }
-  
-        // Parse tasks
         const tasksMap = new Map();
         taskResult.forEach((row) => {
+          console.log (row.StateCompletion)
+          console.log (mapState(row.StateCompletion));
           const taskId = row.TaskId;
           const initials = row.assignedUserName
             .split(" ")
@@ -115,6 +112,7 @@ class DashBoard {
             initials,
             bgColor,
           };
+
   
           if (!tasksMap.has(taskId)) {
             tasksMap.set(taskId, {
@@ -187,15 +185,14 @@ class DashBoard {
       
       let todo = 0, inProgress = 0, completed = 0;
       for (let task of tasksRaw) {
-        if (task.StateCompletion === 0) todo++;
-        else if (task.StateCompletion === 1) inProgress++;
-        else if (task.StateCompletion === 2) completed++;
+        if (task.StateCompletion === 1) todo++;
+        else if (task.StateCompletion === 2) inProgress++;
+        else if (task.StateCompletion === 3) completed++;
       }
-      const tasks = tasksRaw.filter(task => task.StateCompletion !== 2);
     
       
       const summary = {
-        totalTasks: tasks.length,
+        totalTasks: tasksRaw.length,
         todo,
         inProgress,
         completed,
