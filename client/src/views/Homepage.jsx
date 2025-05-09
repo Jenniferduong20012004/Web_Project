@@ -42,7 +42,6 @@ const Homepage = () => {
       const data = await response.json();
 
       if (data.success) {
-        if (data.managedWorkspaces && data.assignedWorkspaces) {
           const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
             ...workspace,
             id: workspace.id,
@@ -71,24 +70,6 @@ const Homepage = () => {
           );
 
           setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
-        } else {
-          // Handle original API structure with workspace array
-          const transformedWorkspaces = data.workspace.map((workspace) => ({
-            ...workspace,
-            id: workspace.id,
-            title: workspace.workspaceName,
-            subtitle: `Created on ${new Date(
-              workspace.dateCreate
-            ).toLocaleDateString()}`,
-            backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-            members: [],
-            // For original API structure, we don't know which are owned
-            // Assuming all are owned for backward compatibility
-            isOwner: true,
-          }));
-
-          setWorkspaces(transformedWorkspaces);
-        }
       } else {
         toast.error(data.message || "Failed to fetch workspaces", {
           position: "top-right",
