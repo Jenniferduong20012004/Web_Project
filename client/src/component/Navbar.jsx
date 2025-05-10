@@ -5,6 +5,8 @@ import { MdNotifications } from "react-icons/md";
 import WorkspaceTabs from "./homepage/WorkspaceTabs";
 import UserAvatar from "./profile/UserAvatar";
 
+import NotificationDropdown from "./noti/NotificationDropdown";
+
 const Navbar = ({ workspaces, activeTab, onTabChange }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,10 +53,8 @@ const Navbar = ({ workspaces, activeTab, onTabChange }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Notification icon */}
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <MdNotifications className="w-6 h-6 text-gray-600" />
-          </button>
+          {/* Notification Dropdown */}
+          <NotificationDropdown />
 
           {/* Avatar */}
           <UserAvatar />
