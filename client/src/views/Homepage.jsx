@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../component/Navbar";
 import AddWorkspaceForm from "../component/homepage/AddWorkspaceForm";
@@ -42,34 +43,31 @@ const Homepage = () => {
       const data = await response.json();
 
       if (data.success) {
-          const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
-            ...workspace,
-            id: workspace.id,
-            title: workspace.workspaceName,
-            subtitle: `Created on ${new Date(
-              workspace.dateCreate
-            ).toLocaleDateString()}`,
-            backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-            members: [],
-            isOwner: true,
-          }));
+        const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
+          ...workspace,
+          id: workspace.id,
+          title: workspace.workspaceName,
+          subtitle: `Created on ${new Date(
+            workspace.dateCreate
+          ).toLocaleDateString()}`,
+          backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+          members: [],
+          isOwner: true,
+        }));
 
-          const assignedWorkspaces = data.assignedWorkspaces.map(
-            (workspace) => ({
-              ...workspace,
-              id: workspace.id,
-              title: workspace.workspaceName,
-              subtitle: `Created on ${new Date(
-                workspace.dateCreate
-              ).toLocaleDateString()}`,
-              backgroundGradient:
-                "bg-gradient-to-br from-blue-300 to-purple-400",
-              members: [],
-              isOwner: false,
-            })
-          );
+        const assignedWorkspaces = data.assignedWorkspaces.map((workspace) => ({
+          ...workspace,
+          id: workspace.id,
+          title: workspace.workspaceName,
+          subtitle: `Created on ${new Date(
+            workspace.dateCreate
+          ).toLocaleDateString()}`,
+          backgroundGradient: "bg-gradient-to-br from-blue-300 to-purple-400",
+          members: [],
+          isOwner: false,
+        }));
 
-          setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
+        setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
       } else {
         toast.error(data.message || "Failed to fetch workspaces", {
           position: "top-right",
@@ -102,64 +100,8 @@ const Homepage = () => {
     navigate(`/dashboard/${workspaceId}`);
   };
 
-  const handleAddNewWorkspace = async (newWorkspace) => {
-    try {
-      // Here you would normally make an API call to add the workspace to the database
-      // For example:
-      // const response = await fetch("http://localhost:5000/addWorkSpace", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     userId: userId,
-      //     workspaceName: newWorkspace.name,
-      //     description: newWorkspace.description
-      //   }),
-      // });
-      // const data = await response.json();
-      // if (data.success) {
-      //   toast.success("Workspace added successfully!", {
-      //     position: "top-right",
-      //   });
-      // } else {
-      //   toast.error(data.message || "Failed to add workspace", {
-      //     position: "top-right",
-      //   });
-      // }
-
-      // For now, we'll just add it locally as before
-      const workspaceWithId = {
-        ...newWorkspace,
-        id: `workspace-${Date.now()}`,
-        backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-        title: newWorkspace.name,
-        subtitle: newWorkspace.description,
-        members: [],
-        isOwner: true,
-      };
-
-      setWorkspaces([...workspaces, workspaceWithId]);
-
-      // Close the form
-      setAddWorkspaceOpen(false);
-
-      // Refetch workspaces from the database to get the updated list
-      setTimeout(() => {
-        fetchWorkspaces();
-      }, 50);
-
-      toast.success("Workspace added successfully!", {
-        position: "top-right",
-      });
-    } catch (error) {
-      toast.error(
-        "Error adding workspace: " + (error.message || "Unknown error"),
-        {
-          position: "top-right",
-        }
-      );
-    }
+  const handleAddNewWorkspace = () => {
+    fetchWorkspaces();
   };
 
   const handleUpdateWorkspace = async (updatedWorkspace) => {
@@ -180,11 +122,6 @@ const Homepage = () => {
 
         // Update state
         setWorkspaces(updatedWorkspaces);
-
-        // Show success message
-        toast.success("Workspace updated successfully!", {
-          position: "top-right",
-        });
       }
     } catch (error) {
       toast.error(
@@ -210,6 +147,11 @@ const Homepage = () => {
   return (
     <div className="w-full min-h-screen flex flex-col bg-[#f4f7fa]">
       <div className="fixed top-0 right-0 left-0 z-20">
+        <ToastContainer
+          pauseOnFocusLoss={false}
+          pauseOnHover={false}
+          draggable={false}
+        />
         <Navbar
           workspaces={workspaces}
           activeTab={activeTab}

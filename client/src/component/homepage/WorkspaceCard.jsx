@@ -10,7 +10,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
   const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [editedWorkspaceName, setEditedWorkspaceName] = useState(
     workspace.workspaceName || workspace.title
   );
@@ -68,90 +67,51 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      // Get the correct ID field
-      const workspaceId = workspace.WorkSpace || workspace.id;
+    // Get the correct ID field
+    const workspaceId = workspace.WorkSpace || workspace.id;
 
-      console.log("Updating workspace with ID:", workspaceId);
-      console.log("New workspacename:", editedWorkspaceName);
-      console.log("New description:", editedDescription);
+    const response = await axios.post("http://localhost:5000/updateWorkSpace", {
+      id: workspaceId,
+      workspacename: editedWorkspaceName,
+      description: editedDescription || "",
+    });
 
-      // Make API call to update the workspace
-      console.log("Sending payload:", {
-        id: workspaceId,
-        workspacename: editedWorkspaceName,
-        description: editedDescription,
-      });
+    const result = response.data;
 
-      const response = await axios.post(
-        "http://localhost:5000/updateWorkSpace",
-        {
-          id: workspaceId,
+    if (result.success) {
+      // Close the form
+      setIsEditFormOpen(false);
+
+      // Update localStorage if this is the current selected workspace
+      const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
+      if (
+        currentWorkspace &&
+        (currentWorkspace.WorkSpace === workspaceId ||
+          currentWorkspace.WorkSpace === workspace.id)
+      ) {
+        const updatedWorkspaceData = {
+          WorkSpace: workspaceId,
           workspacename: editedWorkspaceName,
           description: editedDescription || "",
-        }
-      );
-
-      const result = response.data;
-
-      if (result.success) {
-        // Close the form
-        setIsEditFormOpen(false);
-
-        // Update localStorage if this is the current selected workspace
-        const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
-        if (
-          currentWorkspace &&
-          (currentWorkspace.WorkSpace === workspaceId ||
-            currentWorkspace.WorkSpace === workspace.id)
-        ) {
-          const updatedWorkspaceData = {
-            WorkSpace: workspaceId,
-            workspacename: editedWorkspaceName,
-            description: editedDescription || "",
-          };
-          localStorage.setItem(
-            "workspace",
-            JSON.stringify(updatedWorkspaceData)
-          );
-        }
-
-        // If there's an onUpdate callback, call it with the updated workspace
-        if (onUpdate) {
-          const updatedWorkspace = {
-            ...workspace,
-            workspaceName: editedWorkspaceName,
-            description: editedDescription || "",
-            title: editedWorkspaceName,
-          };
-          console.log("Updated workspace object:", updatedWorkspace);
-          onUpdate(updatedWorkspace);
-        }
-
-        toast.success("Workspace updated successfully!", {
-          position: "top-right",
-        });
-
-        // Force page reload to ensure we get fresh data from server
-        window.location.reload();
-      } else {
-        toast.error(result.message || "Failed to update workspace", {
-          position: "top-right",
-        });
+        };
+        localStorage.setItem("workspace", JSON.stringify(updatedWorkspaceData));
       }
-    } catch (error) {
-      console.error("Full error:", error);
-      toast.error(
-        "Error updating workspace: " +
-          (error.response
-            ? error.response.data.message
-            : error.message || "Unknown error"),
-        {
-          position: "top-right",
-        }
-      );
-    } finally {
-      setLoading(false);
+
+      // If there's an onUpdate callback, call it with the updated workspace
+      if (onUpdate) {
+        const updatedWorkspace = {
+          ...workspace,
+          workspaceName: editedWorkspaceName,
+          description: editedDescription || "",
+          title: editedWorkspaceName,
+        };
+        // console.log("Updated workspace object:", updatedWorkspace);
+        onUpdate(updatedWorkspace);
+      }
+
+      toast.success("Workspace updated successfully!", {
+        position: "top-right",
+      });
     }
   };
 
@@ -168,7 +128,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
     try {
       const workspaceId = workspaceToDelete.WorkSpace || workspaceToDelete.id;
 
-      // Make API call to delete the workspace
       const response = await axios.post(
         "http://localhost:5000/deleteWorkSpace",
         {
@@ -197,9 +156,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
         // Close the confirmation modal
         setShowConfirm(false);
         setWorkspaceToDelete(null);
-
-        // Refresh the page to update the workspace list
-        window.location.reload();
       } else {
         toast.error(result.message || "Failed to delete workspace", {
           position: "top-right",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { MdClose } from "react-icons/md";
 
 const WorkspaceInvitationModal = ({ 
@@ -8,14 +8,28 @@ const WorkspaceInvitationModal = ({
   onAccept, 
   onDecline 
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  
   if (!isOpen || !notification) return null;
+
+  const handleAccept = async () => {
+    setIsLoading(true);
+    await onAccept();
+    setIsLoading(false);
+  };
+
+  const handleDecline = async () => {
+    setIsLoading(true);
+    await onDecline();
+    setIsLoading(false);
+  };
 
   return (
     <div className="fixed inset-0 !z-50 flex items-center justify-center">
       {/* Darker backdrop */}
       <div
         className="absolute inset-0 bg-black/70"
-        onClick={onClose}
+        onClick={isLoading ? null : onClose}
       ></div>
 
       {/* Modal content */}
@@ -27,6 +41,7 @@ const WorkspaceInvitationModal = ({
           <button
             onClick={onClose}
             className="text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
+            disabled={isLoading}
           >
             <MdClose className="w-5 h-5" />
           </button>
@@ -65,16 +80,23 @@ const WorkspaceInvitationModal = ({
 
         <div className="flex justify-end gap-5">
           <button
-            onClick={onDecline}
+            onClick={handleDecline}
             className="!px-6 !py-2 text-[#6299ec] font-medium rounded-md hover:bg-gray-100 cursor-pointer"
+            disabled={isLoading}
           >
-            DECLINE
+            {isLoading ? "PROCESSING..." : "DECLINE"}
           </button>
           <button
-            onClick={onAccept}
+            onClick={handleAccept}
             className="!px-6 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 cursor-pointer"
+            disabled={isLoading}
           >
-            JOIN
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <span className="animate-spin h-4 w-4 !mr-2 border-t-2 border-white rounded-full"></span>
+                PROCESSING...
+              </span>
+            ) : "JOIN"}
           </button>
         </div>
       </div>

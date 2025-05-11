@@ -1,55 +1,56 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdNotifications } from "react-icons/md";
 import WorkspaceInvitationModal from "./WorkspaceInvitationModal";
+import { fetchUserInvitations, markNotificationAsRead, markAllNotificationsAsRead } from "./notificationService";
+import { toast } from "react-toastify";
 
 const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Using database schema: joinWorkSpace, WorkSpace, User tables
-  const notifications = [
-    {
-      joinWorkSpaceId: 1,
-      type: "workspace_invitation",
-      read: false,
-      timestamp: "2025-05-10T14:30:00Z",
-      isPending: true,
-      workspace: {
-        WorkSpace: 101,
-        workspacename: "Product Development",
-        description:
-          "A workspace for all product development tasks and discussions",
-        dateCreate: "2025-04-15",
-        admin: {
-          userId: 201,
-          name: "Jane Cooper",
-          email: "jane@taskup.com",
-          avatar: "https://i.pravatar.cc/150?img=5",
-        },
-      },
-    },
-    {
-      joinWorkSpaceId: 2,
-      type: "workspace_invitation",
-      read: true,
-      timestamp: "2025-05-09T10:15:00Z",
-      isPending: true,
-      workspace: {
-        WorkSpace: 102,
-        workspacename: "Marketing Campaign",
-        description: "Planning and execution of our Q2 marketing initiatives",
-        dateCreate: "2025-05-01",
-        admin: {
-          userId: 202,
-          name: "Robert Fox",
-          email: "robert@taskup.com",
-          avatar: "https://i.pravatar.cc/150?img=8",
-        },
-      },
-    },
-  ];
+  // Get the current user ID 
+  // For demo purposes, assuming userId is stored in localStorage
+  const currentUser = JSON.parse(localStorage.getItem("currentUser")) || { userId: 1 };
+
+  // Fetch notifications when component mounts
+  useEffect(() => {
+    fetchNotifications();
+    
+    // Set up polling to check for new notifications (every 30 seconds)
+    const intervalId = setInterval(fetchNotifications, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const fetchNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const result = await fetchUserInvitations(currentUser.userId);
+      if (result.success) {
+        // Store notifications in state, along with read status (from localStorage)
+        const storedReadStatus = JSON.parse(localStorage.getItem("readNotifications")) || {};
+        
+        // Process notifications from the backend and maintain frontend structure
+        const processedNotifications = result.notifications.map(notification => ({
+          ...notification,
+          read: storedReadStatus[notification.joinWorkSpaceId] || false
+        }));
+        
+        console.log("Processed notifications:", processedNotifications); // For debugging
+        setNotifications(processedNotifications);
+      } else {
+        console.error("Failed to fetch notifications:", result.message);
+      }
+    } catch (error) {
+      console.error("Error in fetchNotifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -68,33 +69,58 @@ const NotificationDropdown = () => {
   };
 
   const handleNotificationClick = (notification) => {
+    // Mark as read
+    markAsRead(notification.joinWorkSpaceId);
+    
     setSelectedNotification(notification);
     setShowModal(true);
     setIsOpen(false);
   };
 
+  const markAsRead = (notificationId) => {
+    // Update local state
+    setNotifications(prevNotifications => 
+      prevNotifications.map(notif => 
+        notif.joinWorkSpaceId === notificationId 
+          ? { ...notif, read: true } 
+          : notif
+      )
+    );
+    
+    // Store read status in localStorage
+    const storedReadStatus = JSON.parse(localStorage.getItem("readNotifications")) || {};
+    localStorage.setItem(
+      "readNotifications", 
+      JSON.stringify({ ...storedReadStatus, [notificationId]: true })
+    );
+    
+    // Call API (if implementing server-side read tracking)
+    markNotificationAsRead(notificationId);
+  };
+
+  const markAllAsRead = () => {
+    // Update local state
+    setNotifications(prevNotifications => 
+      prevNotifications.map(notif => ({ ...notif, read: true }))
+    );
+    
+    // Store read status in localStorage
+    const storedReadStatus = JSON.parse(localStorage.getItem("readNotifications")) || {};
+    const updatedReadStatus = { ...storedReadStatus };
+    
+    notifications.forEach(notif => {
+      updatedReadStatus[notif.joinWorkSpaceId] = true;
+    });
+    
+    localStorage.setItem("readNotifications", JSON.stringify(updatedReadStatus));
+    
+    // Call API (if implementing server-side)
+    markAllNotificationsAsRead(currentUser.userId);
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setSelectedNotification(null);
-  };
-
-  const acceptInvitation = () => {
-    console.log(
-      "Accepted invitation to:",
-      selectedNotification.workspace.workspacename
-    );
-    closeModal();
-    // API call would update the joinWorkSpace table in your DB
-    // Update isPending to false, set dateJoin to current date
-  };
-
-  const declineInvitation = () => {
-    console.log(
-      "Declined invitation to:",
-      selectedNotification.workspace.workspacename
-    );
-    closeModal();
-    // API call would delete the record from the joinWorkSpace table
   };
 
   const formatTimestamp = (timestamp) => {
@@ -129,11 +155,15 @@ const NotificationDropdown = () => {
             </h3>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length > 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center p-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+              </div>
+            ) : notifications.length > 0 ? (
               notifications.map((notification) => (
                 <div
                   key={notification.joinWorkSpaceId}
-                  className={`!p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ${
+                  className={`!p-2 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ${
                     notification.read ? "bg-white" : "bg-blue-50"
                   }`}
                   onClick={() => handleNotificationClick(notification)}
@@ -173,9 +203,12 @@ const NotificationDropdown = () => {
               </div>
             )}
           </div>
-          {notifications.length > 0 && (
+          {notifications.length > 0 && notifications.some(n => !n.read) && (
             <div className="!p-2 text-center border-t border-gray-200">
-              <button className="text-sm text-blue-900 hover:text-blue-700 cursor-pointer">
+              <button 
+                className="text-sm text-blue-900 hover:text-blue-700 cursor-pointer"
+                onClick={markAllAsRead}
+              >
                 Mark all as read
               </button>
             </div>
@@ -188,11 +221,72 @@ const NotificationDropdown = () => {
         notification={selectedNotification}
         isOpen={showModal}
         onClose={closeModal}
-        onAccept={acceptInvitation}
-        onDecline={declineInvitation}
+        onAccept={() => {
+          if (selectedNotification) {
+            acceptInvitation(selectedNotification.joinWorkSpaceId);
+          }
+        }}
+        onDecline={() => {
+          if (selectedNotification) {
+            declineInvitation(selectedNotification.joinWorkSpaceId);
+          }
+        }}
       />
     </div>
   );
+  
+  // Function to accept invitation
+  async function acceptInvitation(joinWorkSpaceId) {
+    const { respondToInvitation } = await import('./notificationService');
+    
+    try {
+      const result = await respondToInvitation(joinWorkSpaceId, true);
+      
+      if (result.success) {
+        toast.success("You've joined the workspace successfully!");
+        
+        // Remove the notification from the list
+        setNotifications(prev => 
+          prev.filter(n => n.joinWorkSpaceId !== joinWorkSpaceId)
+        );
+        
+        closeModal();
+        
+        // Refresh the page or workspace list if needed
+        // You might want to trigger a context update or redirect to workspace page
+      } else {
+        toast.error(`Failed to accept invitation: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      toast.error("An error occurred while accepting the invitation");
+    }
+  }
+  
+  // Function to decline invitation
+  async function declineInvitation(joinWorkSpaceId) {
+    const { respondToInvitation } = await import('./notificationService');
+    
+    try {
+      const result = await respondToInvitation(joinWorkSpaceId, false);
+      
+      if (result.success) {
+        toast.info("Invitation declined");
+        
+        // Remove the notification from the list
+        setNotifications(prev => 
+          prev.filter(n => n.joinWorkSpaceId !== joinWorkSpaceId)
+        );
+        
+        closeModal();
+      } else {
+        toast.error(`Failed to decline invitation: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error declining invitation:", error);
+      toast.error("An error occurred while declining the invitation");
+    }
+  }
 };
 
 export default NotificationDropdown;
