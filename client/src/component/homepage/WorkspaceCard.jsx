@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
+const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
   const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
@@ -156,6 +156,11 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate }) => {
         // Close the confirmation modal
         setShowConfirm(false);
         setWorkspaceToDelete(null);
+        
+        // Fetch workspaces again to update the list
+        if (onFetchWorkspaces) {
+          onFetchWorkspaces();
+        }
       } else {
         toast.error(result.message || "Failed to delete workspace", {
           position: "top-right",

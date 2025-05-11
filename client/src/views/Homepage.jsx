@@ -29,7 +29,7 @@ const Homepage = () => {
 
       setUserId(userData.userId);
 
-      // Fetch workspaces from API
+      // Fetch workspaces from API - only for the specific userId
       const response = await fetch("http://localhost:5000/getWorkSpace", {
         method: "POST",
         headers: {
@@ -59,9 +59,7 @@ const Homepage = () => {
           ...workspace,
           id: workspace.id,
           title: workspace.workspaceName,
-          subtitle: `Created on ${new Date(
-            workspace.dateCreate
-          ).toLocaleDateString()}`,
+          description: workspace.description,
           backgroundGradient: "bg-gradient-to-br from-blue-300 to-purple-400",
           members: [],
           isOwner: false,
@@ -117,7 +115,7 @@ const Homepage = () => {
         updatedWorkspaces[workspaceIndex] = {
           ...updatedWorkspaces[workspaceIndex],
           title: updatedWorkspace.title,
-          subtitle: updatedWorkspace.subtitle,
+          description: updatedWorkspace.description, // Sửa từ subtitle sang description
         };
 
         // Update state
@@ -193,6 +191,7 @@ const Homepage = () => {
                     workspace={workspace}
                     onClick={() => handleWorkspaceClick(workspace.id)}
                     onUpdate={handleUpdateWorkspace}
+                    onFetchWorkspaces={fetchWorkspaces}
                   />
                 ))
               ) : (
