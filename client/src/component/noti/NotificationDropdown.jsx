@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdNotifications } from "react-icons/md";
 import WorkspaceInvitationModal from "./WorkspaceInvitationModal";
-import { fetchUserInvitations, markNotificationAsRead, markAllNotificationsAsRead } from "./notificationService";
+import {
+  fetchUserInvitations,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from "./notificationService";
 import { toast } from "react-toastify";
 
-const NotificationDropdown = () => {
+const NotificationDropdown = ({ refreshWorkspaces }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -12,17 +16,16 @@ const NotificationDropdown = () => {
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Get the current user ID 
-  // For demo purposes, assuming userId is stored in localStorage
-  const currentUser = JSON.parse(localStorage.getItem("currentUser")) || { userId: 1 };
+  // Get the current user ID
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
   // Fetch notifications when component mounts
   useEffect(() => {
     fetchNotifications();
-    
+
     // Set up polling to check for new notifications (every 30 seconds)
     const intervalId = setInterval(fetchNotifications, 30000);
-    
+
     return () => clearInterval(intervalId);
   }, []);
 
@@ -31,16 +34,16 @@ const NotificationDropdown = () => {
     try {
       const result = await fetchUserInvitations(currentUser.userId);
       if (result.success) {
-        // Store notifications in state, along with read status (from localStorage)
-        const storedReadStatus = JSON.parse(localStorage.getItem("readNotifications")) || {};
-        
-        // Process notifications from the backend and maintain frontend structure
-        const processedNotifications = result.notifications.map(notification => ({
-          ...notification,
-          read: storedReadStatus[notification.joinWorkSpaceId] || false
-        }));
-        
-        console.log("Processed notifications:", processedNotifications); // For debugging
+        const storedReadStatus =
+          JSON.parse(localStorage.getItem("readNotifications")) || {};
+
+        const processedNotifications = result.notifications.map(
+          (notification) => ({
+            ...notification,
+            read: storedReadStatus[notification.joinWorkSpaceId] || false,
+          })
+        );
+
         setNotifications(processedNotifications);
       } else {
         console.error("Failed to fetch notifications:", result.message);
@@ -71,7 +74,7 @@ const NotificationDropdown = () => {
   const handleNotificationClick = (notification) => {
     // Mark as read
     markAsRead(notification.joinWorkSpaceId);
-    
+
     setSelectedNotification(notification);
     setShowModal(true);
     setIsOpen(false);
@@ -79,41 +82,46 @@ const NotificationDropdown = () => {
 
   const markAsRead = (notificationId) => {
     // Update local state
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notif => 
-        notif.joinWorkSpaceId === notificationId 
-          ? { ...notif, read: true } 
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notif) =>
+        notif.joinWorkSpaceId === notificationId
+          ? { ...notif, read: true }
           : notif
       )
     );
-    
+
     // Store read status in localStorage
-    const storedReadStatus = JSON.parse(localStorage.getItem("readNotifications")) || {};
+    const storedReadStatus =
+      JSON.parse(localStorage.getItem("readNotifications")) || {};
     localStorage.setItem(
-      "readNotifications", 
+      "readNotifications",
       JSON.stringify({ ...storedReadStatus, [notificationId]: true })
     );
-    
+
     // Call API (if implementing server-side read tracking)
     markNotificationAsRead(notificationId);
   };
 
   const markAllAsRead = () => {
     // Update local state
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notif => ({ ...notif, read: true }))
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notif) => ({ ...notif, read: true }))
     );
-    
+
     // Store read status in localStorage
-    const storedReadStatus = JSON.parse(localStorage.getItem("readNotifications")) || {};
+    const storedReadStatus =
+      JSON.parse(localStorage.getItem("readNotifications")) || {};
     const updatedReadStatus = { ...storedReadStatus };
-    
-    notifications.forEach(notif => {
+
+    notifications.forEach((notif) => {
       updatedReadStatus[notif.joinWorkSpaceId] = true;
     });
-    
-    localStorage.setItem("readNotifications", JSON.stringify(updatedReadStatus));
-    
+
+    localStorage.setItem(
+      "readNotifications",
+      JSON.stringify(updatedReadStatus)
+    );
+
     // Call API (if implementing server-side)
     markAllNotificationsAsRead(currentUser.userId);
   };
@@ -149,7 +157,7 @@ const NotificationDropdown = () => {
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute right-0 !mt-1 w-90 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-          <div className="!p-2 border-b border-gray-200">
+          <div className="!p-3 border-b border-gray-200">
             <h3 className="text-base font-medium text-gray-800">
               Notifications
             </h3>
@@ -203,9 +211,9 @@ const NotificationDropdown = () => {
               </div>
             )}
           </div>
-          {notifications.length > 0 && notifications.some(n => !n.read) && (
+          {notifications.length > 0 && notifications.some((n) => !n.read) && (
             <div className="!p-2 text-center border-t border-gray-200">
-              <button 
+              <button
                 className="text-sm text-blue-900 hover:text-blue-700 cursor-pointer"
                 onClick={markAllAsRead}
               >
@@ -234,26 +242,28 @@ const NotificationDropdown = () => {
       />
     </div>
   );
-  
+
   // Function to accept invitation
   async function acceptInvitation(joinWorkSpaceId) {
-    const { respondToInvitation } = await import('./notificationService');
-    
+    const { respondToInvitation } = await import("./notificationService");
+
     try {
       const result = await respondToInvitation(joinWorkSpaceId, true);
-      
+
       if (result.success) {
         toast.success("You've joined the workspace successfully!");
-        
+
         // Remove the notification from the list
-        setNotifications(prev => 
-          prev.filter(n => n.joinWorkSpaceId !== joinWorkSpaceId)
+        setNotifications((prev) =>
+          prev.filter((n) => n.joinWorkSpaceId !== joinWorkSpaceId)
         );
-        
+
         closeModal();
-        
-        // Refresh the page or workspace list if needed
-        // You might want to trigger a context update or redirect to workspace page
+
+        // Call the refreshWorkspaces function passed from props
+        if (refreshWorkspaces) {
+          await refreshWorkspaces();
+        }
       } else {
         toast.error(`Failed to accept invitation: ${result.message}`);
       }
@@ -262,22 +272,22 @@ const NotificationDropdown = () => {
       toast.error("An error occurred while accepting the invitation");
     }
   }
-  
+
   // Function to decline invitation
   async function declineInvitation(joinWorkSpaceId) {
-    const { respondToInvitation } = await import('./notificationService');
-    
+    const { respondToInvitation } = await import("./notificationService");
+
     try {
       const result = await respondToInvitation(joinWorkSpaceId, false);
-      
+
       if (result.success) {
         toast.info("Invitation declined");
-        
+
         // Remove the notification from the list
-        setNotifications(prev => 
-          prev.filter(n => n.joinWorkSpaceId !== joinWorkSpaceId)
+        setNotifications((prev) =>
+          prev.filter((n) => n.joinWorkSpaceId !== joinWorkSpaceId)
         );
-        
+
         closeModal();
       } else {
         toast.error(`Failed to decline invitation: ${result.message}`);

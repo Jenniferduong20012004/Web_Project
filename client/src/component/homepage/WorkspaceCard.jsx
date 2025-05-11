@@ -23,8 +23,8 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
-    console.log("Workspace updated:", workspace);
-    console.log("Description value:", workspace.description);
+    // console.log("Workspace updated:", workspace);
+    // console.log("Description value:", workspace.description);
   }, [workspace]);
 
   // Close the dropdown menu when clicking outside

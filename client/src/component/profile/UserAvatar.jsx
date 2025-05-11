@@ -30,10 +30,8 @@ const UserMenu = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
 
-    // Show success message
     toast.success("Logged out successfully");
 
-    // Redirect to login page
     navigate("/login");
   };
 

@@ -43,6 +43,7 @@ const Homepage = () => {
       const data = await response.json();
 
       if (data.success) {
+        // Process managed workspaces
         const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
           ...workspace,
           id: workspace.id,
@@ -53,17 +54,34 @@ const Homepage = () => {
           backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
           members: [],
           isOwner: true,
+          isPending: false, // Admin/owner is never pending
         }));
 
-        const assignedWorkspaces = data.assignedWorkspaces.map((workspace) => ({
-          ...workspace,
-          id: workspace.id,
-          title: workspace.workspaceName,
-          description: workspace.description,
-          backgroundGradient: "bg-gradient-to-br from-blue-300 to-purple-400",
-          members: [],
-          isOwner: false,
-        }));
+        // Process assigned workspaces and filter out pending ones
+        const assignedWorkspaces = data.assignedWorkspaces
+          .map((workspace) => {
+
+            // Convert isPending to a proper boolean
+            // This handles cases where isPending is 1, "1", true, or any other truthy value
+            const isPendingStatus = Boolean(
+              workspace.isPending === 1 ||
+                workspace.isPending === "1" ||
+                workspace.isPending === true
+            );
+
+            return {
+              ...workspace,
+              id: workspace.id,
+              title: workspace.workspaceName,
+              description: workspace.description || "",
+              backgroundGradient:
+                "bg-gradient-to-br from-blue-300 to-purple-400",
+              members: [],
+              isOwner: false,
+              isPending: isPendingStatus,
+            };
+          })
+          .filter((workspace) => !workspace.isPending);
 
         setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
       } else {
@@ -115,7 +133,7 @@ const Homepage = () => {
         updatedWorkspaces[workspaceIndex] = {
           ...updatedWorkspaces[workspaceIndex],
           title: updatedWorkspace.title,
-          description: updatedWorkspace.description, // Sửa từ subtitle sang description
+          description: updatedWorkspace.description,
         };
 
         // Update state
@@ -132,15 +150,21 @@ const Homepage = () => {
     }
   };
 
+  // Filter workspaces based on active tab
   const filteredWorkspaces = workspaces.filter((workspace) => {
     if (activeTab === "myWorkspace") {
       return workspace.isOwner;
     } else {
+      // For assigned workspaces, ensure they are not pending
       return !workspace.isOwner;
     }
   });
 
   const displayedWorkspaces = filteredWorkspaces;
+
+  const refreshWorkspaces = async () => {
+    await fetchWorkspaces();
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-[#f4f7fa]">
@@ -154,6 +178,7 @@ const Homepage = () => {
           workspaces={workspaces}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          refreshWorkspaces={refreshWorkspaces}
         />
       </div>
 

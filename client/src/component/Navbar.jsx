@@ -7,7 +7,7 @@ import UserAvatar from "./profile/UserAvatar";
 
 import NotificationDropdown from "./noti/NotificationDropdown";
 
-const Navbar = ({ workspaces, activeTab, onTabChange }) => {
+const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces  }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -54,7 +54,7 @@ const Navbar = ({ workspaces, activeTab, onTabChange }) => {
 
         <div className="flex items-center gap-3">
           {/* Notification Dropdown */}
-          <NotificationDropdown />
+          <NotificationDropdown refreshWorkspaces={refreshWorkspaces} />
 
           {/* Avatar */}
           <UserAvatar />

@@ -1,5 +1,3 @@
-// notificationService.js - API calls for handling notifications and invitations
-
 // Fetch user's pending invitations
 export const fetchUserInvitations = async (userId) => {
   try {
@@ -14,11 +12,6 @@ export const fetchUserInvitations = async (userId) => {
     const data = await response.json();
 
     if (data.success) {
-      // Log the raw data from the backend for debugging
-      console.log("Raw invitations from API:", data.invitations);
-      
-      // The backend should already format data to match frontend expectations,
-      // but we can validate/transform it further if needed
       return { success: true, notifications: data.invitations };
     } else {
       console.error("Failed to fetch invitations:", data.message);
@@ -55,18 +48,10 @@ export const respondToInvitation = async (joinWorkSpace, accept) => {
   }
 };
 
-// Mark notification as read - This would be implemented if you track read status in the database
-// For now, we handle this client-side in the NotificationDropdown component using localStorage
 export const markNotificationAsRead = async (notificationId) => {
-  // This is a placeholder for a server implementation
-  // Currently handled client-side in the NotificationDropdown component
   return { success: true };
 };
 
-// Mark all notifications as read - This would be implemented if you track read status in the database
-// For now, we handle this client-side in the NotificationDropdown component using localStorage
 export const markAllNotificationsAsRead = async (userId) => {
-  // This is a placeholder for a server implementation
-  // Currently handled client-side in the NotificationDropdown component
   return { success: true };
 };
