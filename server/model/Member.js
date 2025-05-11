@@ -2,7 +2,7 @@ const pool = require("../db/connect");
 
 class Member {
   static addMember(memberData, callback) {
-    const { email, role, WorkSpace, dateJoin } = memberData;
+    const { email, role, WorkSpace, dateJoin, isPending = true } = memberData;
 
     // First check if user exists
     const userQuery = "SELECT userId FROM User WHERE email = ?";
@@ -34,13 +34,14 @@ class Member {
           );
         }
 
-        // Add user to workspace
+        // Add user to workspace with isPending set to true (invitation)
         const query =
           "INSERT INTO joinWorkSpace (isPending, isManager, role, dateJoin, userId, WorkSpace) VALUES (?, ?, ?, ?, ?, ?)";
 
+        // Important: isPending is set to true for invitations
         pool.query(
           query,
-          [true, false, role, dateJoin, userId, WorkSpace],
+          [isPending, false, role, dateJoin, userId, WorkSpace],
           (err, results) => {
             if (err) {
               console.error("Error adding member:", err);
@@ -62,7 +63,7 @@ class Member {
                 userName: userResults[0].name,
                 email: userResults[0].email,
                 role: role,
-                isPending: true,
+                isPending: isPending,
                 isManager: false,
               });
             });
@@ -121,6 +122,71 @@ class Member {
       }
 
       return callback(null, { success: true });
+    });
+  }
+
+  // New method to accept an invitation
+  static acceptInvitation(joinWorkSpace, callback) {
+    const query = "UPDATE joinWorkSpace SET isPending = FALSE WHERE joinWorkSpace = ?";
+
+    pool.query(query, [joinWorkSpace], (err, results) => {
+      if (err) {
+        console.error("Error accepting invitation:", err);
+        return callback(err, null);
+      }
+
+      if (results.affectedRows === 0) {
+        return callback({ message: "Invitation not found" }, null);
+      }
+
+      return callback(null, { success: true });
+    });
+  }
+
+  // New method to get pending invitations for a user
+  static getUserInvitations(userId, callback) {
+    const query = `
+      SELECT j.joinWorkSpace, j.isPending, j.isManager, j.role, j.dateJoin, j.WorkSpace,
+             w.workspacename, w.description, w.dateCreate,
+             admin.userId as adminId, admin_user.name as adminName, admin_user.email as adminEmail
+      FROM joinWorkSpace j
+      JOIN WorkSpace w ON j.WorkSpace = w.WorkSpace
+      JOIN joinWorkSpace admin ON admin.WorkSpace = w.WorkSpace AND admin.isManager = TRUE
+      JOIN User admin_user ON admin.userId = admin_user.userId
+      JOIN User u ON j.userId = u.userId
+      WHERE j.userId = ? AND j.isPending = TRUE
+      ORDER BY j.dateJoin DESC
+    `;
+
+    pool.query(query, [userId], (err, results) => {
+      if (err) {
+        console.error("Error fetching user invitations:", err);
+        return callback(err, null);
+      }
+
+      // console.log("Raw invitation results:", results); // For debugging
+
+      const invitations = results.map(invitation => ({
+        joinWorkSpaceId: invitation.joinWorkSpace,
+        // type: "workspace_invitation",
+        read: false, // Default to unread
+        timestamp: invitation.dateJoin,
+        isPending: invitation.isPending,
+        workspace: {
+          WorkSpace: invitation.WorkSpace,
+          workspacename: invitation.workspacename,
+          description: invitation.description,
+          dateCreate: invitation.dateCreate,
+          admin: {
+            userId: invitation.adminId,
+            name: invitation.adminName,
+            email: invitation.adminEmail,
+            avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+          },
+        },
+      }));
+
+      return callback(null, invitations);
     });
   }
 }

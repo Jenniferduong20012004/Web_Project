@@ -6,5 +6,7 @@ router.post("/addMember", memberController.addMember);
 router.post("/getMember", memberController.getMembers);
 router.post("/deleteMember", memberController.deleteMember);
 router.post("/updateMemberRole", memberController.updateMemberRole);
+router.post("/respondToInvitation", memberController.respondToInvitation);
+router.post("/getUserInvitations", memberController.getUserInvitations);
 
 module.exports = router;

@@ -1,15 +1,5 @@
 const pool = require("../db/connect");
 
-// Define WorkSpace class
-class WorkSpace {
-  constructor(id, workspaceName, dateCreate, description) {
-    this.id = id;
-    this.workspaceName = workspaceName;
-    this.dateCreate = dateCreate;
-    this.description = description;
-  }
-}
-
 class HomePage {
   static findMyAssignedWorkSpaceByUserId(userId, callback) {
     const query = `
@@ -17,7 +7,10 @@ class HomePage {
         w.WorkSpace as id, 
         w.workspacename as workspaceName, 
         w.dateCreate,
-        w.description
+        w.description,
+        j.isPending,
+        j.joinWorkSpace,
+        j.role
       FROM 
         joinWorkSpace j 
       JOIN 
@@ -36,12 +29,16 @@ class HomePage {
       console.log("Assigned workspace query results:", results);
 
       // Map row data to WorkSpace objects with proper field access
+      // Include isPending field in the returned objects
       const workspaces = results.map((row) => {
         return {
           id: row.id,
           workspaceName: row.workspaceName,
           dateCreate: row.dateCreate,
           description: row.description || "",
+          isPending: row.isPending, // Include isPending status
+          joinWorkSpace: row.joinWorkSpace, // Include joinWorkSpace ID for reference
+          role: row.role // Include role information
         };
       });
 
@@ -56,7 +53,9 @@ class HomePage {
         w.WorkSpace as id, 
         w.workspacename as workspaceName, 
         w.dateCreate,
-        w.description
+        w.description,
+        j.joinWorkSpace,
+        j.role
       FROM 
         joinWorkSpace j 
       JOIN 
@@ -81,6 +80,9 @@ class HomePage {
           workspaceName: row.workspaceName,
           dateCreate: row.dateCreate,
           description: row.description || "",
+          isPending: false, // Managers are never pending
+          joinWorkSpace: row.joinWorkSpace,
+          role: row.role || "Admin"
         };
       });
 
