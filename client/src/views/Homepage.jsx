@@ -238,8 +238,8 @@ const Homepage = () => {
 
           {/* Loading state */}
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="text-xl text-gray-500">Loading workspaces...</div>
+            <div className="w-full text-center py-8 text-gray-500">
+              <div className=" text-gray-500">Loading workspaces...</div>
             </div>
           ) : (
             /* Workspace cards grid */

@@ -8,8 +8,7 @@ const NotificationDropdown = () => {
   const [showModal, setShowModal] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Sample notification data (this would come from your API)
-  // Using your database schema: joinWorkSpace, WorkSpace, User tables
+  // Using database schema: joinWorkSpace, WorkSpace, User tables
   const notifications = [
     {
       joinWorkSpaceId: 1,
@@ -18,7 +17,7 @@ const NotificationDropdown = () => {
       timestamp: "2025-05-10T14:30:00Z",
       isPending: true,
       workspace: {
-        WorkSpace: 101, // Matches your primary key naming
+        WorkSpace: 101,
         workspacename: "Product Development",
         description:
           "A workspace for all product development tasks and discussions",
@@ -80,7 +79,6 @@ const NotificationDropdown = () => {
   };
 
   const acceptInvitation = () => {
-    // Logic to accept invitation - update joinWorkSpace.isPending to false
     console.log(
       "Accepted invitation to:",
       selectedNotification.workspace.workspacename
@@ -91,7 +89,6 @@ const NotificationDropdown = () => {
   };
 
   const declineInvitation = () => {
-    // Logic to decline invitation - delete the joinWorkSpace record
     console.log(
       "Declined invitation to:",
       selectedNotification.workspace.workspacename
@@ -136,7 +133,7 @@ const NotificationDropdown = () => {
               notifications.map((notification) => (
                 <div
                   key={notification.joinWorkSpaceId}
-                  className={`!p-2 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ${
+                  className={`!p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ${
                     notification.read ? "bg-white" : "bg-blue-50"
                   }`}
                   onClick={() => handleNotificationClick(notification)}
