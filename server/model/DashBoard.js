@@ -86,8 +86,6 @@ class DashBoard {
         }
         const tasksMap = new Map();
         taskResult.forEach((row) => {
-          console.log (row.StateCompletion)
-          console.log (mapState(row.StateCompletion));
           const taskId = row.TaskId;
           const initials = row.assignedUserName
             .split(" ")
