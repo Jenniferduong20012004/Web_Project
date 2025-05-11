@@ -14,6 +14,16 @@ const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toISOString().split('T')[0]; // returns 'YYYY-MM-DD'
 };
+const generateRandomString = (length = 7) => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
+  }
+  return result;
+};
+
 class WorkSpace {
   
   static create(workSpaceData, callback) {
@@ -64,12 +74,22 @@ class WorkSpace {
     })
 
   }
-  static createTask (TaskData, callback){
+  static addFileToSupa = async(TaskData,taskId, callback) =>{
+    if (TaskData.fileName.name) {
+      console.log (TaskData.fileName.name);
+        let str = taskId+"/"+generateRandomString()+"/"+TaskData.fileName.name;
+        console.log (str);
+        const{data, error} = await supabase.storage.from ('taskfile').upload(str, TaskData.fileName);
+        return callback (null, str)
+
+    }
+  }
+  static createTask (TaskData, callback) {
     const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
     const query2 = "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
     const priority = priorityMap[TaskData.priority];
     const dateEnd = formatDate(TaskData.dateEnd);
-    const status = statusMap[TaskData.StateCompletion];
+    const status = statusMap[TaskData.StateCompletion];  
     pool.query (query, [TaskData.taskname,TaskData.workspaceId, priority, TaskData.dateBegin, dateEnd, false, status, TaskData.description], (err, result)=>{
       if (err) {
         console.error("Error creating Task:", err);
@@ -81,12 +101,11 @@ class WorkSpace {
           if (er) {
             console.error("Error add member to task:", er);
             return callback(er, null);
-          }
-          console.log ("no");
+          }       
         }
         );
-  }
-  return callback (null, {id: taskId});
+      }
+      return callback (null, {id: taskId});
 }
     );
   }
