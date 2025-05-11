@@ -115,7 +115,7 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
         priority: formData.priority,
         dateBegin: dateCreate,
         dateEnd: formData.dueDate,
-        fileName: formData.file ? formData.file.name : null,
+        fileName:formData.file,
         assignedTo: formData.assignedMembers.map((member) => ({
         id: member.id,
       })), 

@@ -9,6 +9,11 @@ exports.addTask = (req, res) => {
             return res.status(500).json({ error: true, message: "Error creating task" });
         }
         console.log("Create task successful!");
+        Workspace.addFileToSupa (TaskData, result.id,(e, res)=>{
+            if (e){
+                console.error(err);
+            }
+        });
         res.status(201).json({ success: true, ws: result});
 
     });
