@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
+const Sidebar = ({ workspaceId }) => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [workspaceName, setWorkspaceName] = useState("");
+
+  useEffect(() => {
+    // Get workspace info from localStorage
+    const workspaceData = JSON.parse(localStorage.getItem("workspace"));
+    if (workspaceData && workspaceData.workspacename) {
+      setWorkspaceName(workspaceData.workspacename);
+    }
+  }, []);
 
   useEffect(() => {
     const path = location.pathname;
-     if (path.includes(`/dashboard/${workspaceId}`)) {
+    if (path.includes(`/dashboard/${workspaceId}`)) {
       setActiveTab("Dashboard");
     } else if (path.includes(`/board/${workspaceId}`)) {
       setActiveTab("Board");
@@ -114,7 +123,7 @@ const Sidebar = ({ workspaceName = "TaskClick", workspaceId }) => {
         <div className="w-full">
           <Link
             to="/homepage"
-            className="flex items-center text-[#455294] !ml-3"
+            className="flex items-center text-[#455294] !ml-3 !mt-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
