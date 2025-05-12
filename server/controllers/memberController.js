@@ -1,7 +1,7 @@
 const Member = require("../model/Member");
 
 exports.addMember = (req, res) => {
-  const { email, role, WorkSpace } = req.body;
+  const { email, role, WorkSpace, userId } = req.body;
 
   if (!email || !WorkSpace) {
     return res
@@ -9,6 +9,36 @@ exports.addMember = (req, res) => {
       .json({ error: true, message: "Email and workspace ID are required!" });
   }
 
+  // check if admin role before add new mem
+  if (userId) {
+    Member.checkAdmin(userId, WorkSpace, (err, isAdmin) => {
+      if (err) {
+        return res.status(500).json({
+          error: true,
+          message: "Error checking permission",
+        });
+      }
+
+      if (!isAdmin) {
+        return res.status(403).json({
+          success: false,
+          code: "PERMISSION_DENIED",
+          message: "You don't have permission to add members",
+        });
+      }
+
+      addMemberProcess(email, role, WorkSpace, res);
+    });
+  } else {
+    return res.status(400).json({
+      error: true,
+      message: "User ID is required!",
+    });
+  }
+};
+
+// ADD MEMBER
+const addMemberProcess = (email, role, WorkSpace, res) => {
   const dateJoin = new Date().toISOString().split("T")[0];
   const memberData = { email, role, WorkSpace, dateJoin, isPending: true };
 
@@ -57,7 +87,7 @@ exports.getMembers = (req, res) => {
 };
 
 exports.deleteMember = (req, res) => {
-  const { joinWorkSpace } = req.body;
+  const { joinWorkSpace, userId } = req.body;
 
   if (!joinWorkSpace) {
     return res
@@ -65,22 +95,41 @@ exports.deleteMember = (req, res) => {
       .json({ error: true, message: "Member join ID is required!" });
   }
 
-  Member.deleteMember(joinWorkSpace, (err, result) => {
+  // check admin to delete mem
+  Member.checkAdminForMember(userId, joinWorkSpace, (err, isAdmin) => {
     if (err) {
-      console.error("Error deleting member:", err);
       return res.status(500).json({
         error: true,
-        message: err.message || "Error when deleting member",
+        message: "Error checking permission",
       });
     }
 
-    console.log("Member deleted successfully!");
-    res.status(200).json({ success: true, id: result.id });
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        code: "PERMISSION_DENIED",
+        message: "You don't have permission to delete members",
+      });
+    }
+
+    // DELETE MEMBER
+    Member.deleteMember(joinWorkSpace, (err, result) => {
+      if (err) {
+        console.error("Error deleting member:", err);
+        return res.status(500).json({
+          error: true,
+          message: err.message || "Error when deleting member",
+        });
+      }
+
+      console.log("Member deleted successfully!");
+      res.status(200).json({ success: true, id: result.id });
+    });
   });
 };
 
 exports.updateMemberRole = (req, res) => {
-  const { joinWorkSpace, role } = req.body;
+  const { joinWorkSpace, role, userId } = req.body;
 
   if (!joinWorkSpace || !role) {
     return res
@@ -88,20 +137,64 @@ exports.updateMemberRole = (req, res) => {
       .json({ error: true, message: "Member join ID and role are required!" });
   }
 
-  Member.updateMemberRole(joinWorkSpace, role, (err, result) => {
+  // Kiểm tra quyền admin trước khi cập nhật vai trò thành viên
+  Member.checkAdminForMember(userId, joinWorkSpace, (err, isAdmin) => {
     if (err) {
-      console.error("Error updating member role:", err);
       return res.status(500).json({
         error: true,
-        message: err.message || "Error when updating member role",
+        message: "Error checking permission",
       });
     }
 
-    console.log("Member role updated successfully!");
-    res.status(200).json({ success: true });
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        code: "PERMISSION_DENIED",
+        message: "You don't have permission to update member roles",
+      });
+    }
+
+    // UPDATE MEMBER ROLE
+    Member.updateMemberRole(joinWorkSpace, role, (err, result) => {
+      if (err) {
+        console.error("Error updating member role:", err);
+        return res.status(500).json({
+          error: true,
+          message: err.message || "Error when updating member role",
+        });
+      }
+
+      console.log("Member role updated successfully!");
+      res.status(200).json({ success: true });
+    });
   });
 };
 
+// API to check user admin in workspace
+exports.getCurrentUserRole = (req, res) => {
+  const { userId, workspaceId } = req.body;
+
+  if (!userId || !workspaceId) {
+    return res
+      .status(400)
+      .json({ error: true, message: "User ID and Workspace ID are required!" });
+  }
+
+  Member.getUserRole(userId, workspaceId, (err, result) => {
+    if (err) {
+      console.error("Error fetching user role:", err);
+      return res
+        .status(500)
+        .json({ error: true, message: "Error fetching user role" });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      isAdmin: result?.isManager || 0,
+      role: result?.role || "Member"
+    });
+  });
+};
 
 exports.respondToInvitation = (req, res) => {
   const { joinWorkSpace, accept } = req.body;
@@ -168,4 +261,3 @@ exports.getUserInvitations = (req, res) => {
     res.status(200).json({ success: true, invitations: results });
   });
 };
-

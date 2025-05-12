@@ -1,6 +1,7 @@
 const pool = require("../db/connect");
 
 class Member {
+
   static addMember(memberData, callback) {
     const { email, role, WorkSpace, dateJoin, isPending = true } = memberData;
 
@@ -38,10 +39,9 @@ class Member {
         const query =
           "INSERT INTO joinWorkSpace (isPending, isManager, role, dateJoin, userId, WorkSpace) VALUES (?, ?, ?, ?, ?, ?)";
 
-        // Important: isPending is set to true for invitations
         pool.query(
           query,
-          [isPending, false, role, dateJoin, userId, WorkSpace],
+          [isPending ? 1 : 0, 0, role, dateJoin, userId, WorkSpace],
           (err, results) => {
             if (err) {
               console.error("Error adding member:", err);
@@ -63,8 +63,8 @@ class Member {
                 userName: userResults[0].name,
                 email: userResults[0].email,
                 role: role,
-                isPending: isPending,
-                isManager: false,
+                isPending: isPending ? 1 : 0,
+                isManager: 0, 
               });
             });
           }
@@ -151,10 +151,10 @@ class Member {
              admin.userId as adminId, admin_user.name as adminName, admin_user.email as adminEmail
       FROM joinWorkSpace j
       JOIN WorkSpace w ON j.WorkSpace = w.WorkSpace
-      JOIN joinWorkSpace admin ON admin.WorkSpace = w.WorkSpace AND admin.isManager = TRUE
+      JOIN joinWorkSpace admin ON admin.WorkSpace = w.WorkSpace AND admin.isManager = 1
       JOIN User admin_user ON admin.userId = admin_user.userId
       JOIN User u ON j.userId = u.userId
-      WHERE j.userId = ? AND j.isPending = TRUE
+      WHERE j.userId = ? AND j.isPending = 1
       ORDER BY j.dateJoin DESC
     `;
 
@@ -164,11 +164,8 @@ class Member {
         return callback(err, null);
       }
 
-      // console.log("Raw invitation results:", results); // For debugging
-
       const invitations = results.map(invitation => ({
         joinWorkSpaceId: invitation.joinWorkSpace,
-        // type: "workspace_invitation",
         read: false, // Default to unread
         timestamp: invitation.dateJoin,
         isPending: invitation.isPending,
@@ -187,6 +184,73 @@ class Member {
       }));
 
       return callback(null, invitations);
+    });
+  }
+
+  // check admin = 1
+  static checkAdmin(userId, workspaceId, callback) {
+    const query = `
+      SELECT isManager
+      FROM joinWorkSpace
+      WHERE userId = ? AND WorkSpace = ?
+    `;
+
+    pool.query(query, [userId, workspaceId], (err, results) => {
+      if (err) {
+        console.error("Error checking admin permission:", err);
+        return callback(err, false);
+      }
+
+      if (results.length === 0) {
+        return callback(null, false);
+      }
+
+      return callback(null, results[0].isManager === 1);
+    });
+  }
+
+  // check admin for a specific member
+  static checkAdminForMember(userId, joinWorkSpaceId, callback) {
+    const query = `
+      SELECT j1.isManager
+      FROM joinWorkSpace j1
+      JOIN joinWorkSpace j2 ON j1.WorkSpace = j2.WorkSpace
+      WHERE j1.userId = ? AND j2.joinWorkSpace = ?
+    `;
+
+    pool.query(query, [userId, joinWorkSpaceId], (err, results) => {
+      if (err) {
+        console.error("Error checking admin permission for member:", err);
+        return callback(err, false);
+      }
+
+      if (results.length === 0) {
+        return callback(null, false);
+      }
+
+      return callback(null, results[0].isManager === 1);
+    });
+  }
+
+  // get a specific user role in a workspace
+  static getUserRole(userId, workspaceId, callback) {
+    const query = `
+      SELECT isManager, role
+      FROM joinWorkSpace
+      WHERE userId = ? AND WorkSpace = ?
+    `;
+
+    pool.query(query, [userId, workspaceId], (err, results) => {
+      if (err) {
+        console.error("Error fetching user role:", err);
+        return callback(err, null);
+      }
+
+      if (results.length === 0) {
+        return callback(null, { isManager: 0, role: "Member" });
+      }
+
+      return callback(null, results[0]);
     });
   }
 }
