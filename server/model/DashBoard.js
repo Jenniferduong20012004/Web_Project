@@ -12,35 +12,34 @@ function mapState(state) {
   }
 }
 const mapPriority = {
-  "High":1,
-  "Medium":2,
-  "Low":3,
+  High: 1,
+  Medium: 2,
+  Low: 3,
 };
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
-  return date.toISOString().split('T')[0]; // returns 'YYYY-MM-DD'
+  return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
 };
 
 class DashBoard {
-  
-  static getMemberFromWorkspace (workspaceId, callback){
-    const query = "SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin FROM joinWorkSpace j JOIN User u ON j.userId = u.userId WHERE j.WorkSpace = ?;";
-    pool.query (query, [workspaceId], (err, result) =>{
+  static getMemberFromWorkspace(workspaceId, callback) {
+    const query =
+      "SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin FROM joinWorkSpace j JOIN User u ON j.userId = u.userId WHERE j.WorkSpace = ?;";
+    pool.query(query, [workspaceId], (err, result) => {
       if (err) {
         console.error("Error finding user by workSpaceId:", err);
         return callback(err, null);
       }
-      const members = result.map(row => ({
+      const members = result.map((row) => ({
         userId: row.userId,
         userName: row.name,
         email: row.email,
         role: row.role,
         isManager: row.isManager,
-        isPending:row.isPending,
+        isPending: row.isPending,
         dateJoin: row.dateJoin,
       }));
       return callback(null, members);
-      
     });
   }
   static getForBoard(workspaceId, callback) {
@@ -66,14 +65,14 @@ class DashBoard {
       JOIN User u ON jw.userId = u.userId
       WHERE t.WorkSpace = ?  AND t.trash = FALSE;
     `;
-  
+
     const memberQuery = `
       SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
     `;
-  
+
     pool.query(taskQuery, [workspaceId], (err, taskResult) => {
       if (err) {
         console.error("Error fetching tasks for workspace:", err);
@@ -92,7 +91,7 @@ class DashBoard {
             .map((n) => n[0])
             .join("")
             .toUpperCase();
-  
+
           const bgColorOptions = [
             "bg-blue-700",
             "bg-orange-500",
@@ -100,8 +99,9 @@ class DashBoard {
             "bg-green-600",
             "bg-red-600",
           ];
-          const bgColor = bgColorOptions[row.assignedUserId % bgColorOptions.length];
-  
+          const bgColor =
+            bgColorOptions[row.assignedUserId % bgColorOptions.length];
+
           const user = {
             id: row.assignedUserId,
             name: row.assignedUserName,
@@ -110,7 +110,6 @@ class DashBoard {
             bgColor,
           };
 
-  
           if (!tasksMap.has(taskId)) {
             tasksMap.set(taskId, {
               id: taskId,
@@ -125,14 +124,14 @@ class DashBoard {
             tasksMap.get(taskId).assignedTo.push(user);
           }
         });
-  
+
         const members = memberResult.map((row) => {
           const initials = row.name
             .split(" ")
             .map((n) => n[0])
             .join("")
             .toUpperCase();
-  
+
           const bgColorOptions = [
             "bg-blue-700",
             "bg-orange-500",
@@ -142,7 +141,6 @@ class DashBoard {
           ];
           const bgColor = bgColorOptions[row.userId % bgColorOptions.length];
 
-  
           return {
             id: row.joinWorkSpace,
             name: row.name,
@@ -151,26 +149,26 @@ class DashBoard {
             bgColor,
           };
         });
-  
+
         const summary = {
           tasks: Array.from(tasksMap.values()),
           user: members,
         };
-  
+
         return callback(null, summary);
       });
     });
   }
-  
+
   static getAllTask(workspaceId, callback) {
-  const query = `
+    const query = `
     SELECT t.*, w.workspacename 
     FROM Task t 
     JOIN WorkSpace w ON t.WorkSpace = w.WorkSpace 
     WHERE t.WorkSpace = ? AND t.trash = FALSE;
   `;
 
-  const query2 = `
+    const query2 = `
     SELECT u.name 
     FROM AssignTask a
     JOIN joinWorkSpace j ON a.joinWorkSpace = j.joinWorkSpace
@@ -178,77 +176,84 @@ class DashBoard {
     WHERE a.TaskId = ?
   `;
 
-  pool.query(query, [workspaceId], (err, results) => {
-    if (err) {
-      console.error("Error finding task of workspace:", err);
-      return callback(err, null);
-    }
+    pool.query(query, [workspaceId], (err, results) => {
+      if (err) {
+        console.error("Error finding task of workspace:", err);
+        return callback(err, null);
+      }
 
-    const currentDate = new Date();
+      const currentDate = new Date();
 
-    const taskPromises = results.map(row => {
-      return new Promise((resolve, reject) => {
-        pool.query(query2, [row.TaskId], (err2, assignedUsersResult) => {
-          if (err2) {
-            return reject(err2);
-          }
+      const taskPromises = results.map((row) => {
+        return new Promise((resolve, reject) => {
+          pool.query(query2, [row.TaskId], (err2, assignedUsersResult) => {
+            if (err2) {
+              return reject(err2);
+            }
 
-          const assignedUsers = assignedUsersResult.map(u => u.name);
-          const endDate = new Date(row.dateEnd);
-          const daysLeft = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+            const assignedUsers = assignedUsersResult.map((u) => u.name);
+            const endDate = new Date(row.dateEnd);
+            const daysLeft = Math.ceil(
+              (endDate - currentDate) / (1000 * 60 * 60 * 24)
+            );
 
-          // Count status
-          const status = row.StateCompletion;
-          // console.log (status);
+            // Count status
+            const status = row.StateCompletion;
+            // console.log (status);
 
-          resolve({
-            task: {
-              title: row.taskname,
-              project: row.workspacename,
-              daysLeft,
-              priority: row.priority === 1 ? "High" : row.priority === 2 ? "Medium" : "Low",
-              assignedUsers,
-              status,
-            },
+            resolve({
+              task: {
+                title: row.taskname,
+                project: row.workspacename,
+                daysLeft,
+                priority:
+                  row.priority === 1
+                    ? "High"
+                    : row.priority === 2
+                    ? "Medium"
+                    : "Low",
+                assignedUsers,
+                status,
+              },
+            });
           });
         });
       });
-    });
 
-    Promise.all(taskPromises)
-      .then(taskDataArray => {
-        let todo = 0, inProgress = 0, completed = 0;
-        const tasks = [];
-        taskDataArray.forEach(({ task }) => {
-          if (task.daysLeft >= 0 && task.daysLeft < 7) {
-            tasks.push(task);
-          }
-      console.log (task.daysLeft)
-          // Status counters
-          if (task.status === 1) todo++;
-          else if (task.status === 2) inProgress++;
-          else if (task.status === 3) completed++;
+      Promise.all(taskPromises)
+        .then((taskDataArray) => {
+          let todo = 0,
+            inProgress = 0,
+            completed = 0;
+          const tasks = [];
+          taskDataArray.forEach(({ task }) => {
+            if (task.daysLeft >= 0 && task.daysLeft < 7) {
+              tasks.push(task);
+            }
+            console.log(task.daysLeft);
+            // Status counters
+            if (task.status === 1) todo++;
+            else if (task.status === 2) inProgress++;
+            else if (task.status === 3) completed++;
+          });
+          console.log(todo);
+
+          const summary = {
+            totalTasks: results.length,
+            todo,
+            inProgress,
+            completed,
+            tasks,
+          };
+
+          return callback(null, summary);
+        })
+        .catch((err) => {
+          console.error("Error retrieving assigned users for tasks:", err);
+          return callback(err, null);
         });
-        console.log (todo);
-
-        const summary = {
-          totalTasks: results.length,
-          todo,
-          inProgress,
-          completed,
-          tasks,
-        };
-
-        return callback(null, summary);
-      })
-      .catch(err => {
-        console.error("Error retrieving assigned users for tasks:", err);
-        return callback(err, null);
-      });
-  });
-}
+    });
+  }
 }
 
-  
-  module.exports = DashBoard;
-  
+module.exports = DashBoard;

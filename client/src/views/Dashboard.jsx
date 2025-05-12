@@ -15,7 +15,6 @@ const Dashboard = () => {
     completed: 0,
   });
   const [tasks, setTask] = useState([]);
-  const [workspaceType, setWorkspaceType] = useState("myWorkspace"); // Add state for workspace type
   const { workspacedId } = useParams();
   // const [UpcomingTaskBoard, setUpcomingTaskBoard] = useState();
   const fetchDashboard = async () => {
@@ -40,13 +39,6 @@ const Dashboard = () => {
           completed: data.workspace.completed,
         });
         setTask(data.workspace.tasks);
-
-        // Set workspace type based on isManager
-        if (data.workspace.isManager) {
-          setWorkspaceType("myWorkspace");
-        } else {
-          setWorkspaceType("assignedWorkspace");
-        }
       } else {
         toast.error(data.message || "Get into workspace fail", {
           position: "top-right",
@@ -68,7 +60,7 @@ const Dashboard = () => {
   return (
     <div className="w-full min-h-screen flex flex-col">
       <div className="fixed top-0 right-0 left-0 z-20">
-        <Navbar activeTab={workspaceType} />
+        <Navbar />
       </div>
 
       <div className="fixed left-0 top-16 h-screen z-10">
