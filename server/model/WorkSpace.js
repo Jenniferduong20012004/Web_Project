@@ -1,22 +1,23 @@
 const pool = require("../db/connect");
-const supabase = require ("../db/superbaseClient")
+const supabase = require("../db/superbaseClient");
 const priorityMap = {
-  "High":1,
-  "Medium":2,
-  "Low":3,
+  High: 1,
+  Medium: 2,
+  Low: 3,
 };
 const statusMap = {
-  "TODO":1,
-  "IN-PROGRESS":2,
-  "COMPLETED":3,
+  TODO: 1,
+  "IN-PROGRESS": 2,
+  COMPLETED: 3,
 };
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
-  return date.toISOString().split('T')[0]; // returns 'YYYY-MM-DD'
+  return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
 };
 const generateRandomString = (length = 7) => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     result += characters[randomIndex];
@@ -25,7 +26,6 @@ const generateRandomString = (length = 7) => {
 };
 
 class WorkSpace {
-  
   static create(workSpaceData, callback) {
     const { workspacename, description, dateCreate } = workSpaceData;
     const query =
@@ -43,10 +43,34 @@ class WorkSpace {
       }
     );
   }
-  static getTrashTask (workSpaceId, callback){
+  static checkUserRole(userId, workspaceId, callback) {
+    const query =
+      "SELECT isManager FROM joinWorkSpace WHERE userId = ? AND WorkSpace = ?";
+
+    pool.query(query, [userId, workspaceId], (err, results) => {
+      if (err) {
+        console.error("Error checking user role:", err);
+        return callback(err, null);
+      }
+
+      if (results.length === 0) {
+        return callback(null, {
+          found: false,
+          message: "User not part of this workspace",
+        });
+      }
+
+      return callback(null, {
+        found: true,
+        isManager: Boolean(results[0].isManager),
+      });
+    });
+  }
+
+  static getTrashTask(workSpaceId, callback) {
     const query = "SELECT * FROM Task WHERE trash = TRUE AND WorkSpace = ?;";
-    pool.query (query, [workSpaceId], (err, result)=>{
-      if (err){
+    pool.query(query, [workSpaceId], (err, result) => {
+      if (err) {
         console.error("Error creating workspace:", err);
         return callback(err, null);
       }
@@ -60,53 +84,66 @@ class WorkSpace {
       });
 
       return callback(null, deleteTask);
-    })
-
+    });
   }
-  static restoreTrashTask (taskId, callback){
+  static restoreTrashTask(taskId, callback) {
     const query = "UPDATE Task SET trash = false WHERE TaskId = ?;";
-    pool.query (query, [taskId], (err, result)=>{
-      if (err){
+    pool.query(query, [taskId], (err, result) => {
+      if (err) {
         console.error("Error creating workspace:", err);
         return callback(err, null);
-      }     
+      }
       return callback(null, { success: true });
-    })
-
+    });
   }
-  static addFileToSupa = async(TaskData,taskId, callback) =>{
+  static addFileToSupa = async (TaskData, taskId, callback) => {
     if (TaskData.fileName.name) {
-      console.log (TaskData.fileName.name);
-        let str = taskId+"/"+generateRandomString()+"/"+TaskData.fileName.name;
-        console.log (str);
-        const{data, error} = await supabase.storage.from ('taskfile').upload(str, TaskData.fileName);
-        return callback (null, str)
-
+      console.log(TaskData.fileName.name);
+      let str =
+        taskId + "/" + generateRandomString() + "/" + TaskData.fileName.name;
+      console.log(str);
+      const { data, error } = await supabase.storage
+        .from("taskfile")
+        .upload(str, TaskData.fileName);
+      return callback(null, str);
     }
-  }
-  static createTask (TaskData, callback) {
-    const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
-    const query2 = "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
+  };
+  static createTask(TaskData, callback) {
+    const query =
+      "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
+    const query2 =
+      "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
     const priority = priorityMap[TaskData.priority];
     const dateEnd = formatDate(TaskData.dateEnd);
-    const status = statusMap[TaskData.StateCompletion];  
-    pool.query (query, [TaskData.taskname,TaskData.workspaceId, priority, TaskData.dateBegin, dateEnd, false, status, TaskData.description], (err, result)=>{
-      if (err) {
-        console.error("Error creating Task:", err);
-        return callback(err, null);
-      }
-      const taskId = result.insertId;
-      for (const member of TaskData.assignedTo) {
-        pool.query(query2, [member.id, taskId], (er, res)=>{
-          if (er) {
-            console.error("Error add member to task:", er);
-            return callback(er, null);
-          }       
+    const status = statusMap[TaskData.StateCompletion];
+    pool.query(
+      query,
+      [
+        TaskData.taskname,
+        TaskData.workspaceId,
+        priority,
+        TaskData.dateBegin,
+        dateEnd,
+        false,
+        status,
+        TaskData.description,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error("Error creating Task:", err);
+          return callback(err, null);
         }
-        );
+        const taskId = result.insertId;
+        for (const member of TaskData.assignedTo) {
+          pool.query(query2, [member.id, taskId], (er, res) => {
+            if (er) {
+              console.error("Error add member to task:", er);
+              return callback(er, null);
+            }
+          });
+        }
+        return callback(null, { id: taskId });
       }
-      return callback (null, {id: taskId});
-}
     );
   }
 
@@ -122,7 +159,7 @@ class WorkSpace {
         "INSERT INTO joinWorkSpace (isPending, isManager, role, dateJoin, userId, WorkSpace) VALUES (?, ?, ?,?, ?, ?)";
       pool.query(
         query,
-        [false, true, 'Leader',dateCreate, userId, result.id],
+        [false, true, "Leader", dateCreate, userId, result.id],
         (e, r) => {
           if (e) {
             console.error("Error linking workspace to manager:", e);
