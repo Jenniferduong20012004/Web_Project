@@ -2,58 +2,62 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../component/Navbar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import ProfileUpdateSuccessModal from "../component/profile/ProfileUpdateSuccessfulModal";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+
   const fetchUser = async () => {
-      try {
-        setLoading(true);
-        let userData = JSON.parse(localStorage.getItem("user"));
-        if (!userData) {
-          toast.error("User not found in localStorage", {
-            position: "top-right",
-          });
-          setLoading(false);
-          return;
-        }
-        const response = await fetch("http://localhost:5000/getProfile", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: userData.userId,
-          }),
-        });
-  
-        const data = await response.json();
-        if (data.success && data.userInformation) {
-          const userInfo = {
-            username: data.userInformation.name,
-            email: data.userInformation.email,
-            password: data.userInformation.password,
-          };
-          setUserData(userInfo);
-          setFormData({...userInfo});
-        } 
-        else {
-          toast.error(data.message || "Failed to fetch user", {
-            position: "top-right",
-          });
-        }
-      } catch (error) {
-        toast.error("Error: " + (error.message || "Unknown error"), {
+    try {
+      setLoading(true);
+      let userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not found in localStorage", {
           position: "top-right",
         });
-      } finally {
         setLoading(false);
+        return;
       }
-    };
+      const response = await fetch("http://localhost:5000/getProfile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userData.userId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.userInformation) {
+        const userInfo = {
+          username: data.userInformation.name,
+          email: data.userInformation.email,
+          password: data.userInformation.password,
+        };
+        setUserData(userInfo);
+        setFormData({ ...userInfo });
+      } else {
+        toast.error(data.message || "Failed to fetch user", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
   }, []);
+
   const submitHandler = async (data) => {
     setLoading(true);
     const loadingToast = toast.loading("Updating user name...", {
@@ -62,21 +66,18 @@ const Profile = () => {
       closeOnClick: false,
       autoClose: false,
     });
-  
+
     try {
       let userData = JSON.parse(localStorage.getItem("user"));
       const response = await axios.post("http://localhost:5000/updateProfile", {
         id: userData.userId,
         username: data.username,
       });
-      alert 
-  
-      if (response.data.success) {
-        toast.success("Update successful!", { 
-          position: "top-right",
-          autoClose: 2000
-        });
 
+      if (response.data.success) {
+        toast.dismiss(loadingToast);
+        // Show success modal instead of toast
+        setShowUpdateSuccess(true);
       } else {
         toast.error(response.data.message || "Update failed", {
           position: "top-right",
@@ -84,18 +85,15 @@ const Profile = () => {
       }
     } catch (error) {
       if (error.response) {
-        toast.error(
-          error.response.data.message || "Error when update!",
-          {
-            position: "top-right",
-          }
-        );
+        toast.error(error.response.data.message || "Error when update!", {
+          position: "top-right",
+        });
       } else if (error.request) {
         toast.error("Unable to connect to server. Please try again later.", {
           position: "top-right",
         });
       } else {
-        toast.error("Error during uodate: " + error.message, {
+        toast.error("Error during update: " + error.message, {
           position: "top-right",
         });
       }
@@ -115,9 +113,15 @@ const Profile = () => {
 
   const handleUpdate = () => {
     submitHandler(formData);
+  };
 
-    setUserData({ ...formData });
-    // Add notification or success message later
+  const handleCloseSuccessModal = () => {
+    setShowUpdateSuccess(false);
+  };
+
+  const handleRefreshProfile = () => {
+    // Re-fetch the user data to refresh the profile page
+    fetchUser();
   };
 
   // Get initials from username
@@ -211,7 +215,7 @@ const Profile = () => {
                 name="email"
                 value={formData.email}
                 // onChange={handleInputChange}
-                disabled="true"
+                disabled={true}
                 className="w-full !px-3 !py-2 border border-gray-300 bg-[3F4F7FA] text-gray-500 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -249,14 +253,25 @@ const Profile = () => {
             <div className="flex justify-end !mt-6">
               <button
                 onClick={handleUpdate}
-                className="!px-3 !py-2 bg-blue-400 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 cursor-pointer"
+                disabled={loading}
+                className={`!px-3 !py-2 ${
+                  loading ? "bg-gray-400" : "bg-blue-400 hover:bg-blue-700"
+                } text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 cursor-pointer`}
               >
-                UPDATE
+                {loading ? "UPDATING..." : "UPDATE"}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Profile Update Success Modal */}
+      {showUpdateSuccess && (
+        <ProfileUpdateSuccessModal
+          onClose={handleCloseSuccessModal}
+          onRefresh={handleRefreshProfile}
+        />
+      )}
     </div>
   );
 };
