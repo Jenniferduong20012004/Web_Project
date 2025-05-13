@@ -48,7 +48,7 @@ const ProfileUpdateSuccessModal = ({ onClose, onRefresh }) => {
 
           <button
             onClick={handleClose}
-            className="w-full bg-[#6299ec] hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium transition duration-200"
+            className="w-full bg-[#6299ec] hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium transition duration-200 cursor-pointer"
           >
             OK
           </button>
