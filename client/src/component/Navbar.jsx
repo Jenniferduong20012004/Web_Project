@@ -1,7 +1,6 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { MdNotifications } from "react-icons/md";
 import WorkspaceTabs from "./homepage/WorkspaceTabs";
 import UserAvatar from "./profile/UserAvatar";
 
@@ -10,6 +9,49 @@ import NotificationDropdown from "./noti/NotificationDropdown";
 const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const params = useParams(); // Get URL parameters
+  const workspaceId = params.workspacedId; // Get workspace ID from URL
+
+  const [highlightedTab, setHighlightedTab] = useState(activeTab);
+
+  // Check if user is manager of current workspace
+  useEffect(() => {
+    // Only run this effect if we're on a dashboard page with a workspace ID
+    if (location.pathname.includes("/dashboard/") && workspaceId) {
+      checkWorkspaceRole(workspaceId);
+    } else {
+      // If not on dashboard, use the activeTab prop
+      setHighlightedTab(activeTab);
+    }
+  }, [location.pathname, workspaceId, activeTab]);
+
+  // Function to check if current user is a manager of this workspace
+  const checkWorkspaceRole = async (workspaceId) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) return;
+
+      const response = await fetch("http://localhost:5000/checkWorkspaceRole", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userData.userId,
+          workspaceId: workspaceId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Set tab based on isManager value
+        setHighlightedTab(data.isManager ? "myWorkspace" : "assignedWorkspace");
+      }
+    } catch (error) {
+      console.error("Error checking workspace role:", error);
+    }
+  };
 
   const handleTabChange = (tabId) => {
     navigate("/homepage");
@@ -39,7 +81,10 @@ const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
 
       {/* Workspace Tabs */}
       <nav className="!ml-5 flex items-center gap-10 flex-grow">
-        <WorkspaceTabs activeTab={activeTab} onTabChange={handleTabChange} />
+        <WorkspaceTabs
+          activeTab={highlightedTab}
+          onTabChange={handleTabChange}
+        />
       </nav>
 
       {/* Search bar */}

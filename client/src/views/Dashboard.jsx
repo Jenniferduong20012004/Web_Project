@@ -15,8 +15,10 @@ const Dashboard = () => {
     completed: 0,
   });
   const [tasks, setTask] = useState([]);
+  const [workspaces, setWorkspaces] = useState([]);
   const { workspacedId } = useParams();
   // const [UpcomingTaskBoard, setUpcomingTaskBoard] = useState();
+
   const fetchDashboard = async () => {
     try {
       setIsLoading(true);

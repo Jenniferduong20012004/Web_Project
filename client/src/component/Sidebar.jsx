@@ -118,7 +118,7 @@ const Sidebar = ({ workspaceId }) => {
 
   return (
     <div className="w-48 min-h-screen bg-white flex flex-col border-r border-gray-200">
-      <div className="flex flex-col gap-6 !px-4 !py-6 items-center">
+      <div className="flex flex-col gap-4 !px-4 !py-6 items-center">
         {/* Header with back button and workspace name */}
         <div className="w-full">
           <Link

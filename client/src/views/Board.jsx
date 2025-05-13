@@ -3,75 +3,103 @@ import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
-import mockWorkspaceData from "../mock-data/mockTaskData";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-const  Board=()=> {
+
+const Board = () => {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [members, setMembers] = useState([]);
+  const [workspaceRole, setWorkspaceRole] = useState(null);
 
   const { workspacedId } = useParams();
-  const fetchBoard = async ( workspacedId) => {
+  
+  // New function to check workspace role
+  const checkWorkspaceRole = async (workspaceId) => {
     try {
-          setIsLoading(true);       
-          const response = await fetch("http://localhost:5000/getBoard", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              workspace: workspacedId,
-            }),
-          });
-          
-          
-          const data = await response.json();    
-          if (data.success) {
-            const tasks = data.task.tasks.map((taski) => ({
-              ...taski,
-              id: taski.id,
-              status: taski.status,
-              title:taski.title,
-              description: taski.description,
-              priority: taski.priority,
-              backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-              assignedTo: taski.assignedTo,
-              dueDate: taski.dueDate,
-            }));
-            const members = data.task.user.map((useri)=>({
-              ...useri,
-              id: useri.id,
-              name:useri.name,
-              email: useri.email,
-              bgColor: useri.bgColor,
-            })
-          );
-            setMembers ([...members]);
-            setTasks([...tasks]);
-            
-          } else {
-            toast.error(data.message || "Get into workspace fail", {
-              position: "top-right",
-            });
-          }
-        } catch (error) {
-          toast.error("Error: " + (error.message || "Unknown error"), {
-                  position: "top-right",
-            });
-        } finally {
-          setIsLoading(false);
-        }
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/checkWorkspaceRole", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userData.userId,
+          workspaceId: workspaceId
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setWorkspaceRole(data.isManager ? "myWorkspace" : "assignedWorkspace");
+      }
+    } catch (error) {
+      console.error("Error checking workspace role:", error);
+    }
   };
+  
+  const fetchBoard = async (workspacedId) => {
+    try {
+      setIsLoading(true);       
+      const response = await fetch("http://localhost:5000/getBoard", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workspace: workspacedId,
+        }),
+      });
+      
+      const data = await response.json();    
+      if (data.success) {
+        const tasks = data.task.tasks.map((taski) => ({
+          ...taski,
+          id: taski.id,
+          status: taski.status,
+          title: taski.title,
+          description: taski.description,
+          priority: taski.priority,
+          backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+          assignedTo: taski.assignedTo,
+          dueDate: taski.dueDate,
+        }));
+        
+        const members = data.task.user.map((useri) => ({
+          ...useri,
+          id: useri.id,
+          name: useri.name,
+          email: useri.email,
+          bgColor: useri.bgColor,
+        }));
+        
+        setMembers([...members]);
+        setTasks([...tasks]);
+        
+      } else {
+        toast.error(data.message || "Get into workspace fail", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   useEffect(() => {
-
-    fetchBoard( workspacedId);
-
-    // In a real app, you would fetch members and tasks from an API
-    // fetchMembers();
-    // fetchTasks();
+    fetchBoard(workspacedId);
+    checkWorkspaceRole(workspacedId);
   }, [workspacedId]);
 
   const filters = [
@@ -103,17 +131,17 @@ const  Board=()=> {
   return (
     <div className="w-full min-h-screen flex flex-col">
       <div className="fixed top-0 right-0 left-0 z-20">
-        <Navbar />
+        {/* Pass the active tab to Navbar based on workspace role */}
+        <Navbar activeTab={workspaceRole} />
       </div>
 
       <div className="fixed left-0 top-16 h-screen z-10">
-      <Sidebar workspaceId={workspacedId}/>
+        <Sidebar workspaceId={workspacedId} />
       </div>
 
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           {/* BOARD CONTENT */}
-
           <div className="!mb-6">
             {/* FILTER BAR */}
             <div className="flex items-center justify-between border-b border-gray-300 !pb-1">
@@ -157,7 +185,7 @@ const  Board=()=> {
           {/* TASK CONTAINER */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-10">
             {getFilteredTasks().map((task) => (
-              <Task key={task.id} task={task} workspaceId={workspacedId}/>
+              <Task key={task.id} task={task} workspaceId={workspacedId} />
             ))}
           </div>
         </div>
@@ -169,10 +197,10 @@ const  Board=()=> {
         onClose={closeTaskForm}
         onSave={handleAddTask}
         members={members}
-        workspaceId = {workspacedId}
+        workspaceId={workspacedId}
       />
     </div>
   );
-}
+};
 
 export default Board;
