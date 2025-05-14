@@ -9,6 +9,7 @@ const addTaskRoute = require("./addTaskRoute");
 const boardRoute = require("./boardRoute");
 const trashRoute = require("./trashTaskRoute");
 const memberRoute = require("./memberRoute");
+const taskDetailRoute = require ("./taskDetailRoute");
 
 // Authentication and user routes
 router.use("/", authRoutes);
@@ -23,7 +24,7 @@ router.use("/", dashBoardRoute);
 router.use("/", addTaskRoute);
 router.use("/", trashRoute);
 router.use("/", boardRoute);
-
+router.use ("/", taskDetailRoute);
 // Team/member management
 router.use("/", memberRoute);
 
