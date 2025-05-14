@@ -78,7 +78,7 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
           className={`!px-3 !py-1 text-xs rounded-full font-semibold ${
             priority === "High"
               ? "bg-[#FFDBD8] text-[#D04226]"
-              : priority === "Mid"
+              : priority === "Medium"
               ? "bg-[#FEF9C3] text-[#E37F0A]"
               : "bg-green-100 text-green-700"
           }`}
@@ -111,7 +111,7 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
             />
           </svg>
           <p className="text-xs text-[#E5252A] tracking-wide truncate">
-            Due in {daysLeft} days
+            {daysLeft !== 0 ? `Due in ${daysLeft} days` : 'Expired'}
           </p>
         </div>
         <div className="flex">

@@ -5,7 +5,8 @@ CREATE TABLE User (
     userId INT AUTO_INCREMENT PRIMARY KEY,
     name varchar (100) not null,
     email VARCHAR(100) UNIQUE NOT NULL,
-	password varchar (100) not null   
+	password varchar (100) not null,
+    photoPath varchar (100)
 );
 CREATE TABLE WorkSpace (
     WorkSpace INT AUTO_INCREMENT PRIMARY KEY,
