@@ -1,5 +1,6 @@
 
 const pool = require("../db/connect");
+const supabase = require("../db/superbaseClient");
 class User {
   constructor(userId, email, password, name) {
     this.userId= userId;
@@ -9,6 +10,34 @@ class User {
   }
   static createByGoogle (){
     
+  }
+  static addPicToSupa  = async (id, file, callback) => {
+    let filePath=
+        id  + "/" + file.name;
+        console.log(filePath)
+    const { data, error } = await supabase.storage
+    .from("images")
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true, 
+    });
+
+
+    if (error) {
+      console.error("Upload error:", error);
+      return callback({ success: false, error });
+    }
+    else{
+      const query = "UPDATE User SET photoPath = ? WHERE userId = ?;";
+      pool.query(query, [filePath, id], (err, result) => {
+      if (err) {
+        console.error("Error add file:", err);
+        return callback(err, null);
+      }
+      return callback(null, { success: true });
+    });
+    }
+
   }
   static create(userData, callback) {
     const { name, email, password } = userData;

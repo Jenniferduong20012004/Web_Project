@@ -1,4 +1,23 @@
 const User = require("../model/User");
+exports.updatePicture  = (req, res) =>{
+  try{
+    console.log ("here");
+        const id = req.body.userId;
+        const file = req.file;
+        User.addPicToSupa(id, file, (err, result)=>{
+            if (err) {
+            console.error("Error add file", err);
+            return res.status(500).json({ error: true, message: "Error add file" });
+        }
+        res.status(201).json({ success: true});
+
+        })
+
+    }
+    catch (e){
+        console.log(e);
+    }
+}
 
 exports.userProfileControl = (req, res) => {
   const {userId} = req.body;

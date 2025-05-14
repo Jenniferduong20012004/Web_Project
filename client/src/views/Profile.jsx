@@ -37,6 +37,7 @@ const Profile = () => {
       const data = await response.json();
       if (data.success && data.userInformation) {
         const userInfo = {
+          id: userData.userId,
           username: data.userInformation.name,
           email: data.userInformation.email,
           password: data.userInformation.password,
@@ -73,13 +74,11 @@ const Profile = () => {
     });
 
     try {
-      let userData = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.post("http://localhost:5000/updateProfile", {
-        id: userData.userId,
+        const response = await axios.post("http://localhost:5000/updateProfile", {
+        id: userData.id,
         username: data.username,
-        avatarUrl: avatarUrl,
+        // avatarUrl: avatarUrl,
       });
-
       if (response.data.success) {
         toast.dismiss(loadingToast);
         // Show success modal instead of toast
@@ -89,6 +88,10 @@ const Profile = () => {
           position: "top-right",
         });
       }
+    
+      
+      
+
     } catch (error) {
       if (error.response) {
         toast.error(error.response.data.message || "Error when update!", {
@@ -135,25 +138,33 @@ const Profile = () => {
       closeOnClick: false,
       autoClose: false,
     });
-
-    try {
-      // For demo purposes, we'll use a temporary file URL
-      const fileURL = URL.createObjectURL(file);
-      setAvatarUrl(fileURL);
-      
-      // You would implement actual upload logic here
-      toast.success("Avatar updated successfully", {
+    const data = new FormData();
+      data.append('userId',userData.id);
+      data.append('uploaded_file', file); 
+      try {
+        const response = await fetch("http://localhost:5000/addProfilePicture", {
+        method: 'POST',
+        body: data,
+      });
+        const result = await response.json();
+        console.log('Success:', result);  
+        toast.success("Avatar updated successfully", {
         position: "top-right",
       });
-    } catch (error) {
-      toast.error(`Error updating avatar: ${error.message}`, {
+      }
+      catch (err) {
+        console.error('Error uploading:', err);
+        toast.error(`Error updating avatar: ${error.message}`, {
         position: "top-right",
       });
-    } finally {
+      }
+     finally {
       toast.dismiss(avatarToast);
       setAvatarLoading(false);
     }
-  };
+  }
+
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
