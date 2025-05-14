@@ -19,6 +19,7 @@ const mapPriority = {
 };
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
+  date.setDate(date.getDate() + 1);
   return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
 };
 
@@ -341,7 +342,7 @@ class DashBoard {
             const endDate = new Date(row.dateEnd);
             const daysLeft = Math.ceil(
               (endDate - currentDate) / (1000 * 60 * 60 * 24)
-            )-1;
+            );
 
             // Count status
             const status = row.StateCompletion;
