@@ -115,7 +115,6 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
         priority: formData.priority,
         dateBegin: dateCreate,
         dateEnd: formData.dueDate,
-        fileName:formData.file,
         assignedTo: formData.assignedMembers.map((member) => ({
         id: member.id,
       })), 
@@ -123,7 +122,25 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
 
       const result = response.data;
 
-      if (result.success || result.id) {
+      if (result.success ) {
+            if (formData.file != null){
+            const data = new FormData();
+
+            data.append('taskId',result.taskId);
+            data.append('uploaded_file', formData.file); 
+            try {
+              const response = await fetch("http://localhost:5000/addFile", {
+                method: 'POST',
+                body: data,
+              });
+            const result = await response.json();
+            console.log('Success:', result);  
+        }
+            catch (err) {
+              console.error('Error uploading:', err);
+            }
+
+          }
         toast.success("Workspace created successfully!", {
           position: "top-right",
         });
@@ -202,7 +219,7 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
         </div>
 
         {/* FORM CONTENT */}
-        <form onSubmit={handleSubmit} className="!px-10 !py-6">
+        <form onSubmit={handleSubmit} className="!px-10 !py-6" enctype="multipart/form-data">
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
               <label className="block text-sm font-medium !mb-1">Title</label>

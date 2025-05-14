@@ -96,17 +96,23 @@ class WorkSpace {
       return callback(null, { success: true });
     });
   }
-  static addFileToSupa = async (TaskData, taskId, callback) => {
-    if (TaskData.fileName.name) {
-      console.log(TaskData.fileName.name);
+  static addFileToSupa = async (id, file, callback) => {
       let str =
-        taskId + "/" + generateRandomString() + "/" + TaskData.fileName.name;
-      console.log(str);
+        id + "/" + generateRandomString() + "/" + file.originalname;
       const { data, error } = await supabase.storage
         .from("taskfile")
-        .upload(str, TaskData.fileName);
-      return callback(null, str);
-    }
+        .upload(str, file.buffer, {
+      contentType: file.mimetype, // e.g., text/plain, image/jpeg
+    });
+    
+      const query = "UPDATE Task SET filePath = ? WHERE TaskId = ?;";
+      pool.query(query, [str, id], (err, result) => {
+      if (err) {
+        console.error("Error add file:", err);
+        return callback(err, null);
+      }
+      return callback(null, { success: true });
+    });
   };
   static createTask(TaskData, callback) {
     const query =
