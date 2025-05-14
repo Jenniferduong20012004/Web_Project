@@ -21,6 +21,7 @@ CREATE TABLE Task (
     dateBegin date not null,
     dateEnd date not null,
     trash bool not null,
+    filePath varchar (100),
     StateCompletion int not null,
     description  varchar (500) not null,
     FOREIGN KEY (WorkSpace) REFERENCES WorkSpace(WorkSpace) ON DELETE CASCADE
