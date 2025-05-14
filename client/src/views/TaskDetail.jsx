@@ -37,7 +37,6 @@ function TaskDetail() {
       });
       const data = await response.json();
       if (data.success) {
-        // alert ( data.task.status)
         const task = {
           id: data.task.id,
           title: data.task.title,
@@ -47,6 +46,7 @@ function TaskDetail() {
           dueDate : data.task.dueDate,
           assignedTo: data.task.assignedTo,
           assets: data.task.assets,
+          availableMembers: data.task.availableMembers,
           subtasks: [
       { id: 1, title: "Sketch the ERD", completed: false },
       { id: 2, title: "Draw class diagram", completed: false },
@@ -117,7 +117,7 @@ function TaskDetail() {
   return (
     <PageLayout>
       <div className="!mb-6">
-        <BackButton />
+        <BackButton workspaceId={workspaceId} />
       </div>
 
       <div className="bg-white rounded-lg shadow !p-8 !mb-6">
