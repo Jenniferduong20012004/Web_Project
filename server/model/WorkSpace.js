@@ -12,6 +12,7 @@ const statusMap = {
 };
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
+  date.setDate(date.getDate() + 1);
   return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
 };
 const generateRandomString = (length = 7) => {
@@ -121,6 +122,7 @@ class WorkSpace {
       "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
     const priority = priorityMap[TaskData.priority];
     const dateEnd = formatDate(TaskData.dateEnd);
+    console.log (dateEnd);
     const status = statusMap[TaskData.StateCompletion];
     pool.query(
       query,

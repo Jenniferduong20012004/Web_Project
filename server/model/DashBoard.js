@@ -341,7 +341,7 @@ class DashBoard {
             const endDate = new Date(row.dateEnd);
             const daysLeft = Math.ceil(
               (endDate - currentDate) / (1000 * 60 * 60 * 24)
-            );
+            )-1;
 
             // Count status
             const status = row.StateCompletion;

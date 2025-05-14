@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import PageLayout from "../component/board/task-detail/PageLayout";
 import TaskHeader from "../component/board/task-detail/TaskHeader";
@@ -50,6 +51,7 @@ function TaskDetail() {
           subtasks: data.task.subtasks,
         };
         setTask(task);
+        setOriginalTask(JSON.parse(JSON.stringify(task)));
         // alert (task.id);
       } else {
         toast.error(data.message || "Failed to fetch user", {
