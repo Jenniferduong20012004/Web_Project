@@ -12,9 +12,9 @@ function mapState(state) {
   }
 }
 const mapPriority = {
-  High: 1,
-  Medium: 2,
-  Low: 3,
+  1: "High",
+  2: "Medium",
+  3: "Low",
 };
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
@@ -109,7 +109,7 @@ class DashBoard {
             initials,
             bgColor,
           };
-
+          // console.log (mapPriority[row.priority]);
           if (!tasksMap.has(taskId)) {
             tasksMap.set(taskId, {
               id: taskId,
@@ -230,13 +230,13 @@ class DashBoard {
             if (task.daysLeft >= 0 && task.daysLeft < 7) {
               tasks.push(task);
             }
-            console.log(task.daysLeft);
+            // console.log(task.daysLeft);
             // Status counters
             if (task.status === 1) todo++;
             else if (task.status === 2) inProgress++;
             else if (task.status === 3) completed++;
           });
-          console.log(todo);
+          // console.log(todo);
 
           const summary = {
             totalTasks: results.length,

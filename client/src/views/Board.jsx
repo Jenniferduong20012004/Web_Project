@@ -72,6 +72,7 @@ const Board = () => {
           dueDate: taski.dueDate,
         }));
         
+        // alert (tasks[0].priority)
         const members = data.task.user.map((useri) => ({
           ...useri,
           id: useri.id,
