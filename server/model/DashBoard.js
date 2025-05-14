@@ -180,6 +180,7 @@ class DashBoard {
     LEFT JOIN User u ON jw.userId = u.userId
     WHERE t.TaskId = ?;
   `;
+  const queryGetSubtask = `Select * from SubTask where SubTakId = ?`;
 
   const queryAvaMem = `
     SELECT * FROM joinWorkSpace 
@@ -217,6 +218,19 @@ class DashBoard {
           resolve(mappedMembers);
         });
       });
+      const subtasks = await new Promise((resolve, reject) => {
+        pool.query(queryGetSubtask, [taskId], (err, results) => {
+          if (err) return reject(err);
+
+          const mappedSubtask = results.map(row => ({
+            id: row.SubTakId,
+            title: row.subtaskName,
+            completed: row.status,
+          }));
+
+          resolve(mappedSubtask);
+        });
+      });
 
       // Get task details
       pool.query(query, [taskId], async (err, rows) => {
@@ -234,8 +248,10 @@ class DashBoard {
           dueDate: formatDate(row0.dateEnd),
           assignedTo: [],
           assets: [],
+          subtasks: subtasks,
           availableMembers: members,
         };
+        
 
         // Handle file if present
         if (row0.filePath) {

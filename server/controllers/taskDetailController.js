@@ -17,6 +17,7 @@ exports.getTask = (req, res) => {
           message: "Task not found",
         });
       }
+      console.log (task);
 
       return res.status(200).json({
         success: true,
