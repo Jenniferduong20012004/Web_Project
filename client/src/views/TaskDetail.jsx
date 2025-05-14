@@ -14,6 +14,7 @@ function TaskDetail() {
   const [task, setTask] = useState(null);
   const [originalTask, setOriginalTask] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState({
     title: false,
     description: false,
@@ -21,12 +22,57 @@ function TaskDetail() {
     priority: false,
   });
   
-
+  const fetchTaskDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:5000/getTaskDetail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          taskId: taskId ,
+          workspaceId: workspaceId,
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        // alert ( data.task.status)
+        const task = {
+          id: data.task.id,
+          title: data.task.title,
+          description: data.task.description,
+          status: data.task.status,
+          priority: data.task.priority,
+          dueDate : data.task.dueDate,
+          assignedTo: data.task.assignedTo,
+          assets: data.task.assets,
+          subtasks: [
+      { id: 1, title: "Sketch the ERD", completed: false },
+      { id: 2, title: "Draw class diagram", completed: false },
+    ],
+        };
+        setTask(task);
+        // alert (task.id);
+      } else {
+        toast.error(data.message || "Failed to fetch user", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   // Fetch task data
   useEffect(() => {
-    const taskData = mockTaskDetailData.getTaskDetail(parseInt(taskId));
-    setTask(taskData);
-    setOriginalTask(JSON.parse(JSON.stringify(taskData)));
+    fetchTaskDetail();
+    // const taskData = mockTaskDetailData.getTaskDetail(parseInt(taskId));
+    // setTask(taskData);
+    // setOriginalTask(JSON.parse(JSON.stringify(taskData)));
   }, [taskId]);
 
   // Detect changes
