@@ -131,7 +131,6 @@ exports.login = (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, {
       expiresIn: "1h",
     });
-
     // Log in successfully, might need JWT token later nhe Qunu
     return res.status(200).json({
       success: true,
@@ -140,6 +139,8 @@ exports.login = (req, res) => {
         userId: user.userId, // Fix: Change from user.id to user.userId
         email: user.email,
         name: user.name,
+        photoPath: user.photoPath,
+        initials: user.initials
       },
       token,
     });

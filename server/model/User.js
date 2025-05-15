@@ -52,22 +52,37 @@ class User {
     });
   }
 
-  static findByEmail(email, callback) {
-    const query = "SELECT * FROM User WHERE email = ?";
-    
-    pool.query(query, [email], (err, results) => {
-      if (err) {
-        console.error("Error finding user by email:", err);
-        return callback(err, null);
-      }
-      if (results.length > 0) {
-        const userData = results[0];
-        const user = new User(userData.userId, userData.email, userData.password, userData.name); // Fix: use userData.userId
-        return callback(null, user);
-      }     
-      return callback(null, null);
-    });
+static findByEmail(email, callback) {
+  const query = "SELECT * FROM User WHERE email = ?";
+  
+  pool.query(query, [email], (err, results) => {
+    if (err) {
+      console.error("Error finding user by email:", err);
+      return callback(err, null);
+    }
+
+    if (results.length > 0) {
+      const r = results[0];
+
+      const user = {
+        ...r,
+        photoPath: r.photoPath
+          ? `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${r.photoPath}`
+          : null,
+        initials: r.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase(),
+      };
+
+      return callback(null, user);
+    }
+
+    return callback(null, null);
+  });
 }
+
 
   static findById(userId, callback) {
     const query = "SELECT * FROM User WHERE userId = ?";

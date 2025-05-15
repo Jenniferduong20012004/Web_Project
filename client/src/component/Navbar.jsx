@@ -11,7 +11,6 @@ const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
   const navigate = useNavigate();
   const params = useParams(); // Get URL parameters
   const workspaceId = params.workspacedId; // Get workspace ID from URL
-
   const [highlightedTab, setHighlightedTab] = useState(activeTab);
 
   // Check if user is manager of current workspace

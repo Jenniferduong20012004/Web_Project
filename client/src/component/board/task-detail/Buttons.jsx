@@ -3,7 +3,7 @@ import React from "react";
 export const BackButton = ({workspaceId }) => (
   <button
     className="flex items-center text-blue-900 hover:text-gray-500 font-medium cursor-pointer"
-    onClick={() => (window.location.href = `/board/${workspaceId}`)}
+    onClick={() =>  window.history.back()}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
