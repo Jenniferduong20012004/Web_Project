@@ -1,54 +1,248 @@
-import { useState , useEffect} from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import { FaUndoAlt, FaTrashAlt } from "react-icons/fa";
 
-const TrashPage = ({ trashTask }) => {
+const TrashBin = ({ trashTask }) => {
+  const { workspacedId } = useParams();
   const [tasks, setTasks] = useState([]);
-        useEffect(() => {
-      
-          fetchTasks(trashTask);
-  
-        }, [trashTask]);
-    const mapStage = (state) => {
-          switch (state) {
-            case 0:
-              return "TODOS";
-            case 1:
-              return "IN-PROGRESS";
-            case 2:
-              return "COMPLETED";
-            default:
-              return "TODOS";
-          }
-        };
-    const mapPriority = (priority) => {
-          switch (priority) {
-            case 3:
-              return "Low";
-            case 2:
-              return "Medium";
-            case 1:
-              return "High";
-            default:
-              return "Medium";
-          }
-        };
-    
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchTasks(trashTask);
+  }, [trashTask]);
+
+  const mapStage = (state) => {
+    switch (state) {
+      case 0:
+        return "TODOS";
+      case 1:
+        return "IN-PROGRESS";
+      case 2:
+        return "COMPLETED";
+      default:
+        return "TODOS";
+    }
+  };
+
+  const mapPriority = (priority) => {
+    switch (priority) {
+      case 3:
+        return "Low";
+      case 2:
+        return "Medium";
+      case 1:
+        return "High";
+      default:
+        return "Medium";
+    }
+  };
+
   const fetchTasks = async (trashTask) => {
     const transformedTasks = trashTask.map((row) => ({
-          id: row.TaskId,
-          title: row.taskname,
-          stage: mapStage(row.StateCompletion),
-          priority: mapPriority(row.priority),
-        }));
-        setTasks(transformedTasks);
-      }
-  
+      id: row.id,
+      title: row.taskname,
+      stage: mapStage(row.StateCompletion),
+      priority: mapPriority(row.priority),
+    }));
+    setTasks(transformedTasks);
+  };
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [restoredTask, setRestoredTask] = useState(null);
   const [restoreAllConfirm, setRestoreAllConfirm] = useState(false);
+
+  // API IMPLEMENTATION
+  // Function to restore a task from trash
+  const restoreTask = async (taskId) => {
+    try {
+      setIsLoading(true);
+      
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/restoreTrashTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          taskId: taskId,
+          workspaceId: workspacedId,
+          userId: userData.userId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Update the UI
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        toast.success("Task restored successfully", { position: "top-right" });
+      } else {
+        toast.error(data.message || "Failed to restore task", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // permanently delete a task
+  const permanentlyDeleteTask = async (taskId) => {
+    try {
+      setIsLoading(true);
+      
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/permanentlyDeleteTask",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: taskId,
+            workspaceId: workspacedId,
+            userId: userData.userId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        // update UI
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        toast.success("Task permanently deleted", { position: "top-right" });
+      } else {
+        toast.error(data.message || "Failed to delete task", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // restore all tasks
+  const restoreAllTasks = async () => {
+    try {
+      setIsLoading(true);
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      // create an array of promises to restore each task
+      const restorePromises = tasks.map((task) =>
+        fetch("http://localhost:5000/restoreTrashTask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: task.id,
+            workspaceId: workspacedId,
+            userId: userData.userId,
+          }),
+        }).then((res) => res.json())
+      );
+
+      // execute all promises
+      const results = await Promise.all(restorePromises);
+
+      // Check if all operations were successful
+      const allSuccessful = results.every((data) => data.success);
+
+      if (allSuccessful) {
+        setTasks([]);
+        toast.success("All tasks restored successfully", {
+          position: "top-right",
+        });
+      } else {
+        toast.warning("Some tasks could not be restored", {
+          position: "top-right",
+        });
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // permanently delete all tasks
+  const deleteAllTasks = async () => {
+    try {
+      setIsLoading(true);
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      // Create an array of promises to delete each task
+      const deletePromises = tasks.map((task) =>
+        fetch("http://localhost:5000/permanentlyDeleteTask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: task.id,
+            workspaceId: workspacedId,
+            userId: userData.userId,
+          }),
+        }).then((res) => res.json())
+      );
+
+      // Execute all promises
+      const results = await Promise.all(deletePromises);
+
+      const allSuccessful = results.every((data) => data.success);
+
+      if (allSuccessful) {
+        setTasks([]);
+        toast.success("All tasks permanently deleted", {
+          position: "top-right",
+        });
+      } else {
+        toast.warning("Some tasks could not be deleted", {
+          position: "top-right",
+        });
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const confirmRestoreTask = (id) => {
     const task = tasks.find((t) => t.id === id);
@@ -57,7 +251,8 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleRestoreConfirmed = () => {
-    setTasks(tasks.filter((task) => task.id !== restoredTask.id));
+    // Call the API to restore the task
+    restoreTask(restoredTask.id);
     setShowRestoreModal(false);
     setRestoredTask(null);
   };
@@ -73,7 +268,8 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleRestoreAllConfirmed = () => {
-    setTasks([]);
+    // Call the API to restore all tasks
+    restoreAllTasks();
     setRestoreAllConfirm(false);
   };
 
@@ -87,7 +283,7 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleDeleteConfirmed = () => {
-    setTasks(tasks.filter((task) => task.id !== taskToDelete));
+    permanentlyDeleteTask(taskToDelete);
     setShowConfirm(false);
     setTaskToDelete(null);
   };
@@ -103,7 +299,8 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleDeleteAllConfirmed = () => {
-    setTasks([]);
+    // Call the API to permanently delete all tasks - FIX HERE
+    deleteAllTasks();
     setDeleteAllConfirm(false);
   };
 
@@ -146,14 +343,16 @@ const TrashPage = ({ trashTask }) => {
           <button
             onClick={onCancel}
             className="!px-4 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            disabled={isLoading}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             className="!px-4 !py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            disabled={isLoading}
           >
-            Yes, delete
+            {isLoading ? "Processing..." : "Yes, delete"}
           </button>
         </div>
       </div>
@@ -191,14 +390,16 @@ const TrashPage = ({ trashTask }) => {
           <button
             onClick={onCancel}
             className="!px-4 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            disabled={isLoading}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             className="!px-4 !py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            disabled={isLoading}
           >
-            Yes, restore
+            {isLoading ? "Processing..." : "Yes, restore"}
           </button>
         </div>
       </div>
@@ -213,20 +414,22 @@ const TrashPage = ({ trashTask }) => {
           <button
             onClick={confirmRestoreAll}
             className={`hover:underline ${
-              tasks.length === 0
+              tasks.length === 0 || isLoading
                 ? "text-gray-300 cursor-not-allowed"
                 : "text-green-600"
             }`}
+            disabled={tasks.length === 0 || isLoading}
           >
             Restore all
           </button>
           <button
             onClick={confirmDeleteAll}
             className={`hover:underline ${
-              tasks.length === 0
+              tasks.length === 0 || isLoading
                 ? "text-gray-300 cursor-not-allowed"
                 : "text-red-600"
             }`}
+            disabled={tasks.length === 0 || isLoading}
           >
             Delete all
           </button>
@@ -237,7 +440,9 @@ const TrashPage = ({ trashTask }) => {
         <table className="min-w-full bg-white">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-sm">
-              <th className="!py-4 !px-8 text-left font-semibold">Task title</th>
+              <th className="!py-4 !px-8 text-left font-semibold">
+                Task title
+              </th>
               <th className="!py-4 !px-8 text-left font-semibold">Stage</th>
               <th className="!py-4 !px-8 text-left font-semibold">Priority</th>
               <th className="!py-4 !px-8 text-center font-semibold">Actions</th>
@@ -262,12 +467,14 @@ const TrashPage = ({ trashTask }) => {
                   <button
                     onClick={() => confirmRestoreTask(task.id)}
                     className="text-green-600 hover:scale-110 transition"
+                    disabled={isLoading}
                   >
                     <FaUndoAlt />
                   </button>
                   <button
                     onClick={() => confirmDeleteTask(task.id)}
                     className="text-red-600 hover:scale-110 transition"
+                    disabled={isLoading}
                   >
                     <FaTrashAlt />
                   </button>
@@ -320,4 +527,4 @@ const TrashPage = ({ trashTask }) => {
   );
 };
 
-export default TrashPage;
+export default TrashBin;

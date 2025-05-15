@@ -39,11 +39,11 @@ exports.updateWorkSpace = (req, res) => {
   }
 
   // Log the request data for debugging
-  console.log("Update workspace request data:", {
-    id,
-    workspacename,
-    description,
-  });
+  // console.log("Update workspace request data:", {
+  //   id,
+  //   workspacename,
+  //   description,
+  // });
 
   const workspaceData = { id, workspacename, description };
 
