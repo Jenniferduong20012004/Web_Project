@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 const UserMenu = (user) => {
   let userData = JSON.parse(localStorage.getItem("user"));
-  // alert (userData.initials)
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
