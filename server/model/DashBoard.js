@@ -55,6 +55,7 @@ class DashBoard {
         t.StateCompletion,
         t.description AS taskDescription,
         u.userId AS assignedUserId,
+        u.photoPath AS photo,
         u.name AS assignedUserName,
         u.email AS assignedUserEmail,
         jw.joinWorkSpace AS joinId,
@@ -69,7 +70,7 @@ class DashBoard {
     `;
 
     const memberQuery = `
-      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace
+      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace, u.photoPath
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
@@ -103,11 +104,15 @@ class DashBoard {
           ];
           const bgColor =
             bgColorOptions[row.assignedUserId % bgColorOptions.length];
-
+            let photoLink = null;
+            if (row.photo){
+              photoLink =  `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
+            }
           const user = {
             id: row.assignedUserId,
             name: row.assignedUserName,
             email: row.assignedUserEmail,
+            photoPath: photoLink,
             initials,
             bgColor,
           };
@@ -147,6 +152,7 @@ class DashBoard {
             id: row.joinWorkSpace,
             name: row.name,
             email: row.email,
+            photoPath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`,
             initials,
             bgColor,
           };
@@ -314,7 +320,7 @@ class DashBoard {
   `;
 
     const query2 = `
-    SELECT u.name 
+    SELECT u.name, u.photoPath
     FROM AssignTask a
     JOIN joinWorkSpace j ON a.joinWorkSpace = j.joinWorkSpace
     JOIN User u ON j.userId = u.userId
@@ -335,8 +341,18 @@ class DashBoard {
             if (err2) {
               return reject(err2);
             }
+        const assignedUsers = assignedUsersResult.map((u) => {
+          let photoLink = null;
+          if (u.photoPath) {
+            photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
+            console.log (photoLink)
+          }
+          return {
+            name: u.name,
+            photoPath: photoLink,
+          };
+        });
 
-            const assignedUsers = assignedUsersResult.map((u) => u.name);
             const endDate = new Date(row.dateEnd);
             const daysLeft = Math.ceil(
               (endDate - currentDate) / (1000 * 60 * 60 * 24)
