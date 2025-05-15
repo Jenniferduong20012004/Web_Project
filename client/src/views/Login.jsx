@@ -56,6 +56,8 @@ const Login = () => {
             userId: response.data.user.userId,
             name: response.data.user.name,
             email: response.data.user.email,
+            photoPath: response.data.user.photoPath,
+            initials: response.data.user.initials
           })
         );
         // alert(response.data.user.userId);
