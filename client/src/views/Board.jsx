@@ -78,6 +78,7 @@ const Board = () => {
           id: useri.id,
           name: useri.name,
           email: useri.email,
+          photoPath: useri.photoPath|| null,
           bgColor: useri.bgColor,
         }));
         
