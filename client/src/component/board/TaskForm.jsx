@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect, forwardRef } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
+import Calendar from "./task-detail/Calendar";
+
+const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
   const fileInputRef = useRef(null);
   const { workspacedId } = useParams();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -20,11 +20,9 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
     file: null,
   };
   const [formData, setFormData] = useState(initialFormState);
-  const [selectedDate, setSelectedDate] = useState(null);
 
   const resetForm = () => {
     setFormData({ ...initialFormState });
-    setSelectedDate(null);
     setIsDropdownOpen(false);
   };
 
@@ -47,18 +45,8 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
     });
   };
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-
-    // Format date as "MMM DD, YYYY" (e.g., "Apr 28, 2025")
-    const formattedDate = date
-      ? date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "";
-
+  // Updated to use the Calendar component
+  const handleDateChange = (formattedDate) => {
     setFormData({
       ...formData,
       dueDate: formattedDate,
@@ -179,29 +167,6 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
     };
   }, [isDropdownOpen]);
 
-  // Custom input component for DatePicker
-  const CustomDateInput = forwardRef(({ value, onClick }, ref) => (
-    <div
-      className="w-full border border-gray-400 rounded-md !p-2 text-sm focus:outline-none focus:border-1 focus:border-blue-500 cursor-pointer flex items-center"
-      onClick={onClick}
-      ref={ref}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 text-gray-500 mr-2"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-          clipRule="evenodd"
-        />
-      </svg>
-      {value || "Select date"}
-    </div>
-  ));
-
   if (!isOpen) return null;
 
   return (
@@ -219,7 +184,7 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
         </div>
 
         {/* FORM CONTENT */}
-        <form onSubmit={handleSubmit} className="!px-10 !py-6" enctype="multipart/form-data">
+        <form onSubmit={handleSubmit} className="!px-10 !py-6" encType="multipart/form-data">
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
               <label className="block text-sm font-medium !mb-1">Title</label>
@@ -366,13 +331,10 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId  }) => {
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
               <label className="block text-sm font-medium !mb-1">Due to</label>
-              <DatePicker
-                selected={selectedDate}
-                onChange={handleDateChange}
-                dateFormat="MMM dd, yyyy"
-                customInput={<CustomDateInput />}
-                popperClassName="z-50"
-                popperPlacement="bottom-start"
+              {/* Replaced DatePicker with our Calendar component */}
+              <Calendar 
+                selectedDate={formData.dueDate} 
+                onDateChange={handleDateChange} 
               />
             </div>
 
