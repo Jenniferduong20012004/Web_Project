@@ -108,7 +108,7 @@ const TaskItem = ({ task, workspaceId }) => {
       className="w-full h-full object-cover rounded-full"
     />
   ) : (
-     getInitials(user)
+     getInitials(user.name)
   )}
              
             </div>
