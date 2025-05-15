@@ -77,7 +77,18 @@ class User {
         console.error("Error finding user by ID:", err);
         return callback(err, null);
       }
-      return callback(null, results.length > 0 ? results[0] : null);
+        if (results.length === 0) {
+          return callback(null, null);
+        }
+        const user = results[0];
+
+    if (user.photoPath) {
+      user.photoPath = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${user.photoPath}`;
+    } else {
+      user.photoPath = null; // or set to a default image URL
+    }
+
+    return callback(null, user);
     });
   }
   static updateUserNameById (userId, userName, callback){

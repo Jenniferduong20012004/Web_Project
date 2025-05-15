@@ -1,5 +1,5 @@
 const pool = require("../db/connect");
-
+const supabase = require("../db/superbaseClient");
 class Member {
 
   static addMember(memberData, callback) {
@@ -148,7 +148,7 @@ class Member {
     const query = `
       SELECT j.joinWorkSpace, j.isPending, j.isManager, j.role, j.dateJoin, j.WorkSpace,
              w.workspacename, w.description, w.dateCreate,
-             admin.userId as adminId, admin_user.name as adminName, admin_user.email as adminEmail
+             admin.userId as adminId, admin_user.photoPath as photo, admin_user.name as adminName, admin_user.email as adminEmail
       FROM joinWorkSpace j
       JOIN WorkSpace w ON j.WorkSpace = w.WorkSpace
       JOIN joinWorkSpace admin ON admin.WorkSpace = w.WorkSpace AND admin.isManager = 1
@@ -178,7 +178,7 @@ class Member {
             userId: invitation.adminId,
             name: invitation.adminName,
             email: invitation.adminEmail,
-            avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+            avatar: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${invitation.photo}`,
           },
         },
       }));
