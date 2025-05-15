@@ -278,7 +278,16 @@ const ManageMembers = () => {
                           member.email
                         )}`}
                       >
-                        {getInitials(String(member.name))}
+                          {member.photoPath ? (
+                      <img
+                        src={member.photoPath}
+                        alt={member.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      getInitials(String(member.name))
+                    )}
+                        
                       </div>
 
                       <span className=" text-[#111827] font-medium">

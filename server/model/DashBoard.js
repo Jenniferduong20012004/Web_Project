@@ -180,7 +180,8 @@ class DashBoard {
       t.WorkSpace,
       u.userId AS assignedUserId,
       u.name AS assignedUserName,
-      u.email AS assignedUserEmail
+      u.email AS assignedUserEmail,
+      u.photoPath as photo
     FROM Task t
     LEFT JOIN AssignTask at ON t.TaskId = at.TaskId
     LEFT JOIN joinWorkSpace jw ON at.joinWorkSpace = jw.joinWorkSpace
@@ -209,18 +210,27 @@ class DashBoard {
         const members = await new Promise((resolve, reject) => {
           pool.query(queryAvaMem, [workspaceId], (err, results) => {
             if (err) return reject(err);
+              // console.log (link);
+const mappedMembers = results.map((row) => {
+  let link = null;
+  if (row.photoPath != null) {
+    link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`;
+  }
 
-            const mappedMembers = results.map((row) => ({
-              id: row.userId,
-              name: row.name,
-              email: row.email,
-              initials: row.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase(),
-              bgColor: bgColorOptions[row.userId % bgColorOptions.length],
-            }));
+  return {
+    id: row.userId,
+    name: row.name,
+    email: row.email,
+    photoPath: link,
+    initials: row.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase(),
+    bgColor: bgColorOptions[row.userId % bgColorOptions.length],
+  };
+});
+
 
             resolve(mappedMembers);
           });
@@ -244,7 +254,7 @@ class DashBoard {
           if (err) return reject(err);
 
           if (rows.length === 0) return resolve(null);
-
+          
           const row0 = rows[0];
           const task = {
             id: row0.TaskId,
@@ -291,10 +301,16 @@ class DashBoard {
               .join("")
               .toUpperCase();
 
+              let link = null;
+              if (row.photo != null){
+                link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`
+              }
+              console.log (link);
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
               email: row.assignedUserEmail,
+              photoPath: link,
               initials,
               bgColor:
                 bgColorOptions[row.assignedUserId % bgColorOptions.length],

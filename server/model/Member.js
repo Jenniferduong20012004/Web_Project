@@ -73,23 +73,35 @@ class Member {
     });
   }
 
-  static getMembers(WorkSpace, callback) {
-    const query = `
-      SELECT j.joinWorkSpace, j.isPending, j.isManager, j.role, j.userId, u.name as userName, u.email
-      FROM joinWorkSpace j
-      JOIN User u ON j.userId = u.userId
-      WHERE j.WorkSpace = ?
-    `;
+static getMembers(WorkSpace, callback) {
+  const query = `
+    SELECT j.joinWorkSpace, j.isPending, j.isManager, j.role, j.userId, u.name as userName, u.email, u.photoPath
+    FROM joinWorkSpace j
+    JOIN User u ON j.userId = u.userId
+    WHERE j.WorkSpace = ?
+  `;
 
-    pool.query(query, [WorkSpace], (err, results) => {
-      if (err) {
-        console.error("Error fetching members:", err);
-        return callback(err, null);
-      }
+  pool.query(query, [WorkSpace], (err, results) => {
+    if (err) {
+      console.error("Error fetching members:", err);
+      return callback(err, null);
+    }
 
-      return callback(null, results);
+    const formattedResults = results.map((row) => {
+      const photoLink = row.photoPath
+        ? `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`
+        : null;
+
+      return {
+        ...row,
+        photoPath: photoLink,
+      };
     });
-  }
+
+    return callback(null, formattedResults);
+  });
+}
+
 
   static deleteMember(joinWorkSpace, callback) {
     const query = "DELETE FROM joinWorkSpace WHERE joinWorkSpace = ?";

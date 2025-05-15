@@ -30,7 +30,8 @@ export const fetchMembers = async (workspace) => {
         email: row.email,
         role: row.role,
         joinWorkSpace: row.joinWorkSpace,
-        userId: row.userId
+        userId: row.userId,
+        photoPath: row.photoPath
       }));
       
       return { success: true, members };
