@@ -19,7 +19,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   const [loading, setLoading] = useState(false);
   const menuRef = useRef(null);
 
-  // Update state when workspace prop changes
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
@@ -27,7 +26,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     // console.log("Description value:", workspace.description);
   }, [workspace]);
 
-  // Close the dropdown menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -42,19 +40,16 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   }, []);
 
   const handleWorkspaceClick = () => {
-    // Format the workspace data for localStorage
     const workspaceData = {
       WorkSpace: workspace.WorkSpace || workspace.id,
       workspacename: workspace.workspaceName || workspace.title,
       description: workspace.description || "",
     };
 
-    // Save to localStorage
     localStorage.setItem("workspace", JSON.stringify(workspaceData));
 
     console.log("Workspace selected and saved to localStorage:", workspaceData);
 
-    // If there's an onClick handler provided, call it
     if (onClick) {
       onClick(workspace);
     } else {
@@ -79,10 +74,8 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     const result = response.data;
 
     if (result.success) {
-      // Close the form
       setIsEditFormOpen(false);
 
-      // Update localStorage if this is the current selected workspace
       const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
       if (
         currentWorkspace &&
@@ -96,8 +89,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         };
         localStorage.setItem("workspace", JSON.stringify(updatedWorkspaceData));
       }
-
-      // If there's an onUpdate callback, call it with the updated workspace
+      
       if (onUpdate) {
         const updatedWorkspace = {
           ...workspace,
@@ -116,10 +108,8 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   };
 
   const handleDeleteWorkspace = async () => {
-    // Close the menu
     setIsMenuOpen(false);
 
-    // Set the workspace to delete and show confirmation modal
     setWorkspaceToDelete(workspace);
     setShowConfirm(true);
   };
@@ -138,26 +128,23 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
       const result = response.data;
 
       if (result.success) {
-        // Check if the deleted workspace is the current one in localStorage
         const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
         if (
           currentWorkspace &&
           (currentWorkspace.WorkSpace === workspaceId ||
             currentWorkspace.WorkSpace === workspaceToDelete.id)
         ) {
-          // Remove from localStorage if it's the current workspace
           localStorage.removeItem("workspace");
         }
 
         toast.success("Workspace deleted successfully!", {
           position: "top-right",
         });
-
-        // Close the confirmation modal
+        
         setShowConfirm(false);
         setWorkspaceToDelete(null);
         
-        // Fetch workspaces again to update the list
+        
         if (onFetchWorkspaces) {
           onFetchWorkspaces();
         }
