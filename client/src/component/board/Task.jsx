@@ -55,7 +55,7 @@ const Task = ({ task, workspaceId }) => {
         <button 
           className="text-gray-400 hover:text-gray-600"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent triggering the parent div's onClick
+            e.stopPropagation(); 
           }}
         >
           <svg

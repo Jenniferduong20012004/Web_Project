@@ -162,7 +162,7 @@ class DashBoard {
     });
   }
   static getTaskDetail = async (taskId, workspaceId) => {
-  const query = `
+    const query = `
     SELECT 
       t.TaskId,
       t.taskname,
@@ -181,131 +181,129 @@ class DashBoard {
     LEFT JOIN User u ON jw.userId = u.userId
     WHERE t.TaskId = ?;
   `;
-  const queryGetSubtask = `Select * from SubTask where SubTakId = ?`;
+    const queryGetSubtask = `Select * from SubTask where SubTakId = ?`;
 
-  const queryAvaMem = `
+    const queryAvaMem = `
     SELECT * FROM joinWorkSpace 
     LEFT JOIN User ON joinWorkSpace.userId = User.userId 
     WHERE joinWorkSpace.WorkSpace = ?;
   `;
 
-  const bgColorOptions = [
-    "bg-blue-700",
-    "bg-orange-500",
-    "bg-purple-600",
-    "bg-green-600",
-    "bg-red-600",
-  ];
+    const bgColorOptions = [
+      "bg-blue-700",
+      "bg-orange-500",
+      "bg-purple-600",
+      "bg-green-600",
+      "bg-red-600",
+    ];
 
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Get available members
-      const members = await new Promise((resolve, reject) => {
-        pool.query(queryAvaMem, [workspaceId], (err, results) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Get available members
+        const members = await new Promise((resolve, reject) => {
+          pool.query(queryAvaMem, [workspaceId], (err, results) => {
+            if (err) return reject(err);
+
+            const mappedMembers = results.map((row) => ({
+              id: row.userId,
+              name: row.name,
+              email: row.email,
+              initials: row.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase(),
+              bgColor: bgColorOptions[row.userId % bgColorOptions.length],
+            }));
+
+            resolve(mappedMembers);
+          });
+        });
+        const subtasks = await new Promise((resolve, reject) => {
+          pool.query(queryGetSubtask, [taskId], (err, results) => {
+            if (err) return reject(err);
+
+            const mappedSubtask = results.map((row) => ({
+              id: row.SubTakId,
+              title: row.subtaskName,
+              completed: row.status,
+            }));
+
+            resolve(mappedSubtask);
+          });
+        });
+
+        // Get task details
+        pool.query(query, [taskId], async (err, rows) => {
           if (err) return reject(err);
 
-          const mappedMembers = results.map(row => ({
-            id: row.userId,
-            name: row.name,
-            email: row.email,
-            initials: row.name
-              .split(" ")
-              .map(n => n[0])
-              .join("")
-              .toUpperCase(),
-            bgColor: bgColorOptions[row.userId % bgColorOptions.length],
-          }));
+          if (rows.length === 0) return resolve(null);
 
-          resolve(mappedMembers);
-        });
-      });
-      const subtasks = await new Promise((resolve, reject) => {
-        pool.query(queryGetSubtask, [taskId], (err, results) => {
-          if (err) return reject(err);
+          const row0 = rows[0];
+          const task = {
+            id: row0.TaskId,
+            title: row0.taskname,
+            description: row0.description,
+            status: mapState(row0.StateCompletion),
+            priority: mapPriority[row0.priority],
+            dueDate: formatDate(row0.dateEnd),
+            assignedTo: [],
+            assets: [],
+            subtasks: subtasks,
+            availableMembers: members,
+          };
 
-          const mappedSubtask = results.map(row => ({
-            id: row.SubTakId,
-            title: row.subtaskName,
-            completed: row.status,
-          }));
+          // Handle file if present
+          if (row0.filePath) {
+            const fileName = row0.filePath;
+            const { data: fileInfo, error } = await supabase.storage
+              .from("taskfile")
+              .getPublicUrl(fileName);
 
-          resolve(mappedSubtask);
-        });
-      });
-
-      // Get task details
-      pool.query(query, [taskId], async (err, rows) => {
-        if (err) return reject(err);
-
-        if (rows.length === 0) return resolve(null);
-
-        const row0 = rows[0];
-        const task = {
-          id: row0.TaskId,
-          title: row0.taskname,
-          description: row0.description,
-          status: mapState(row0.StateCompletion),
-          priority: mapPriority[row0.priority],
-          dueDate: formatDate(row0.dateEnd),
-          assignedTo: [],
-          assets: [],
-          subtasks: subtasks,
-          availableMembers: members,
-        };
-        
-
-        // Handle file if present
-        if (row0.filePath) {
-          const fileName = row0.filePath;
-          const { data: fileInfo, error } = await supabase
-            .storage
-            .from("taskfile")
-            .getPublicUrl(fileName);
-
-          if (error) {
-            console.error("Supabase file fetch error:", error);
-          } else {
-            const fileExt = fileName.split(".").pop();
-            task.assets.push({
-              id: 1,
-              name: fileName,
-              type: fileExt,
-              url: fileInfo.publicUrl,
-            });
+            if (error) {
+              console.error("Supabase file fetch error:", error);
+            } else {
+              const fileExt = fileName.split(".").pop();
+              task.assets.push({
+                id: 1,
+                name: fileName,
+                type: fileExt,
+                url: fileInfo.publicUrl,
+              });
+            }
           }
-        }
 
-        // Populate assigned users
-        const seenUsers = new Set();
-        rows.forEach(row => {
-          if (!row.assignedUserId || seenUsers.has(row.assignedUserId)) return;
+          // Populate assigned users
+          const seenUsers = new Set();
+          rows.forEach((row) => {
+            if (!row.assignedUserId || seenUsers.has(row.assignedUserId))
+              return;
 
-          const initials = row.assignedUserName
-            .split(" ")
-            .map(n => n[0])
-            .join("")
-            .toUpperCase();
+            const initials = row.assignedUserName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase();
 
-          task.assignedTo.push({
-            id: row.assignedUserId,
-            name: row.assignedUserName,
-            email: row.assignedUserEmail,
-            initials,
-            bgColor: bgColorOptions[row.assignedUserId % bgColorOptions.length],
+            task.assignedTo.push({
+              id: row.assignedUserId,
+              name: row.assignedUserName,
+              email: row.assignedUserEmail,
+              initials,
+              bgColor:
+                bgColorOptions[row.assignedUserId % bgColorOptions.length],
+            });
+
+            seenUsers.add(row.assignedUserId);
           });
 
-          seenUsers.add(row.assignedUserId);
+          resolve(task);
         });
-
-        resolve(task);
-      });
-    } catch (err) {
-      reject(err);
-    }
-  });
-};
-
-
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 
   static getAllTask(workspaceId, callback) {
     const query = `
@@ -350,8 +348,9 @@ class DashBoard {
 
             resolve({
               task: {
+                id: row.TaskId,
                 title: row.taskname,
-                project: row.workspacename,
+                description: row.description,
                 daysLeft,
                 priority:
                   row.priority === 1

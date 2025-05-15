@@ -79,7 +79,7 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
 
   const handleAdd = async () => {
     if (!email.trim()) return;
-    
+
     setIsLoading(true);
     const success = await onAdd(email, role);
     if (!success) {
@@ -226,12 +226,12 @@ export const UserNotFoundModal = ({ email, onClose }) => {
             >
               <circle cx="12" cy="12" r="10" fill="#EBF5FF" />
               <path
-                d="M12 6v8"
+                d="M12 7v6"
                 stroke="#3B82F6"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
-              <circle cx="12" cy="16" r="1.5" fill="#3B82F6" />
+              <circle cx="12" cy="18" r="1.5" fill="#3B82F6" />
             </svg>
           </div>
           <h3 className="text-xl font-bold text-gray-800 !mb-2">

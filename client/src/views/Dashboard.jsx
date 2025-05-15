@@ -4,7 +4,7 @@ import Navbar from "../component/Navbar";
 import OverviewSection from "../component/dashboard/OverviewSection";
 import UpcomingTaskBoard from "../component/dashboard/UpcomingTasksBoard";
 import { useParams } from "react-router-dom";
-import { toast } from "react-toastify"; // Added missing import
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const [loading, setIsLoading] = useState(true);
@@ -22,15 +22,15 @@ const Dashboard = () => {
   const fetchDashboard = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:5000/getDashBoard", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          workspace: workspacedId,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/getDashBoard/${workspacedId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -55,10 +55,10 @@ const Dashboard = () => {
     }
   };
 
-  // Call fetchWorkspaces when component mounts
   useEffect(() => {
     fetchDashboard();
   }, []);
+
   return (
     <div className="w-full min-h-screen flex flex-col">
       <div className="fixed top-0 right-0 left-0 z-20">

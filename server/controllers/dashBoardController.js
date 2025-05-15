@@ -1,12 +1,15 @@
 const DashBoard = require("../model/DashBoard");
+
 exports.getWorkSpaceDashboard = (req, res) => {
-  const { workspace } = req.body;
-  if (!workspace) {
+  const workspaceId = req.params.workspaceId;
+  
+  if (!workspaceId) {
     return res
       .status(400)
       .json({ success: false, message: "Cannot get workspaceId" });
   }
-  DashBoard.getAllTask(workspace, (err, result) => {
+  
+  DashBoard.getAllTask(workspaceId, (err, result) => {
     if (err) {
       return res.status(500).json({
         error: true,

@@ -25,6 +25,7 @@ router.use("/", addTaskRoute);
 router.use("/", trashRoute);
 router.use("/", boardRoute);
 router.use ("/", taskDetailRoute);
+
 // Team/member management
 router.use("/", memberRoute);
 

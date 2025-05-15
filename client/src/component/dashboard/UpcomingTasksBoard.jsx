@@ -1,12 +1,6 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-// User data with colors
-const usersData = {
-  User1: { initials: "U1", bgColor: "bg-blue-500" },
-  User2: { initials: "U2", bgColor: "bg-green-500" },
-  User3: { initials: "U3", bgColor: "bg-purple-500" },
-  User4: { initials: "U4", bgColor: "bg-pink-500" },
-};
 const bgColorPool = [
   "bg-blue-500",
   "bg-green-500",
@@ -28,67 +22,45 @@ const getUserColor = (user) => {
   }
   return userColors.get(user);
 };
+
 const getInitials = (name) =>
   name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase();
-// Mock data for tasks
-const tasks = [
-  {
-    title: "Creating Website Landing Page",
-    project: "TaskClick - Task Management Project",
-    daysLeft: 7,
-    priority: "High",
-    assignedUsers: ["User1", "User2"],
-  },
-  {
-    title: "Creating Website Design",
-    project: "TaskUP - Task Management Project",
-    daysLeft: 7,
-    priority: "Mid",
-    assignedUsers: ["User1", "User3", "User4"],
-  },
-  {
-    title: "Creating Website Design",
-    project: "TaskUP - Task Management Project",
-    daysLeft: 7,
-    priority: "High",
-    assignedUsers: ["User2", "User4"],
-  },
-  {
-    title: "Creating Website Design",
-    project: "TaskUP - Task Management Project",
-    daysLeft: 7,
-    priority: "Low",
-    assignedUsers: ["User3", "User4"],
-  },
-];
 
-const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
-      
+const TaskItem = ({ task, workspaceId }) => {
+  const navigate = useNavigate();
+
+  const handleTaskClick = () => {
+    navigate(`/board/${workspaceId}/task/${task.id}`);
+  };
+
   return (
-    <div className="bg-white rounded-lg !p-5 shadow-lg hover:shadow-xl transition-all duration-200">
+    <div
+      className="bg-white rounded-lg !p-5 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+      onClick={handleTaskClick}
+    >
       <div className="flex justify-between items-center !mb-2">
         <p className="text-3sm font-semibold text-blue-900 tracking-wide truncate">
-          {title}
+          {task.title}
         </p>
         <span
-          className={`!px-3 !py-1 text-xs rounded-full font-semibold ${
-            priority === "High"
+          className={`!px-3 !py-1 text-xs rounded-full font-medium ${
+            task.priority === "High"
               ? "bg-[#FFDBD8] text-[#D04226]"
-              : priority === "Medium"
+              : task.priority === "Medium"
               ? "bg-[#FEF9C3] text-[#E37F0A]"
               : "bg-green-100 text-green-700"
           }`}
         >
-          {priority}
+          {task.priority}
         </span>
       </div>
-      <p className="text-sm text-gray-400 !mb-2 truncate">{project}</p>
+      <p className="text-sm text-gray-600 !mb-2 truncate">{task.description}</p>
 
-      <div className="flex justify-between items-center !mt-2">
+      <div className="flex justify-between items-center !mt-4">
         <div className="flex items-center">
           <svg
             className="w-5 h-4 text-[#E5252A] !mr-1"
@@ -111,14 +83,20 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
             />
           </svg>
           <p className="text-xs text-[#E5252A] tracking-wide truncate">
-            {daysLeft !== 0 ? `Due in ${daysLeft} days` : 'Expired'}
+            {task.daysLeft > 0
+              ? `Due in ${task.daysLeft} days`
+              : task.daysLeft === 0
+              ? "Due Today"
+              : "Expired"}
           </p>
         </div>
         <div className="flex">
-          {assignedUsers.map((user, index) => (
+          {task.assignedUsers.map((user, index) => (
             <div
               key={index}
-              className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getUserColor(user)}`}
+              className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getUserColor(
+                user
+              )}`}
               style={{
                 marginLeft: index > 0 ? "-5px" : "0",
               }}
@@ -132,21 +110,16 @@ const TaskItem = ({ title, project, daysLeft, priority, assignedUsers }) => {
   );
 };
 
-const UpcomingTaskBoard = ({tasks}) => {
+const UpcomingTaskBoard = ({ tasks }) => {
+  const { workspacedId } = useParams();
 
   return (
     <div className="!pt-3">
-      <h2 className="text-xl font-bold text-[#455294] ">Upcoming Tasks</h2> <br />
+      <h2 className="text-xl font-bold text-[#455294] ">Upcoming Tasks</h2>{" "}
+      <br />
       <div className="flex flex-col gap-2">
         {tasks.map((task, index) => (
-          <TaskItem
-            key={index}
-            title={task.title}
-            project={task.project}
-            daysLeft={task.daysLeft}
-            priority={task.priority}
-            assignedUsers={task.assignedUsers}
-          />
+          <TaskItem key={index} task={task} workspaceId={workspacedId} />
         ))}
       </div>
     </div>
