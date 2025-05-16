@@ -76,7 +76,7 @@ const Homepage = () => {
               description: workspace.description || "",
               backgroundGradient:
                 "bg-gradient-to-br from-blue-300 to-purple-400",
-              members: [],
+              members:  workspace.members,
               isOwner: false,
               isPending: isPendingStatus,
             };

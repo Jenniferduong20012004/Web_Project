@@ -29,6 +29,8 @@ exports.signInHomePage = (req, res) => {
           message: "Error when finding assigned workspaces!",
         });
       }
+      console.log (assignedWorkspaces);
+      console.log (managedWorkspaces);
       
       // Log data before sending to client for debugging purposes
       // console.log("Managed workspaces:", managedWorkspaces);
