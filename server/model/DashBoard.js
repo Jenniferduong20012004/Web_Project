@@ -272,22 +272,17 @@ const mappedMembers = results.map((row) => {
           // Handle file if present
           if (row0.filePath) {
             const fileName = row0.filePath;
-            const { data: fileInfo, error } = await supabase.storage
-              .from("taskfile")
-              .getPublicUrl(fileName);
 
-            if (error) {
-              console.error("Supabase file fetch error:", error);
-            } else {
-              const fileExt = fileName.split(".").pop();
+
+              const fileExt = fileName.split(".").pop().toLowerCase();
               task.assets.push({
                 id: 1,
                 name: fileName,
                 type: fileExt,
-                url: fileInfo.publicUrl,
+                filePath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/taskfile/${fileName}`,
               });
-            }
           }
+          
 
           // Populate assigned users
           const seenUsers = new Set();
@@ -305,7 +300,6 @@ const mappedMembers = results.map((row) => {
               if (row.photo != null){
                 link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`
               }
-              console.log (link);
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
@@ -361,7 +355,6 @@ const mappedMembers = results.map((row) => {
           let photoLink = null;
           if (u.photoPath) {
             photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
-            console.log (photoLink)
           }
           return {
             name: u.name,
