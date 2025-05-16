@@ -11,60 +11,70 @@ export const DeleteConfirmModal = ({ member, onConfirm, onCancel }) => {
   };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-50">
-      <div className="bg-white rounded-xl shadow-xl !p-8 max-w-md w-full animate-fade-in-scale">
-        <div className="flex flex-col items-center">
-          <div className="text-red-500 !mb-4">
-            <svg
-              className="w-16 h-16 animate-bounce"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path fill="#FACC15" d="M12 2L1 21h22L12 2z" />
-              <path
-                d="M12 8v4"
-                stroke="#000"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <circle cx="12" cy="16" r="1.25" fill="#000" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-bold text-red-500 !mb-2">DELETE</h3>
-          <p className="text-center text-sm text-gray-700 !mb-2">
-            Are you sure to delete member <br />
-            <span className="text-[#f44336] font-semibold">
-              {member?.name} ({member?.email})
-            </span>{" "}
-            ?
-          </p>
-          <p className="text-sm text-gray-400 !mb-6">
-            This action cannot be undone.
-          </p>
-          <div className="flex gap-4 w-full">
-            <button
-              className="w-1/2 py-2 border text-gray-700 font-medium rounded-md hover:bg-gray-100"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              className="w-1/2 !py-2 bg-[#6e6cf4] text-white font-medium rounded-md hover:bg-[#4b3bbd]"
-              onClick={handleConfirm}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <span className="animate-spin h-4 w-4 !mr-2 border-t-2 border-white rounded-full"></span>
-                  Deleting...
-                </span>
-              ) : (
-                "Yes, delete"
-              )}
-            </button>
-          </div>
+    <div className="fixed inset-0 !z-50 flex items-center justify-center">
+      {/* Darker backdrop */}
+      <div className="absolute inset-0 bg-black/70" onClick={onCancel}></div>
+
+      {/* Modal content */}
+      <div className="relative bg-white rounded-lg shadow-md !p-6 w-[450px] text-center max-w-[95%] mx-auto !z-10">
+        {/* Warning icon - red triangle with exclamation */}
+        <div className="flex justify-center items-center !mb-4">
+          <svg
+            className="!w-12 !h-12 text-red-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 2L1 21h22L12 2z" />
+            <path
+              d="M12 16v.01M12 8v5"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* Delete header - all caps, red text */}
+        <h2 className="text-xl font-bold text-red-500 !mb-4">DELETE</h2>
+
+        {/* Message - darker text, centered */}
+        <p className="text-gray-700 !mb-2">
+          Are you sure to delete member <br />
+          <span className="text-red-500 font-semibold">
+            {member?.name} ({member?.email})
+          </span>
+          ?
+        </p>
+
+        {/* Subtext - smaller, lighter gray */}
+        <p className="text-gray-500 text-sm !mb-6">
+          This action cannot be undone.
+        </p>
+
+        {/* Buttons - side by side with matching style to image */}
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onCancel}
+            className="!px-5 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors font-medium cursor-pointer"
+            disabled={isLoading}
+          >
+            CANCEL
+          </button>
+          <button
+            onClick={handleConfirm}
+            className="!px-6 !py-2 bg-blue-400 text-white rounded hover:bg-blue-800 transition-colors font-medium cursor-pointer"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <span className="animate-spin h-4 w-4 !mr-2 border-t-2 border-white rounded-full"></span>
+                Deleting...
+              </span>
+            ) : (
+              "DELETE"
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -88,10 +98,10 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 !z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70" onClick={onCancel}></div>
 
-      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-8 z-10">
+      <div className="relative bg-white rounded-lg shadow-md w-full max-w-md !p-6 !z-10">
         <h3 className="text-2xl font-bold text-gray-800 !mb-6">
           Add new member
         </h3>
@@ -101,7 +111,7 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
           </label>
           <input
             type="email"
-            className="w-full border rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full border rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -111,7 +121,7 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
           <label className="block text-sm text-gray-600 !mb-1">Role</label>
           <input
             type="text"
-            className="w-full border rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full border rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             placeholder="Member role"
             value={role}
             onChange={(e) => setRole(e.target.value)}
@@ -119,14 +129,14 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
         </div>
         <div className="flex justify-end gap-4">
           <button
-            className="text-[#6b7280] hover:underline text-sm font-semibold uppercase"
+            className="!px-5 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors font-medium cursor-pointer"
             onClick={onCancel}
             disabled={isLoading}
           >
-            Cancel
+            CANCEL
           </button>
           <button
-            className="bg-[#6e6cf4] hover:bg-[#4b3bbd] text-white text-sm font-medium !px-6 !py-2 rounded-md"
+            className="!px-6 !py-2 bg-blue-400 text-white rounded hover:bg-blue-800 transition-colors font-medium cursor-pointer"
             onClick={handleAdd}
             disabled={isLoading}
           >
@@ -136,7 +146,7 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
                 Adding...
               </span>
             ) : (
-              "Add"
+              "ADD"
             )}
           </button>
         </div>
@@ -146,7 +156,13 @@ export const AddMemberModal = ({ onAdd, onCancel }) => {
 };
 
 // Update Role Modal
-export const UpdateRoleModal = ({ member, role, onRoleChange, onUpdate, onCancel }) => {
+export const UpdateRoleModal = ({
+  member,
+  role,
+  onRoleChange,
+  onUpdate,
+  onCancel,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleUpdate = async () => {
@@ -156,26 +172,26 @@ export const UpdateRoleModal = ({ member, role, onRoleChange, onUpdate, onCancel
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 !z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70" onClick={onCancel}></div>
 
-      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-8 z-10">
+      <div className="relative bg-white rounded-lg shadow-md w-full max-w-md !p-6 !z-10">
         <h3 className="text-2xl font-bold text-gray-800 !mb-6">
           Update Member Role
         </h3>
         <div className="!mb-2">
-          <p className="text-sm text-gray-600">
+          <p className="text-gray-600">
             <span className="font-semibold">Member:</span> {member?.name}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-gray-600">
             <span className="font-semibold">Email:</span> {member?.email}
           </p>
         </div>
         <div className="!mb-6">
-          <label className="block text-sm text-gray-600 !mb-1">Role</label>
+          <label className="block ext-gray-600 !mb-1">Role</label>
           <input
             type="text"
-            className="w-full border rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full border rounded-md !px-3 !py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             placeholder="Member role"
             value={role}
             onChange={(e) => onRoleChange(e.target.value)}
@@ -183,14 +199,14 @@ export const UpdateRoleModal = ({ member, role, onRoleChange, onUpdate, onCancel
         </div>
         <div className="flex justify-end gap-4">
           <button
-            className="text-[#6b7280] hover:underline text-sm font-semibold uppercase"
+            className="!px-5 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors font-medium cursor-pointer"
             onClick={onCancel}
             disabled={isLoading}
           >
-            Cancel
+            CANCEL
           </button>
           <button
-            className="bg-[#6e6cf4] hover:bg-[#4b3bbd] text-white text-sm font-medium !px-6 !py-2 rounded-md"
+            className="!px-6 !py-2 bg-blue-400 text-white rounded hover:bg-blue-800 transition-colors font-medium cursor-pointer"
             onClick={handleUpdate}
             disabled={isLoading}
           >
@@ -200,7 +216,7 @@ export const UpdateRoleModal = ({ member, role, onRoleChange, onUpdate, onCancel
                 Updating...
               </span>
             ) : (
-              "Update Role"
+              "UPDATE"
             )}
           </button>
         </div>
@@ -212,14 +228,14 @@ export const UpdateRoleModal = ({ member, role, onRoleChange, onUpdate, onCancel
 // User Not Found Modal
 export const UserNotFoundModal = ({ email, onClose }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 !z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
 
-      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-8 z-10">
+      <div className="relative bg-white rounded-lg shadow-md w-full max-w-md !p-6 !z-10">
         <div className="flex flex-col items-center">
           <div className="text-blue-500 !mb-4">
             <svg
-              className="w-16 h-16"
+              className="!w-12 !h-12"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
@@ -239,15 +255,15 @@ export const UserNotFoundModal = ({ email, onClose }) => {
           </h3>
           <p className="text-center text-sm text-gray-600 !mb-6">
             The user with email{" "}
-            <span className="text-blue-600 font-semibold">{email}</span>{" "}
-            does not exist in the system.
+            <span className="text-blue-600 font-semibold">{email}</span> does
+            not exist in the system.
           </p>
-          <div className="w-full space-y-3">
+          <div className="w-full">
             <button
-              className="w-full !py-2 border text-gray-700 font-medium rounded-md hover:bg-gray-100"
+              className="w-full !py-2 bg-blue-400 text-white font-medium rounded hover:bg-blue-800 transition-colors cursor-pointer"
               onClick={onClose}
             >
-              Close
+              CLOSE
             </button>
           </div>
         </div>

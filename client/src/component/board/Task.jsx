@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Task = ({ task, workspaceId, onTrashTask }) => {
   const navigate = useNavigate();
@@ -61,9 +61,6 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
 
     if (onTrashTask) {
       onTrashTask(task.id);
-      toast.success(`Task "${task.title}" moved to trash`, {
-        position: "top-right",
-      });
     }
   };
 
@@ -75,6 +72,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
       {/* Task Status & Menu */}
       <div className="flex justify-between items-center !mb-2">
         <div className="flex items-center">
+          
           <span
             className={`h-2 w-2 rounded-full ${getStatusColor(
               task.status

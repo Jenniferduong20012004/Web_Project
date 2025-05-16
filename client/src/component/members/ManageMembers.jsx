@@ -83,18 +83,14 @@ const ManageMembers = () => {
     }
   };
 
-  // Load members data
   const loadMembers = async (workspace) => {
     setIsLoading(true);
     try {
       const data = await fetchMembers(workspace);
       if (data.success) {
-        // Process member data to ensure names don't have trailing numbers
         const processedMembers = data.members.map((member) => ({
           ...member,
-          // Remove any trailing digits from names
           name: String(member.userName || member.name).replace(/\d+$/, "").trim(),
-          // Giữ nguyên giá trị 0/1 từ server
         }));
         setMembers(processedMembers);
       }
@@ -340,7 +336,7 @@ const ManageMembers = () => {
                     <td className="!py-4 !px-8 text-center">
                       {member.isManager !== 1 && (
                         <button
-                          className="text-red-600 hover:scale-110 transition"
+                          className="text-red-600 hover:scale-110 transition cursor-pointer"
                           onClick={() => handleDeleteClick(member)}
                           title="Delete Member"
                         >

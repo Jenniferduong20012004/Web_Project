@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
 
 const Board = () => {
-  const { workspaceId } = useParams();
-  const [workspaceName, setWorkspaceName] = useState("");
-
+  // const { workspaceId } = useParams();
+  // const [workspaceName, setWorkspaceName] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
@@ -18,7 +17,7 @@ const Board = () => {
   const [workspaceRole, setWorkspaceRole] = useState(null);
 
   const { workspacedId } = useParams();
-  
+
   // Function to check workspace role
   const checkWorkspaceRole = async (workspaceId) => {
     try {
@@ -34,7 +33,7 @@ const Board = () => {
         },
         body: JSON.stringify({
           userId: userData.userId,
-          workspaceId: workspaceId
+          workspaceId: workspaceId,
         }),
       });
 
@@ -65,7 +64,7 @@ const Board = () => {
         body: JSON.stringify({
           taskId: taskId,
           workspaceId: workspacedId,
-          userId: userData.userId
+          userId: userData.userId,
         }),
       });
 
@@ -172,6 +171,11 @@ const Board = () => {
 
   return (
     <div className="w-full min-h-screen flex flex-col">
+      <ToastContainer
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        draggable={false}
+      />
       <div className="fixed top-0 right-0 left-0 z-20">
         {/* Pass the active tab to Navbar based on workspace role */}
         <Navbar activeTab={workspaceRole} />
@@ -227,9 +231,9 @@ const Board = () => {
           {/* TASK CONTAINER */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-8">
             {getFilteredTasks().map((task) => (
-              <Task 
-                key={task.id} 
-                task={task} 
+              <Task
+                key={task.id}
+                task={task}
                 workspaceId={workspacedId}
                 onTrashTask={handleTrashTask} // Pass the trash function to Task component
               />
