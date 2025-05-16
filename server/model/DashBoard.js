@@ -50,8 +50,7 @@ function compareSubtasks(originalTask, updatedTask) {
       removed.push(originalMap.get(id));
     }
   }
-  console.log (added)
-  console.log (removed)
+  console.log (updated)
   if (added.length > 0) {  
     const queryInsert = 'INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)';
     added.forEach(sub=>{
@@ -63,10 +62,23 @@ function compareSubtasks(originalTask, updatedTask) {
     })
   }
     if (removed.length > 0) {  
-      console.log ("as")
     const queryDelete = 'DELETE FROM SubTask WHERE SubTakId = ?';
     removed.forEach(sub=>{
         pool.query (queryDelete,[sub.id], (err, res)=>{
+          if (err) {
+        console.error( err);
+      }
+        })
+    })
+  }
+  if (updated.length>0){
+const updateQuery = `UPDATE SubTask
+SET 
+    subtaskName = ?,
+     status = ?
+WHERE SubTakId  = ?;`
+updated.forEach(sub=>{
+        pool.query (updateQuery ,[sub.to.title, sub.to.completed, sub.to.id], (err, res)=>{
           if (err) {
         console.error( err);
       }
