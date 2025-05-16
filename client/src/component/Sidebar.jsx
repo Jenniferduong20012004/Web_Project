@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Sidebar = ({ workspaceId }) => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("Dashboard");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("Dashboard");;
   const [workspaceName, setWorkspaceName] = useState("");
 
   useEffect(() => {
@@ -16,14 +17,18 @@ const Sidebar = ({ workspaceId }) => {
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes(`/dashboard/${workspaceId}`)) {
+    if (path.includes(`/dashboard/${workspaceId}`) && !path.includes("/task/")) {
       setActiveTab("Dashboard");
-    } else if (path.includes(`/board/${workspaceId}`)) {
+    } else if (path.includes(`/board/${workspaceId}`) && !path.includes("/task/")) {
       setActiveTab("Board");
     } else if (path.includes(`/trash/${workspaceId}`)) {
       setActiveTab("Trash");
     } else if (path.includes(`/members/${workspaceId}`)) {
       setActiveTab("Members");
+    }
+    else if (path.includes(`/task/`)){
+      const last = localStorage.getItem("lastMainTab") || "Dashboard";
+    setActiveTab(last);
     }
   }, [location]);
 

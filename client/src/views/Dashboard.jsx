@@ -20,6 +20,7 @@ const Dashboard = () => {
   // const [UpcomingTaskBoard, setUpcomingTaskBoard] = useState();
 
   const fetchDashboard = async () => {
+    localStorage.setItem("lastMainTab", "Dashboard");
     try {
       setIsLoading(true);
       const response = await fetch(
