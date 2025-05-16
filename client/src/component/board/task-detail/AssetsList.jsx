@@ -3,6 +3,7 @@ const AssetsList = ({ assets }) => {
     switch (type) {
       case "pdf":
         return (
+          <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-red-500"
@@ -15,9 +16,11 @@ const AssetsList = ({ assets }) => {
               clipRule="evenodd"
             />
           </svg>
+          </div>
         );
       case "docx":
         return (
+          <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-blue-500"
@@ -30,9 +33,11 @@ const AssetsList = ({ assets }) => {
               clipRule="evenodd"
             />
           </svg>
+          </div>
         );
       case "xlsx":
         return (
+          <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-green-500"
@@ -45,9 +50,11 @@ const AssetsList = ({ assets }) => {
               clipRule="evenodd"
             />
           </svg>
+          </div>
         );
       case "pptx":
         return (
+          <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-orange-500"
@@ -60,12 +67,14 @@ const AssetsList = ({ assets }) => {
               clipRule="evenodd"
             />
           </svg>
+          </div>
         );
       case "img":
       case "png":
       case "jpg":
       case "jpeg":
         return (
+          <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-purple-500"
@@ -78,6 +87,7 @@ const AssetsList = ({ assets }) => {
               clipRule="evenodd"
             />
           </svg>
+          </div>
         );
       default:
         return (
@@ -100,13 +110,21 @@ const AssetsList = ({ assets }) => {
   return (
     <div className="space-y-4">
       {assets.map((asset) => (
-        <div
+        <a
           key={asset.id}
+          href={asset.filePath}
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center !p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer !mb-2"
         >
           {getFileIcon(asset.type)}
-          <span className="!ml-2 text-sm text-gray-700">{asset.name}</span>
-        </div>
+          <span
+  className="!ml-2 text-sm text-gray-700 truncate max-w-xs"
+  title={asset.name}
+>
+  {asset.name}
+</span>
+        </a>
       ))}
     </div>
   );
