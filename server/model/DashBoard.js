@@ -81,6 +81,7 @@ function compareSubtasks(originalTask, updatedTask) {
         pool.query (queryInsert,[sub.title, originalTask.id, sub.completed], (err, res)=>{
           if (err) {
         console.error( err);
+        return false;
       }
         })
     })
@@ -91,6 +92,7 @@ function compareSubtasks(originalTask, updatedTask) {
         pool.query (queryDelete,[sub.id], (err, res)=>{
           if (err) {
         console.error( err);
+        return false;
       }
         })
     })
@@ -105,10 +107,12 @@ updated.forEach(sub=>{
         pool.query (updateQuery ,[sub.to.title, sub.to.completed, sub.to.id], (err, res)=>{
           if (err) {
         console.error( err);
+        return false;
       }
         })
     })
   }
+  return true;
 }
 
 function updateUser (newTask, originalTask){
@@ -125,6 +129,7 @@ function updateUser (newTask, originalTask){
           if (err) {
         console.error( err);
         return callback(err, null);
+        return false;
       }
         })
     });
@@ -136,11 +141,12 @@ function updateUser (newTask, originalTask){
               pool.query (queryRemove,[user.aId], (err, res)=>{
           if (err) {
         console.error( err);
-        return callback(err, null);
+        return false;
       }
         })
     })
   }
+  return true;
 }
 function updateTaskInfo (newTask, originalTask){
     const query = `UPDATE Task
@@ -154,14 +160,22 @@ WHERE TaskId = ?;`
 pool.query (query, [newTask.title, mapP(newTask.priority), newTask.dueDate, mapS(newTask.status), newTask.description, newTask.id], (e, r)=>{
 if (e){
   console.log (e);
+  return false;
 }
 });
+return true;
 }
 class DashBoard {
   static updateTask(newTask, originalTask, callback){
-    updateUser(newTask, originalTask);
-    compareSubtasks(originalTask, newTask);
-    updateTaskInfo(newTask, originalTask);
+    const a =updateUser(newTask, originalTask);
+    const b =compareSubtasks(originalTask, newTask);
+    const c =updateTaskInfo(newTask, originalTask);
+    if (a &&b &&c){
+      callback(null, { success: true });
+    }
+    else{
+      callback(null, { success: false });
+    }
     
   
 }

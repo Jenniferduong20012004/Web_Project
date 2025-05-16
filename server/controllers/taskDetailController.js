@@ -35,12 +35,15 @@ exports.getTask = (req, res) => {
 exports.updateTask = (req, res) => {
   const {newTask, originalTask} = req.body;
   Dashboard.updateTask(newTask, originalTask, (err, result) => {
-    if (err) {
-      console.error("Error inserting workspace:", err);
-      return res
-        .status(500)
-        .json({ error: true, message: "Error when creating workspace" });
+    if (result.success){
+    return res.status (200).json({
+      success: true
+    })
     }
+    return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
 
     // console.log("Create workspace successful!");
     // res.status(201).json({ success: true, ws: result });
