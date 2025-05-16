@@ -41,11 +41,11 @@ const Profile = () => {
           username: data.userInformation.name,
           email: data.userInformation.email,
           password: data.userInformation.password,
-          avatarUrl: data.userInformation.avatarUrl || null,
+          photoPath: data.userInformation.photoPath || null,
         };
         setUserData(userInfo);
         setFormData({ ...userInfo });
-        setAvatarUrl(userInfo.avatarUrl);
+        setAvatarUrl(userInfo.photoPath);
       } else {
         toast.error(data.message || "Failed to fetch user", {
           position: "top-right",

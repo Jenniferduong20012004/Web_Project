@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { MdPerson, MdHelpCenter, MdLogout } from "react-icons/md";
 import { toast } from "sonner";
 
-const UserMenu = () => {
+const UserMenu = (user) => {
+  let userData = JSON.parse(localStorage.getItem("user"));
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
@@ -66,7 +67,15 @@ const UserMenu = () => {
         className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium cursor-pointer"
         onClick={toggleMenu}
       >
-        TT
+        {userData.photoPath ? (
+                      <img
+                        src={userData.photoPath}
+                        alt={userData.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      userData.initials
+                    )}
       </div>
 
       {/* Popup Menu */}

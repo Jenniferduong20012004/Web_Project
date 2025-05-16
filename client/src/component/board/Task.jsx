@@ -67,6 +67,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
       });
     }
   };
+  
 
   return (
     <div 
@@ -154,12 +155,21 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
         <div className="flex !-space-x-1">
           {task.assignedTo && task.assignedTo.map((member, index) => (
             <div
-              key={index}
-              className={`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
-              title={member.name}
-            >
-              {member.initials}
-            </div>
+  key={index}
+  className={`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
+  title={member.name}
+>
+  {member.photoPath ? (
+    <img
+      src={member.photoPath}
+      alt={member.name}
+      className="w-full h-full object-cover rounded-full"
+    />
+  ) : (
+    member.initials
+  )}
+</div>
+
           ))}
         </div>
       </div>

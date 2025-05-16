@@ -52,7 +52,7 @@ const Homepage = () => {
             workspace.dateCreate
           ).toLocaleDateString()}`,
           backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-          members: [],
+          members: workspace.members,
           isOwner: true,
           isPending: false, // Admin/owner is never pending
         }));

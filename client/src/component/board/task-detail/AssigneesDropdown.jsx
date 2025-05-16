@@ -81,7 +81,15 @@ const AssigneesDropdown = ({
                   <div
                     className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white font-medium !mr-2 ${member.bgColor}`}
                   >
-                    {member.initials}
+                    {member.photoPath ? (
+                      <img
+                        src={member.photoPath}
+                        alt={member.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      member.initials
+                    )}
                   </div>
                   <span className="text-sm">{member.name}</span>
                 </div>
@@ -117,7 +125,15 @@ const AssigneesDropdown = ({
               <div
                 className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white font-medium !mr-2 !mb-2 ${member.bgColor}`}
               >
-                {member.initials}
+                                    {member.photoPath ? (
+                      <img
+                        src={member.photoPath}
+                        alt={member.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      member.initials
+                    )}
               </div>
               <div className="font-medium text-gray-900 flex-1">
                 {member.name}

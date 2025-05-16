@@ -52,22 +52,37 @@ class User {
     });
   }
 
-  static findByEmail(email, callback) {
-    const query = "SELECT * FROM User WHERE email = ?";
-    
-    pool.query(query, [email], (err, results) => {
-      if (err) {
-        console.error("Error finding user by email:", err);
-        return callback(err, null);
-      }
-      if (results.length > 0) {
-        const userData = results[0];
-        const user = new User(userData.userId, userData.email, userData.password, userData.name); // Fix: use userData.userId
-        return callback(null, user);
-      }     
-      return callback(null, null);
-    });
+static findByEmail(email, callback) {
+  const query = "SELECT * FROM User WHERE email = ?";
+  
+  pool.query(query, [email], (err, results) => {
+    if (err) {
+      console.error("Error finding user by email:", err);
+      return callback(err, null);
+    }
+
+    if (results.length > 0) {
+      const r = results[0];
+
+      const user = {
+        ...r,
+        photoPath: r.photoPath
+          ? `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${r.photoPath}`
+          : null,
+        initials: r.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase(),
+      };
+
+      return callback(null, user);
+    }
+
+    return callback(null, null);
+  });
 }
+
 
   static findById(userId, callback) {
     const query = "SELECT * FROM User WHERE userId = ?";
@@ -77,7 +92,18 @@ class User {
         console.error("Error finding user by ID:", err);
         return callback(err, null);
       }
-      return callback(null, results.length > 0 ? results[0] : null);
+        if (results.length === 0) {
+          return callback(null, null);
+        }
+        const user = results[0];
+
+    if (user.photoPath) {
+      user.photoPath = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${user.photoPath}`;
+    } else {
+      user.photoPath = null; // or set to a default image URL
+    }
+
+    return callback(null, user);
     });
   }
   static updateUserNameById (userId, userName, callback){

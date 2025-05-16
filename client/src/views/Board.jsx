@@ -83,6 +83,7 @@ const Board = () => {
   };
   
   const fetchBoard = async (workspacedId) => {
+    localStorage.setItem("lastMainTab", "Board");
     try {
       setIsLoading(true);       
       const response = await fetch("http://localhost:5000/getBoard", {
@@ -114,6 +115,7 @@ const Board = () => {
           id: useri.id,
           name: useri.name,
           email: useri.email,
+          photoPath: useri.photoPath|| null,
           bgColor: useri.bgColor,
         }));
         

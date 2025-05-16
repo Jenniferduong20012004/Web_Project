@@ -5,6 +5,7 @@ import { FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
+  // alert (workspace.members[0].name)
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
   const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
@@ -204,7 +205,15 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
-              TT
+              {workspace.photoPath ? (
+                      <img
+                        src={workspace.photoPath}
+                        alt={workspace.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      workspace.initials
+                    )}
             </div>
             <div>
               <div className="text-sm font-medium">
@@ -299,7 +308,15 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
                   marginLeft: idx > 0 ? "-3px" : "0",
                 }}
               >
-                {member.initials}
+                {member.photoPath ? (
+                      <img
+                        src={member.photoPath}
+                        alt={member.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      member.initials
+                    )}
               </div>
             ))}
         </div>

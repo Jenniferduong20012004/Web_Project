@@ -101,7 +101,16 @@ const TaskItem = ({ task, workspaceId }) => {
                 marginLeft: index > 0 ? "-5px" : "0",
               }}
             >
-              {getInitials(user)}
+                {user.photoPath ? (
+    <img
+      src={user.photoPath}
+      alt={user.name}
+      className="w-full h-full object-cover rounded-full"
+    />
+  ) : (
+     getInitials(user.name)
+  )}
+             
             </div>
           ))}
         </div>

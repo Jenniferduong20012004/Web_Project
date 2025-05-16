@@ -55,6 +55,7 @@ class DashBoard {
         t.StateCompletion,
         t.description AS taskDescription,
         u.userId AS assignedUserId,
+        u.photoPath AS photo,
         u.name AS assignedUserName,
         u.email AS assignedUserEmail,
         jw.joinWorkSpace AS joinId,
@@ -69,7 +70,7 @@ class DashBoard {
     `;
 
     const memberQuery = `
-      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace
+      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace, u.photoPath
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
@@ -103,11 +104,15 @@ class DashBoard {
           ];
           const bgColor =
             bgColorOptions[row.assignedUserId % bgColorOptions.length];
-
+            let photoLink = null;
+            if (row.photo){
+              photoLink =  `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
+            }
           const user = {
             id: row.assignedUserId,
             name: row.assignedUserName,
             email: row.assignedUserEmail,
+            photoPath: photoLink,
             initials,
             bgColor,
           };
@@ -147,6 +152,7 @@ class DashBoard {
             id: row.joinWorkSpace,
             name: row.name,
             email: row.email,
+            photoPath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`,
             initials,
             bgColor,
           };
@@ -174,7 +180,8 @@ class DashBoard {
       t.WorkSpace,
       u.userId AS assignedUserId,
       u.name AS assignedUserName,
-      u.email AS assignedUserEmail
+      u.email AS assignedUserEmail,
+      u.photoPath as photo
     FROM Task t
     LEFT JOIN AssignTask at ON t.TaskId = at.TaskId
     LEFT JOIN joinWorkSpace jw ON at.joinWorkSpace = jw.joinWorkSpace
@@ -203,18 +210,27 @@ class DashBoard {
         const members = await new Promise((resolve, reject) => {
           pool.query(queryAvaMem, [workspaceId], (err, results) => {
             if (err) return reject(err);
+              // console.log (link);
+const mappedMembers = results.map((row) => {
+  let link = null;
+  if (row.photoPath != null) {
+    link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`;
+  }
 
-            const mappedMembers = results.map((row) => ({
-              id: row.userId,
-              name: row.name,
-              email: row.email,
-              initials: row.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase(),
-              bgColor: bgColorOptions[row.userId % bgColorOptions.length],
-            }));
+  return {
+    id: row.userId,
+    name: row.name,
+    email: row.email,
+    photoPath: link,
+    initials: row.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase(),
+    bgColor: bgColorOptions[row.userId % bgColorOptions.length],
+  };
+});
+
 
             resolve(mappedMembers);
           });
@@ -238,7 +254,7 @@ class DashBoard {
           if (err) return reject(err);
 
           if (rows.length === 0) return resolve(null);
-
+          
           const row0 = rows[0];
           const task = {
             id: row0.TaskId,
@@ -256,22 +272,17 @@ class DashBoard {
           // Handle file if present
           if (row0.filePath) {
             const fileName = row0.filePath;
-            const { data: fileInfo, error } = await supabase.storage
-              .from("taskfile")
-              .getPublicUrl(fileName);
 
-            if (error) {
-              console.error("Supabase file fetch error:", error);
-            } else {
-              const fileExt = fileName.split(".").pop();
+
+              const fileExt = fileName.split(".").pop().toLowerCase();
               task.assets.push({
                 id: 1,
                 name: fileName,
                 type: fileExt,
-                url: fileInfo.publicUrl,
+                filePath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/taskfile/${fileName}`,
               });
-            }
           }
+          
 
           // Populate assigned users
           const seenUsers = new Set();
@@ -285,10 +296,15 @@ class DashBoard {
               .join("")
               .toUpperCase();
 
+              let link = null;
+              if (row.photo != null){
+                link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`
+              }
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
               email: row.assignedUserEmail,
+              photoPath: link,
               initials,
               bgColor:
                 bgColorOptions[row.assignedUserId % bgColorOptions.length],
@@ -314,7 +330,7 @@ class DashBoard {
   `;
 
     const query2 = `
-    SELECT u.name 
+    SELECT u.name, u.photoPath
     FROM AssignTask a
     JOIN joinWorkSpace j ON a.joinWorkSpace = j.joinWorkSpace
     JOIN User u ON j.userId = u.userId
@@ -335,8 +351,17 @@ class DashBoard {
             if (err2) {
               return reject(err2);
             }
+        const assignedUsers = assignedUsersResult.map((u) => {
+          let photoLink = null;
+          if (u.photoPath) {
+            photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
+          }
+          return {
+            name: u.name,
+            photoPath: photoLink,
+          };
+        });
 
-            const assignedUsers = assignedUsersResult.map((u) => u.name);
             const endDate = new Date(row.dateEnd);
             const daysLeft = Math.ceil(
               (endDate - currentDate) / (1000 * 60 * 60 * 24)
