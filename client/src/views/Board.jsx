@@ -9,7 +9,7 @@ import TaskForm from "../component/board/TaskForm";
 const Board = () => {
   const { workspaceId } = useParams();
   const [workspaceName, setWorkspaceName] = useState("");
-  
+
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
@@ -39,7 +39,7 @@ const Board = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setWorkspaceRole(data.isManager ? "myWorkspace" : "assignedWorkspace");
       }
@@ -47,7 +47,7 @@ const Board = () => {
       console.error("Error checking workspace role:", error);
     }
   };
-  
+
   // handle moving a task to trash
   const handleTrashTask = async (taskId) => {
     try {
@@ -72,20 +72,24 @@ const Board = () => {
       const data = await response.json();
       if (data.success) {
         // Remove task from the current view
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
         toast.success("Task moved to trash", { position: "top-right" });
       } else {
-        toast.error(data.message || "Failed to move task to trash", { position: "top-right" });
+        toast.error(data.message || "Failed to move task to trash", {
+          position: "top-right",
+        });
       }
     } catch (error) {
-      toast.error("Error: " + (error.message || "Unknown error"), { position: "top-right" });
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
     }
   };
-  
-  const fetchBoard = async (workspacedId) => {
+
+  const fetchBoard = async (workspaceId) => {
     localStorage.setItem("lastMainTab", "Board");
     try {
-      setIsLoading(true);       
+      setIsLoading(true);
       const response = await fetch("http://localhost:5000/getBoard", {
         method: "POST",
         headers: {
@@ -95,8 +99,8 @@ const Board = () => {
           workspace: workspacedId,
         }),
       });
-      
-      const data = await response.json();    
+
+      const data = await response.json();
       if (data.success) {
         const tasks = data.task.tasks.map((taski) => ({
           ...taski,
@@ -109,19 +113,18 @@ const Board = () => {
           assignedTo: taski.assignedTo,
           dueDate: taski.dueDate,
         }));
-        
+
         const members = data.task.user.map((useri) => ({
           ...useri,
           id: useri.id,
           name: useri.name,
           email: useri.email,
-          photoPath: useri.photoPath|| null,
+          photoPath: useri.photoPath || null,
           bgColor: useri.bgColor,
         }));
-        
+
         setMembers([...members]);
         setTasks([...tasks]);
-        
       } else {
         toast.error(data.message || "Get into workspace fail", {
           position: "top-right",
@@ -135,7 +138,7 @@ const Board = () => {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchBoard(workspacedId);
     checkWorkspaceRole(workspacedId);
@@ -182,31 +185,6 @@ const Board = () => {
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           {/* BOARD CONTENT */}
           <div className="!mb-6">
-            {/* Header with trash link */}
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-bold text-[#455294]">Task Board</h1>
-              <div className="flex items-center gap-4">
-                <Link
-                  to={`/workspace/${workspacedId}/trash`}
-                  className="flex items-center text-gray-600 hover:text-red-600"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 !mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Trash
-                </Link>
-              </div>
-            </div>
-            
             {/* FILTER BAR */}
             <div className="flex items-center justify-between border-b border-gray-300 !pb-1">
               <div className="flex !space-x-6">
@@ -247,7 +225,7 @@ const Board = () => {
           </div>
 
           {/* TASK CONTAINER */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-8">
             {getFilteredTasks().map((task) => (
               <Task 
                 key={task.id} 

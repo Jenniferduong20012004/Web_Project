@@ -38,7 +38,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
       case "High":
         return "bg-red-100 text-red-700";
       case "Medium":
-        return "bg-orange-100 text-orange-700";
+        return "bg-yellow-100 text-orange-700";
       case "Low":
         return "bg-green-100 text-green-700";
       default:
@@ -47,7 +47,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
   };
 
   const handleTaskClick = () => {
-    navigate(`/board/${workspaceId}/task/${task.id}`);  
+    navigate(`/board/${workspaceId}/task/${task.id}`);
   };
 
   const handleMenuToggle = (e) => {
@@ -58,8 +58,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
   const handleMoveToTrash = (e) => {
     e.stopPropagation();
     setIsMenuOpen(false);
-    
-    // Call the parent component's function to handle moving to trash
+
     if (onTrashTask) {
       onTrashTask(task.id);
       toast.success(`Task "${task.title}" moved to trash`, {
@@ -67,10 +66,9 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
       });
     }
   };
-  
 
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow !p-5 !mb-4 cursor-pointer hover:shadow-md transition-shadow"
       onClick={handleTaskClick}
     >
@@ -86,10 +84,10 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
             {task.status.replace("-", " ")}
           </span>
         </div>
-        
+
         {/* MENU BUTTON with Dropdown */}
         <div className="relative" ref={menuRef}>
-          <button 
+          <button
             className="text-gray-400 hover:text-gray-600 cursor-pointer"
             onClick={handleMenuToggle}
           >
@@ -102,12 +100,12 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
               <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
             </svg>
           </button>
-          
+
           {/* Dropdown Menu -Move to Trash option */}
           {isMenuOpen && (
             <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10">
               <button
-                className="w-full text-left !px-2 !py-3 text-sm text-red-600 hover:bg-gray-100"
+                className="w-full text-left !px-2 !py-3 text-sm text-red-500 hover:bg-gray-100"
                 onClick={handleMoveToTrash}
               >
                 <span className="flex items-center cursor-pointer">
@@ -153,24 +151,24 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
 
         {/* Assigned Members */}
         <div className="flex !-space-x-1">
-          {task.assignedTo && task.assignedTo.map((member, index) => (
-            <div
-  key={index}
-  className={`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
-  title={member.name}
->
-  {member.photoPath ? (
-    <img
-      src={member.photoPath}
-      alt={member.name}
-      className="w-full h-full object-cover rounded-full"
-    />
-  ) : (
-    member.initials
-  )}
-</div>
-
-          ))}
+          {task.assignedTo &&
+            task.assignedTo.map((member, index) => (
+              <div
+                key={index}
+                className={`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
+                title={member.name}
+              >
+                {member.photoPath ? (
+                  <img
+                    src={member.photoPath}
+                    alt={member.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  member.initials
+                )}
+              </div>
+            ))}
         </div>
       </div>
 

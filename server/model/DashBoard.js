@@ -104,10 +104,10 @@ class DashBoard {
           ];
           const bgColor =
             bgColorOptions[row.assignedUserId % bgColorOptions.length];
-            let photoLink = null;
-            if (row.photo){
-              photoLink =  `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
-            }
+          let photoLink = null;
+          if (row.photo) {
+            photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
+          }
           const user = {
             id: row.assignedUserId,
             name: row.assignedUserName,
@@ -210,27 +210,26 @@ class DashBoard {
         const members = await new Promise((resolve, reject) => {
           pool.query(queryAvaMem, [workspaceId], (err, results) => {
             if (err) return reject(err);
-              // console.log (link);
-const mappedMembers = results.map((row) => {
-  let link = null;
-  if (row.photoPath != null) {
-    link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`;
-  }
+            // console.log (link);
+            const mappedMembers = results.map((row) => {
+              let link = null;
+              if (row.photoPath != null) {
+                link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`;
+              }
 
-  return {
-    id: row.userId,
-    name: row.name,
-    email: row.email,
-    photoPath: link,
-    initials: row.name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase(),
-    bgColor: bgColorOptions[row.userId % bgColorOptions.length],
-  };
-});
-
+              return {
+                id: row.userId,
+                name: row.name,
+                email: row.email,
+                photoPath: link,
+                initials: row.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase(),
+                bgColor: bgColorOptions[row.userId % bgColorOptions.length],
+              };
+            });
 
             resolve(mappedMembers);
           });
@@ -254,7 +253,7 @@ const mappedMembers = results.map((row) => {
           if (err) return reject(err);
 
           if (rows.length === 0) return resolve(null);
-          
+
           const row0 = rows[0];
           const task = {
             id: row0.TaskId,
@@ -273,16 +272,14 @@ const mappedMembers = results.map((row) => {
           if (row0.filePath) {
             const fileName = row0.filePath;
 
-
-              const fileExt = fileName.split(".").pop().toLowerCase();
-              task.assets.push({
-                id: 1,
-                name: fileName,
-                type: fileExt,
-                filePath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/taskfile/${fileName}`,
-              });
+            const fileExt = fileName.split(".").pop().toLowerCase();
+            task.assets.push({
+              id: 1,
+              name: fileName,
+              type: fileExt,
+              filePath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/taskfile/${fileName}`,
+            });
           }
-          
 
           // Populate assigned users
           const seenUsers = new Set();
@@ -296,10 +293,10 @@ const mappedMembers = results.map((row) => {
               .join("")
               .toUpperCase();
 
-              let link = null;
-              if (row.photo != null){
-                link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`
-              }
+            let link = null;
+            if (row.photo != null) {
+              link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
+            }
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
@@ -351,16 +348,16 @@ const mappedMembers = results.map((row) => {
             if (err2) {
               return reject(err2);
             }
-        const assignedUsers = assignedUsersResult.map((u) => {
-          let photoLink = null;
-          if (u.photoPath) {
-            photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
-          }
-          return {
-            name: u.name,
-            photoPath: photoLink,
-          };
-        });
+            const assignedUsers = assignedUsersResult.map((u) => {
+              let photoLink = null;
+              if (u.photoPath) {
+                photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
+              }
+              return {
+                name: u.name,
+                photoPath: photoLink,
+              };
+            });
 
             const endDate = new Date(row.dateEnd);
             const daysLeft = Math.ceil(

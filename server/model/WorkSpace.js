@@ -68,53 +68,6 @@ class WorkSpace {
     });
   }
 
-  static getTrashTask(workSpaceId, callback) {
-    const query = "SELECT * FROM Task WHERE trash = TRUE AND WorkSpace = ?;";
-    pool.query(query, [workSpaceId], (err, result) => {
-      if (err) {
-        console.error("Error creating workspace:", err);
-        return callback(err, null);
-      }
-      const deleteTask = result.map((row) => {
-        return {
-          id: row.TaskId,
-          taskname: row.taskname,
-          priority: row.priority,
-          StateCompletionn: row.StateCompletion,
-        };
-      });
-
-      return callback(null, deleteTask);
-    });
-  }
-  static restoreTrashTask(taskId, callback) {
-    const query = "UPDATE Task SET trash = false WHERE TaskId = ?;";
-    pool.query(query, [taskId], (err, result) => {
-      if (err) {
-        console.error("Error creating workspace:", err);
-        return callback(err, null);
-      }
-      return callback(null, { success: true });
-    });
-  }
-  static addFileToSupa = async (id, file, callback) => {
-      let str =
-        id + "/" + generateRandomString() + "/" + file.originalname;
-      const { data, error } = await supabase.storage
-        .from("taskfile")
-        .upload(str, file.buffer, {
-      contentType: file.mimetype, // e.g., text/plain, image/jpeg
-    });
-    
-      const query = "UPDATE Task SET filePath = ? WHERE TaskId = ?;";
-      pool.query(query, [str, id], (err, result) => {
-      if (err) {
-        console.error("Error add file:", err);
-        return callback(err, null);
-      }
-      return callback(null, { success: true });
-    });
-  };
   static createTask(TaskData, callback) {
     const query =
       "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
@@ -122,7 +75,7 @@ class WorkSpace {
       "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
     const priority = priorityMap[TaskData.priority];
     const dateEnd = formatDate(TaskData.dateEnd);
-    console.log (dateEnd);
+    console.log(dateEnd);
     const status = statusMap[TaskData.StateCompletion];
     pool.query(
       query,
