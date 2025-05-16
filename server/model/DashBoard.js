@@ -50,19 +50,29 @@ function compareSubtasks(originalTask, updatedTask) {
       removed.push(originalMap.get(id));
     }
   }
-  
+  console.log (added)
+  console.log (removed)
   if (added.length > 0) {  
     const queryInsert = 'INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)';
     added.forEach(sub=>{
         pool.query (queryInsert,[sub.title, originalTask.id, sub.completed], (err, res)=>{
           if (err) {
         console.error( err);
-        return callback(err, null);
       }
         })
     })
   }
-  return { added, removed, updated };
+    if (removed.length > 0) {  
+      console.log ("as")
+    const queryDelete = 'DELETE FROM SubTask WHERE SubTakId = ?';
+    removed.forEach(sub=>{
+        pool.query (queryDelete,[sub.id], (err, res)=>{
+          if (err) {
+        console.error( err);
+      }
+        })
+    })
+  }
 }
 
 function updateUser (newTask, originalTask){
@@ -280,7 +290,7 @@ WHERE TaskId = ?;`
     LEFT JOIN User u ON jw.userId = u.userId
     WHERE t.TaskId = ?;
   `;
-    const queryGetSubtask = `Select * from SubTask where SubTakId = ?`;
+    const queryGetSubtask = `Select * from SubTask where TaskId = ?`;
 
     const queryAvaMem = `
     SELECT * FROM joinWorkSpace 
