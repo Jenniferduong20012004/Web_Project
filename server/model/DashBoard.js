@@ -12,11 +12,35 @@ function mapState(state) {
       return "UNKNOWN";
   }
 }
+function mapS(state) {
+  switch (state) {
+    case "TODO":
+      return 1;
+    case "IN-PROGRESS":
+      return 2;
+    case "COMPLETED":
+      return 3;
+    default:
+      return 4;
+  }
+}
 const mapPriority = {
   1: "High",
   2: "Medium",
   3: "Low",
 };
+function mapP(state) {
+  switch (state) {
+    case "High":
+      return 1;
+    case "Medium":
+      return 2;
+    case "Low":
+      return 3;
+    default:
+      return 4;
+  }
+}
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   date.setDate(date.getDate() + 1);
@@ -118,21 +142,27 @@ function updateUser (newTask, originalTask){
     })
   }
 }
-class DashBoard {
-  static updateTask(newTask, originalTask, callback){
-    updateUser(newTask, originalTask);
-    compareSubtasks(originalTask, newTask);
-    
-
+function updateTaskInfo (newTask, originalTask){
     const query = `UPDATE Task
 SET 
     taskname = ?,
     priority = ?,
-    dateBegin = ?,
     dateEnd = ?,
     StateCompletion = ?,
-    description = description
+    description = ?
 WHERE TaskId = ?;`
+pool.query (query, [newTask.title, mapP(newTask.priority), newTask.dueDate, mapS(newTask.status), newTask.description, newTask.id], (e, r)=>{
+if (e){
+  console.log (e);
+}
+});
+}
+class DashBoard {
+  static updateTask(newTask, originalTask, callback){
+    updateUser(newTask, originalTask);
+    compareSubtasks(originalTask, newTask);
+    updateTaskInfo(newTask, originalTask);
+    
   
 }
 
