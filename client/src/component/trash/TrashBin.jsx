@@ -1,54 +1,254 @@
-import { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import { FaUndoAlt, FaTrashAlt } from "react-icons/fa";
+import ConfirmationModal from "./ConfirmationModal";
+import RestoreModal from "./RestoreModal";
 
-const TrashPage = ({ trashTask }) => {
+const TrashBin = ({ trashTask, workspaceId }) => {
   const [tasks, setTasks] = useState([]);
-        useEffect(() => {
-      
-          fetchTasks(trashTask);
-  
-        }, [trashTask]);
-    const mapStage = (state) => {
-          switch (state) {
-            case 0:
-              return "TODOS";
-            case 1:
-              return "IN-PROGRESS";
-            case 2:
-              return "COMPLETED";
-            default:
-              return "TODOS";
-          }
-        };
-    const mapPriority = (priority) => {
-          switch (priority) {
-            case 3:
-              return "Low";
-            case 2:
-              return "Medium";
-            case 1:
-              return "High";
-            default:
-              return "Medium";
-          }
-        };
-    
-  const fetchTasks = async (trashTask) => {
-    const transformedTasks = trashTask.map((row) => ({
-          id: row.TaskId,
-          title: row.taskname,
-          stage: mapStage(row.StateCompletion),
-          priority: mapPriority(row.priority),
-        }));
-        setTasks(transformedTasks);
-      }
-  
+  const [isLoading, setIsLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [restoredTask, setRestoredTask] = useState(null);
   const [restoreAllConfirm, setRestoreAllConfirm] = useState(false);
+
+  useEffect(() => {
+    fetchTasks(trashTask);
+  }, [trashTask]);
+
+  const mapStage = (state) => {
+    switch (state) {
+      case 1:
+        return "TODOS";
+      case 2:
+        return "IN-PROGRESS";
+      case 3:
+        return "COMPLETED";
+      default:
+        return "TODOS";
+    }
+  };
+
+  const mapPriority = (priority) => {
+    switch (priority) {
+      case 3:
+        return "Low";
+      case 2:
+        return "Medium";
+      case 1:
+        return "High";
+      default:
+        return "Medium";
+    }
+  };
+
+  const fetchTasks = async (trashTask) => {
+    const transformedTasks = trashTask.map((row) => {
+      const id = row.id || row.TaskId;
+
+      return {
+        id: id,
+        title: row.title || row.taskname,
+        stage: mapStage(row.StateCompletion),
+        priority: mapPriority(row.priority),
+      };
+    });
+
+    setTasks(transformedTasks);
+  };
+
+  const restoreTask = async (taskId) => {
+    try {
+      setIsLoading(true);
+
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+  
+      const requestBody = {
+        taskId: parseInt(taskId, 10) || taskId,
+        workspaceId: parseInt(workspaceId, 10) || workspaceId,
+        userId: userData.userId,
+      };
+
+
+      const response = await fetch("http://localhost:5000/restoreTrashTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Update the UI
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        toast.success("Task restored successfully", { position: "top-right" });
+      } else {
+        toast.error(data.message || "Failed to restore task", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // permanently delete a task
+  const permanentlyDeleteTask = async (taskId) => {
+    try {
+      setIsLoading(true);
+
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/permanentlyDeleteTask",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: taskId,
+            workspaceId: workspaceId,
+            userId: userData.userId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        // update UI
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        toast.success("Task permanently deleted", { position: "top-right" });
+      } else {
+        toast.error(data.message || "Failed to delete task", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // restore all tasks
+  const restoreAllTasks = async () => {
+    try {
+      setIsLoading(true);
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      // create an array of promises to restore each task
+      const restorePromises = tasks.map((task) =>
+        fetch("http://localhost:5000/restoreTrashTask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: task.id,
+            workspaceId: workspaceId,
+            userId: userData.userId,
+          }),
+        }).then((res) => res.json())
+      );
+
+      // execute all promises
+      const results = await Promise.all(restorePromises);
+
+      // Check if all operations were successful
+      const allSuccessful = results.every((data) => data.success);
+
+      if (allSuccessful) {
+        setTasks([]);
+        toast.success("All tasks restored successfully", {
+          position: "top-right",
+        });
+      } else {
+        toast.warning("Some tasks could not be restored", {
+          position: "top-right",
+        });
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // permanently delete all tasks
+  const deleteAllTasks = async () => {
+    try {
+      setIsLoading(true);
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      // Create an array of promises to delete each task
+      const deletePromises = tasks.map((task) =>
+        fetch("http://localhost:5000/permanentlyDeleteTask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: task.id,
+            workspaceId: workspaceId,
+            userId: userData.userId,
+          }),
+        }).then((res) => res.json())
+      );
+
+      // Execute all promises
+      const results = await Promise.all(deletePromises);
+
+      const allSuccessful = results.every((data) => data.success);
+
+      if (allSuccessful) {
+        setTasks([]);
+        toast.success("All tasks permanently deleted", {
+          position: "top-right",
+        });
+      } else {
+        toast.warning("Some tasks could not be deleted", {
+          position: "top-right",
+        });
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const confirmRestoreTask = (id) => {
     const task = tasks.find((t) => t.id === id);
@@ -57,7 +257,7 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleRestoreConfirmed = () => {
-    setTasks(tasks.filter((task) => task.id !== restoredTask.id));
+    restoreTask(restoredTask.id);
     setShowRestoreModal(false);
     setRestoredTask(null);
   };
@@ -73,7 +273,7 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleRestoreAllConfirmed = () => {
-    setTasks([]);
+    restoreAllTasks();
     setRestoreAllConfirm(false);
   };
 
@@ -87,7 +287,7 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleDeleteConfirmed = () => {
-    setTasks(tasks.filter((task) => task.id !== taskToDelete));
+    permanentlyDeleteTask(taskToDelete);
     setShowConfirm(false);
     setTaskToDelete(null);
   };
@@ -103,7 +303,7 @@ const TrashPage = ({ trashTask }) => {
   };
 
   const handleDeleteAllConfirmed = () => {
-    setTasks([]);
+    deleteAllTasks();
     setDeleteAllConfirm(false);
   };
 
@@ -111,98 +311,52 @@ const TrashPage = ({ trashTask }) => {
     setDeleteAllConfirm(false);
   };
 
-  const stageColors = {
-    TODOS: "text-blue-500",
-    "IN-PROGRESS": "text-yellow-500",
-    COMPLETED: "text-green-500",
+  // stage styles
+  const stageStyles = {
+    TODOS: {
+      dot: "bg-blue-500",
+      text: "text-gray-600",
+    },
+    "IN-PROGRESS": {
+      dot: "bg-yellow-500",
+      text: "text-gray-600",
+    },
+    COMPLETED: {
+      dot: "bg-green-500",
+      text: "text-gray-600",
+    },
   };
-
-  const ConfirmationModal = ({ onConfirm, onCancel, message }) => (
-    <div className="absolute top-0 left-0 w-full h-full backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-lg shadow-lg !p-8 w-[400px] text-center scale-95 animate-scale-in">
-        <div className="flex justify-center items-center !mb-4">
-          <svg
-            className="!w-16 !h-16 text-yellow-400 animate-bounce"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path fill="#FACC15" d="M12 2L1 21h22L12 2z" />
-            <path
-              d="M12 8v4"
-              stroke="#000"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <circle cx="12" cy="16" r="1.25" fill="#000" />
-          </svg>
-        </div>
-        <h2 className="text-xl font-bold text-red-600 !mb-2">DELETE</h2>
-        <p className="text-gray-700 !mb-1">{message}</p>
-        <p className="text-gray-400 text-sm !mb-6">
-          This action cannot be undone.
-        </p>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onCancel}
-            className="!px-4 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="!px-4 !py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-          >
-            Yes, delete
-          </button>
-        </div>
-      </div>
+  const StageIndicator = ({ stage }) => (
+    <div className="flex items-center gap-2">
+      <div className={`h-2 w-2 rounded-full ${stageStyles[stage].dot}`}></div>
+      <span className={`text-sm ${stageStyles[stage].text} uppercase`}>
+        {stage === "IN-PROGRESS" ? "IN PROGRESS" : stage}
+      </span>
     </div>
   );
 
-  const RestoreModal = ({ onConfirm, onCancel, task }) => (
-    <div className="absolute top-0 left-0 w-full h-full backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-lg shadow-lg !p-8 w-[400px] text-center scale-95 animate-scale-in">
-        <div className="flex justify-center items-center !mb-4">
-          <svg
-            className="!w-16 !h-16 text-green-400 animate-bounce"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path fill="#86efac" d="M12 2L1 21h22L12 2z" />
-            <path
-              d="M12 8v4"
-              stroke="#000"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <circle cx="12" cy="16" r="1.25" fill="#000" />
-          </svg>
-        </div>
-        <h2 className="text-xl font-bold text-green-600 !mb-2">RESTORE</h2>
-        <p className="text-gray-700 !mb-1">
-          Do you want to restore {task?.title || "all tasks"}?
-        </p>
-        <p className="text-gray-400 text-sm !mb-6">
-          This action will move the task(s) back.
-        </p>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onCancel}
-            className="!px-4 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="!px-4 !py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Yes, restore
-          </button>
-        </div>
-      </div>
-    </div>
+  // Priority badge styles
+  const priorityStyles = {
+    High: {
+      bg: "bg-red-100",
+      text: "text-red-700",
+    },
+    Medium: {
+      bg: "bg-yellow-100",
+      text: "text-orange-700",
+    },
+    Low: {
+      bg: "bg-green-100",
+      text: "text-green-700",
+    },
+  };
+
+  const PriorityBadge = ({ priority }) => (
+    <span
+      className={`!px-3 !py-1 rounded-full text-xs ${priorityStyles[priority].bg} ${priorityStyles[priority].text}`}
+    >
+      {priority}
+    </span>
   );
 
   return (
@@ -212,21 +366,23 @@ const TrashPage = ({ trashTask }) => {
         <div className="flex gap-8">
           <button
             onClick={confirmRestoreAll}
-            className={`hover:underline ${
-              tasks.length === 0
+            className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
+              tasks.length === 0 || isLoading
                 ? "text-gray-300 cursor-not-allowed"
-                : "text-green-600"
+                : "text-green-600 hover:bg-green-100 hover:text-green-700"
             }`}
+            disabled={tasks.length === 0 || isLoading}
           >
             Restore all
           </button>
           <button
             onClick={confirmDeleteAll}
-            className={`hover:underline ${
-              tasks.length === 0
+            className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
+              tasks.length === 0 || isLoading
                 ? "text-gray-300 cursor-not-allowed"
-                : "text-red-600"
+                : "text-red-600 hover:bg-red-100 hover:text-red-700"
             }`}
+            disabled={tasks.length === 0 || isLoading}
           >
             Delete all
           </button>
@@ -236,8 +392,10 @@ const TrashPage = ({ trashTask }) => {
       <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
         <table className="min-w-full bg-white">
           <thead>
-            <tr className="bg-gray-100 text-gray-700 text-sm">
-              <th className="!py-4 !px-8 text-left font-semibold">Task title</th>
+            <tr className="bg-gray-100 text-gray-700">
+              <th className="!py-4 !px-8 text-left font-semibold">
+                Task title
+              </th>
               <th className="!py-4 !px-8 text-left font-semibold">Stage</th>
               <th className="!py-4 !px-8 text-left font-semibold">Priority</th>
               <th className="!py-4 !px-8 text-center font-semibold">Actions</th>
@@ -249,25 +407,27 @@ const TrashPage = ({ trashTask }) => {
                 key={task.id}
                 className="border-t border-gray-200 hover:bg-gray-50"
               >
-                <td className="!py-4 !px-8 text-gray-800">{task.title}</td>
-                <td
-                  className={`!py-4 !px-8 ${
-                    stageColors[task.stage]
-                  } font-small`}
-                >
-                  {task.stage}
+                <td className="text-base !py-4 !px-8 text-gray-600">
+                  {task.title}
                 </td>
-                <td className="!py-4 !px-8 text-gray-700">{task.priority}</td>
+                <td className="!py-4 !px-8">
+                  <StageIndicator stage={task.stage} />
+                </td>
+                <td className="!py-4 !px-8">
+                  <PriorityBadge priority={task.priority} />
+                </td>
                 <td className="!py-4 !px-8 flex justify-center gap-8">
                   <button
                     onClick={() => confirmRestoreTask(task.id)}
                     className="text-green-600 hover:scale-110 transition"
+                    disabled={isLoading}
                   >
                     <FaUndoAlt />
                   </button>
                   <button
                     onClick={() => confirmDeleteTask(task.id)}
                     className="text-red-600 hover:scale-110 transition"
+                    disabled={isLoading}
                   >
                     <FaTrashAlt />
                   </button>
@@ -290,6 +450,7 @@ const TrashPage = ({ trashTask }) => {
           onConfirm={handleDeleteConfirmed}
           onCancel={handleCancelDelete}
           message="Are you sure you want to permanently delete this task?"
+          isLoading={isLoading}
         />
       )}
 
@@ -298,6 +459,7 @@ const TrashPage = ({ trashTask }) => {
           onConfirm={handleDeleteAllConfirmed}
           onCancel={handleCancelDeleteAll}
           message="Are you sure you want to permanently delete all tasks?"
+          isLoading={isLoading}
         />
       )}
 
@@ -306,6 +468,7 @@ const TrashPage = ({ trashTask }) => {
           onConfirm={handleRestoreConfirmed}
           onCancel={handleCancelRestore}
           task={restoredTask}
+          isLoading={isLoading}
         />
       )}
 
@@ -314,10 +477,11 @@ const TrashPage = ({ trashTask }) => {
           onConfirm={handleRestoreAllConfirmed}
           onCancel={handleCancelRestoreAll}
           task={null}
+          isLoading={isLoading}
         />
       )}
     </div>
   );
 };
 
-export default TrashPage;
+export default TrashBin;

@@ -7,7 +7,7 @@ const dashBoardRoute = require("./dashboardRoute");
 const workspaceRoute = require("./workspaceRoute");
 const addTaskRoute = require("./addTaskRoute");
 const boardRoute = require("./boardRoute");
-const trashRoute = require("./trashTaskRoute");
+const taskRoute = require("./taskRoute");
 const memberRoute = require("./memberRoute");
 const taskDetailRoute = require ("./taskDetailRoute");
 
@@ -16,13 +16,13 @@ router.use("/", authRoutes);
 router.use("/", homePageRoute);
 router.use("/", profileRoute);
 
-// Workspace management routes (consolidated)
+// Workspace management routes
 router.use("/", workspaceRoute);
 
 // Task and board management
 router.use("/", dashBoardRoute);
 router.use("/", addTaskRoute);
-router.use("/", trashRoute);
+router.use("/", taskRoute);
 router.use("/", boardRoute);
 router.use ("/", taskDetailRoute);
 

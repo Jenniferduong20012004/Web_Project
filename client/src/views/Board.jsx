@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
-import { useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 
 const Board = () => {
+  const { workspaceId } = useParams();
+  const [workspaceName, setWorkspaceName] = useState("");
+
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
@@ -16,7 +19,7 @@ const Board = () => {
 
   const { workspacedId } = useParams();
   
-  // New function to check workspace role
+  // Function to check workspace role
   const checkWorkspaceRole = async (workspaceId) => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
@@ -36,7 +39,7 @@ const Board = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setWorkspaceRole(data.isManager ? "myWorkspace" : "assignedWorkspace");
       }
@@ -44,11 +47,49 @@ const Board = () => {
       console.error("Error checking workspace role:", error);
     }
   };
-  
-  const fetchBoard = async (workspacedId) => {
+
+  // handle moving a task to trash
+  const handleTrashTask = async (taskId) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/trashTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          taskId: taskId,
+          workspaceId: workspacedId,
+          userId: userData.userId
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Remove task from the current view
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        toast.success("Task moved to trash", { position: "top-right" });
+      } else {
+        toast.error(data.message || "Failed to move task to trash", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      toast.error("Error: " + (error.message || "Unknown error"), {
+        position: "top-right",
+      });
+    }
+  };
+
+  const fetchBoard = async (workspaceId) => {
     localStorage.setItem("lastMainTab", "Board");
     try {
-      setIsLoading(true);       
+      setIsLoading(true);
       const response = await fetch("http://localhost:5000/getBoard", {
         method: "POST",
         headers: {
@@ -58,8 +99,8 @@ const Board = () => {
           workspace: workspacedId,
         }),
       });
-      
-      const data = await response.json();    
+
+      const data = await response.json();
       if (data.success) {
         const tasks = data.task.tasks.map((taski) => ({
           ...taski,
@@ -72,20 +113,18 @@ const Board = () => {
           assignedTo: taski.assignedTo,
           dueDate: taski.dueDate,
         }));
-        
-        // alert (tasks[0].priority)
+
         const members = data.task.user.map((useri) => ({
           ...useri,
           id: useri.id,
           name: useri.name,
           email: useri.email,
-          photoPath: useri.photoPath|| null,
+          photoPath: useri.photoPath || null,
           bgColor: useri.bgColor,
         }));
-        
+
         setMembers([...members]);
         setTasks([...tasks]);
-        
       } else {
         toast.error(data.message || "Get into workspace fail", {
           position: "top-right",
@@ -99,7 +138,7 @@ const Board = () => {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchBoard(workspacedId);
     checkWorkspaceRole(workspacedId);
@@ -186,9 +225,14 @@ const Board = () => {
           </div>
 
           {/* TASK CONTAINER */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-8">
             {getFilteredTasks().map((task) => (
-              <Task key={task.id} task={task} workspaceId={workspacedId} />
+              <Task 
+                key={task.id} 
+                task={task} 
+                workspaceId={workspacedId}
+                onTrashTask={handleTrashTask} // Pass the trash function to Task component
+              />
             ))}
           </div>
         </div>
