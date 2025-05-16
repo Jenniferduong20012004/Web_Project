@@ -98,7 +98,6 @@ const Homepage = () => {
     }
   };
 
-  // Call fetchWorkspaces when component mounts
   useEffect(() => {
     fetchWorkspaces();
   }, []);
@@ -112,7 +111,6 @@ const Homepage = () => {
   };
 
   const handleWorkspaceClick = (workspaceId) => {
-    // Navigate to the dashboard with the workspace ID
     navigate(`/dashboard/${workspaceId}`);
   };
 
@@ -122,7 +120,6 @@ const Homepage = () => {
 
   const handleUpdateWorkspace = async (updatedWorkspace) => {
     try {
-      // Find the workspace in our state that matches the id
       const workspaceIndex = workspaces.findIndex(
         (ws) => ws.id === updatedWorkspace.id
       );
@@ -136,7 +133,6 @@ const Homepage = () => {
           description: updatedWorkspace.description,
         };
 
-        // Update state
         setWorkspaces(updatedWorkspaces);
       }
     } catch (error) {
@@ -155,7 +151,6 @@ const Homepage = () => {
     if (activeTab === "myWorkspace") {
       return workspace.isOwner;
     } else {
-      // For assigned workspaces, ensure they are not pending
       return !workspace.isOwner;
     }
   });
