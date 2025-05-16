@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import Sidebar from "../component/Sidebar";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import PageLayout from "../component/board/task-detail/PageLayout";
@@ -127,6 +128,9 @@ function TaskDetail() {
           toggleEditMode={toggleEditMode}
           handleSaveField={handleSaveField}
         />
+            <div className="fixed left-0 top-16 h-screen z-10">
+                <Sidebar workspaceId={workspaceId} />
+            </div>
 
         {/* Task Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 !mt-8">
