@@ -12,18 +12,160 @@ function mapState(state) {
       return "UNKNOWN";
   }
 }
+function mapS(state) {
+  switch (state) {
+    case "TODO":
+      return 1;
+    case "IN-PROGRESS":
+      return 2;
+    case "COMPLETED":
+      return 3;
+    default:
+      return 4;
+  }
+}
 const mapPriority = {
   1: "High",
   2: "Medium",
   3: "Low",
 };
+function mapP(state) {
+  switch (state) {
+    case "High":
+      return 1;
+    case "Medium":
+      return 2;
+    case "Low":
+      return 3;
+    default:
+      return 4;
+  }
+}
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   date.setDate(date.getDate() + 1);
   return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
 };
+function compareSubtasks(originalTask, updatedTask) {
+  const originalMap = new Map(originalTask.subtasks.map(st => [st.id, st]));
+  const updatedMap = new Map(updatedTask.subtasks.map(st => [st.id, st]));
 
+  const added = [];
+  const removed = [];
+  const updated = [];
+
+  for (const [id, updatedSubtask] of updatedMap.entries()) {
+    if (!originalMap.has(id)) {
+      added.push(updatedSubtask);
+    } else {
+      const originalSubtask = originalMap.get(id);
+      if (
+        originalSubtask.title !== updatedSubtask.title ||
+        originalSubtask.completed !== updatedSubtask.completed
+      ) {
+        updated.push({ from: originalSubtask, to: updatedSubtask });
+      }
+    }
+  }
+
+  // Check for removed
+  for (const id of originalMap.keys()) {
+    if (!updatedMap.has(id)) {
+      removed.push(originalMap.get(id));
+    }
+  }
+  console.log (updated)
+  if (added.length > 0) {  
+    const queryInsert = 'INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)';
+    added.forEach(sub=>{
+        pool.query (queryInsert,[sub.title, originalTask.id, sub.completed], (err, res)=>{
+          if (err) {
+        console.error( err);
+      }
+        })
+    })
+  }
+    if (removed.length > 0) {  
+    const queryDelete = 'DELETE FROM SubTask WHERE SubTakId = ?';
+    removed.forEach(sub=>{
+        pool.query (queryDelete,[sub.id], (err, res)=>{
+          if (err) {
+        console.error( err);
+      }
+        })
+    })
+  }
+  if (updated.length>0){
+const updateQuery = `UPDATE SubTask
+SET 
+    subtaskName = ?,
+     status = ?
+WHERE SubTakId  = ?;`
+updated.forEach(sub=>{
+        pool.query (updateQuery ,[sub.to.title, sub.to.completed, sub.to.id], (err, res)=>{
+          if (err) {
+        console.error( err);
+      }
+        })
+    })
+  }
+}
+
+function updateUser (newTask, originalTask){
+  const assignedToIds = new Set(newTask.assignedTo.map(user => user.id));
+    const originalAssignedToIds = new Set(originalTask.assignedTo.map(user => user.id));
+    const addedIds = [...assignedToIds].filter(id => !originalAssignedToIds.has(id));
+    const removeIds = [...originalAssignedToIds].filter (id => !assignedToIds.has(id));
+    const addedUsers = newTask.availableMembers.filter(user => addedIds.includes(user.id));
+    const removedUsers = originalTask.assignedTo.filter(user => removeIds.includes(user.id));
+   if (addedUsers.length > 0) {    
+  const queryAdd = 'INSERT INTO AssignTask (joinWorkSpace, TaskId) VALUES (?, ?)';
+  addedUsers.forEach(user => {
+        pool.query (queryAdd,[user.joinId, newTask.id], (err, res)=>{
+          if (err) {
+        console.error( err);
+        return callback(err, null);
+      }
+        })
+    });
+  }
+
+    if (removedUsers.length > 0) {  
+    const queryRemove = 'DELETE FROM AssignTask WHERE AssignId = ?';
+    removedUsers.forEach(user=>{
+              pool.query (queryRemove,[user.aId], (err, res)=>{
+          if (err) {
+        console.error( err);
+        return callback(err, null);
+      }
+        })
+    })
+  }
+}
+function updateTaskInfo (newTask, originalTask){
+    const query = `UPDATE Task
+SET 
+    taskname = ?,
+    priority = ?,
+    dateEnd = ?,
+    StateCompletion = ?,
+    description = ?
+WHERE TaskId = ?;`
+pool.query (query, [newTask.title, mapP(newTask.priority), newTask.dueDate, mapS(newTask.status), newTask.description, newTask.id], (e, r)=>{
+if (e){
+  console.log (e);
+}
+});
+}
 class DashBoard {
+  static updateTask(newTask, originalTask, callback){
+    updateUser(newTask, originalTask);
+    compareSubtasks(originalTask, newTask);
+    updateTaskInfo(newTask, originalTask);
+    
+  
+}
+
   static getMemberFromWorkspace(workspaceId, callback) {
     const query =
       "SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin FROM joinWorkSpace j JOIN User u ON j.userId = u.userId WHERE j.WorkSpace = ?;";
@@ -58,7 +200,6 @@ class DashBoard {
         u.photoPath AS photo,
         u.name AS assignedUserName,
         u.email AS assignedUserEmail,
-        jw.joinWorkSpace AS joinId,
         jw.isManager,
         jw.role,
         jw.dateJoin
@@ -70,7 +211,7 @@ class DashBoard {
     `;
 
     const memberQuery = `
-      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace, u.photoPath
+      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace, u.photoPath, j.joinWorkSpace
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
@@ -113,6 +254,7 @@ class DashBoard {
             name: row.assignedUserName,
             email: row.assignedUserEmail,
             photoPath: photoLink,
+            joinId: row.joinWorkSpace,
             initials,
             bgColor,
           };
@@ -181,14 +323,16 @@ class DashBoard {
       u.userId AS assignedUserId,
       u.name AS assignedUserName,
       u.email AS assignedUserEmail,
-      u.photoPath as photo
+      u.photoPath as photo,
+      at.AssignId as aId,
+      jw.joinWorkSpace as joiny
     FROM Task t
     LEFT JOIN AssignTask at ON t.TaskId = at.TaskId
     LEFT JOIN joinWorkSpace jw ON at.joinWorkSpace = jw.joinWorkSpace
     LEFT JOIN User u ON jw.userId = u.userId
     WHERE t.TaskId = ?;
   `;
-    const queryGetSubtask = `Select * from SubTask where SubTakId = ?`;
+    const queryGetSubtask = `Select * from SubTask where TaskId = ?`;
 
     const queryAvaMem = `
     SELECT * FROM joinWorkSpace 
@@ -219,6 +363,7 @@ const mappedMembers = results.map((row) => {
 
   return {
     id: row.userId,
+    joinId: row.joinWorkSpace,
     name: row.name,
     email: row.email,
     photoPath: link,
@@ -300,12 +445,15 @@ const mappedMembers = results.map((row) => {
               if (row.photo != null){
                 link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`
               }
+              console.log ()
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
               email: row.assignedUserEmail,
               photoPath: link,
+              aId: row.aId,
               initials,
+              joinId: row.joiny,
               bgColor:
                 bgColorOptions[row.assignedUserId % bgColorOptions.length],
             });

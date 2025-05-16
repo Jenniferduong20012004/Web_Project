@@ -102,13 +102,36 @@ function TaskDetail() {
     setTask((prev) => ({ ...prev, assignedTo: newAssignees }));
   }, []);
 
-  const handleUpdateTask = useCallback(() => {
-    // API call would go here
-    console.log("Updating task with new data:", task);
+  const handleUpdateTask = useCallback(async () => {
+            try {
+            const userData = JSON.parse(localStorage.getItem("user"));
+            if (!userData) {
+                return;
+            }
+
+            const response = await fetch("http://localhost:5000/updateTask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    newTask: task,
+                    originalTask: originalTask,
+                }),
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log("Updating task with new data:", task);
     setOriginalTask(JSON.parse(JSON.stringify(task)));
     setHasChanges(false);
     alert("Task updated successfully!");
-  }, [task]);
+            }
+        } catch (error) {
+            console.error("Error update task:", error);
+        }
+  }, [task, originalTask]);
 
   if (!task) {
     return <PageLayout isLoading={true} />;
