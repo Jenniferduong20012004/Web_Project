@@ -4,6 +4,18 @@ import { MdPerson, MdHelpCenter, MdLogout } from "react-icons/md";
 import { toast } from "sonner";
 
 const UserMenu = (user) => {
+  const avatarColors = [
+            "bg-blue-700",
+            "bg-orange-500",
+            "bg-purple-600",
+            "bg-green-600",
+            "bg-red-600",
+];
+
+const getAvatarColor = (index) => {
+  return avatarColors[index %
+    avatarColors.length];
+};
   let userData = JSON.parse(localStorage.getItem("user"));
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -63,9 +75,9 @@ const UserMenu = (user) => {
   return (
     <div className="relative" ref={menuRef}>
       {/* Avatar button */}
-      <div
-        className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium cursor-pointer"
-        onClick={toggleMenu}
+      <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-medium cursor-pointer ${getAvatarColor(userData.userId)}`}
+  onClick={toggleMenu}
+       
       >
         {userData.photoPath ? (
                       <img
