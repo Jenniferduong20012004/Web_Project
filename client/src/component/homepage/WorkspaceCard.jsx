@@ -3,9 +3,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { DeleteWorkspaceModal, EditWorkspaceModal } from "./WorkspaceModals";
 
 const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
-  // alert (workspace.members[0].name)
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
   const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
@@ -17,14 +17,11 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   const [editedDescription, setEditedDescription] = useState(
     workspace.description || ""
   );
-  const [loading, setLoading] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
-    // console.log("Workspace updated:", workspace);
-    // console.log("Description value:", workspace.description);
   }, [workspace]);
 
   useEffect(() => {
@@ -61,7 +58,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
   const handleUpdateWorkspace = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     // Get the correct ID field
     const workspaceId = workspace.WorkSpace || workspace.id;
@@ -90,7 +86,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         };
         localStorage.setItem("workspace", JSON.stringify(updatedWorkspaceData));
       }
-      
+
       if (onUpdate) {
         const updatedWorkspace = {
           ...workspace,
@@ -98,7 +94,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           description: editedDescription || "",
           title: editedWorkspaceName,
         };
-        // console.log("Updated workspace object:", updatedWorkspace);
         onUpdate(updatedWorkspace);
       }
 
@@ -110,7 +105,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
   const handleDeleteWorkspace = async () => {
     setIsMenuOpen(false);
-
     setWorkspaceToDelete(workspace);
     setShowConfirm(true);
   };
@@ -141,11 +135,10 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         toast.success("Workspace deleted successfully!", {
           position: "top-right",
         });
-        
+
         setShowConfirm(false);
         setWorkspaceToDelete(null);
-        
-        
+
         if (onFetchWorkspaces) {
           onFetchWorkspaces();
         }
@@ -206,14 +199,14 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
               {workspace.photoPath ? (
-                      <img
-                        src={workspace.photoPath}
-                        alt={workspace.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      workspace.initials
-                    )}
+                <img
+                  src={workspace.photoPath}
+                  alt={workspace.name}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                workspace.initials
+              )}
             </div>
             <div>
               <div className="text-sm font-medium">
@@ -309,14 +302,14 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
                 }}
               >
                 {member.photoPath ? (
-                      <img
-                        src={member.photoPath}
-                        alt={member.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      member.initials
-                    )}
+                  <img
+                    src={member.photoPath}
+                    alt={member.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  member.initials
+                )}
               </div>
             ))}
         </div>
@@ -324,120 +317,24 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
       {/* Edit Form Modal */}
       {isEditFormOpen && (
-        <div className="fixed inset-0 !z-50 flex items-center justify-center">
-          {/* Darker backdrop */}
-          <div
-            className="absolute inset-0 bg-black/70"
-            onClick={handleCancelEdit}
-          ></div>
-
-          {/* Form content */}
-          <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md !p-6 z-10">
-            <h2 className="text-2xl font-bold !mb-4">Edit Workspace</h2>
-
-            <form onSubmit={handleUpdateWorkspace}>
-              <div className="!mb-4">
-                <label htmlFor="name" className="block font-medium !mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  placeholder="Workspace name"
-                  className="w-full !p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6299ec] focus:border-1"
-                  value={editedWorkspaceName}
-                  onChange={(e) => setEditedWorkspaceName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="!mb-6">
-                <label
-                  htmlFor="description"
-                  className="block font-medium !mb-1"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  placeholder="Workspace description"
-                  className="w-full !p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6299ec] focus:border-1"
-                  rows="4"
-                  value={editedDescription}
-                  onChange={(e) => setEditedDescription(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-end gap-5">
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="!px-7 !py-2 text-[#6299ec] font-medium rounded-md hover:bg-gray-100 cursor-pointer"
-                  disabled={loading}
-                >
-                  CANCEL
-                </button>
-                <button
-                  type="submit"
-                  className="!px-7 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 cursor-pointer"
-                  disabled={loading}
-                >
-                  {loading ? "UPDATING..." : "UPDATE"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EditWorkspaceModal
+          workspace={workspace}
+          onUpdate={handleUpdateWorkspace}
+          onCancel={handleCancelEdit}
+          editedWorkspaceName={editedWorkspaceName}
+          setEditedWorkspaceName={setEditedWorkspaceName}
+          editedDescription={editedDescription}
+          setEditedDescription={setEditedDescription}
+        />
       )}
 
-      {/* Delete Confirmation m*/}
+      {/* Delete Confirmation Modal */}
       {showConfirm && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-50">
-          <div className="bg-white rounded-xl shadow-xl !p-8 max-w-md w-full animate-fade-in-scale">
-            <div className="flex flex-col items-center">
-              <div className="text-red-500 !mb-4">
-                <svg
-                  className="w-16 h-16 animate-bounce"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path fill="#FACC15" d="M12 2L1 21h22L12 2z" />
-                  <path
-                    d="M12 8v4"
-                    stroke="#000"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="12" cy="16" r="1.25" fill="#000" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-red-500 !mb-2">DELETE</h3>
-              <p className="text-center text-sm text-gray-700 !mb-2">
-                Are you sure to delete workspace <br />
-                <span className="text-[#f44336] font-semibold">
-                  {workspaceToDelete?.title || workspaceToDelete?.workspaceName}
-                </span>{" "}
-                ?
-              </p>
-              <p className="text-sm text-gray-400 !mb-6">
-                This action cannot be undone.
-              </p>
-              <div className="flex gap-4 w-full">
-                <button
-                  className="w-1/2 !py-2 border text-gray-700 font-medium rounded-md hover:bg-gray-100"
-                  onClick={handleCancelDelete}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="w-1/2 !py-2 bg-[#6e6cf4] text-white font-medium rounded-md hover:bg-[#4b3bbd]"
-                  onClick={handleDeleteConfirmed}
-                >
-                  Yes, delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DeleteWorkspaceModal
+          workspace={workspaceToDelete}
+          onConfirm={handleDeleteConfirmed}
+          onCancel={handleCancelDelete}
+        />
       )}
     </>
   );

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { FaUndoAlt, FaTrashAlt } from "react-icons/fa";
 import ConfirmationModal from "./ConfirmationModal";
-import RestoreModal from "./RestoreModal";
 
 const TrashBin = ({ trashTask, workspaceId }) => {
   const [tasks, setTasks] = useState([]);
@@ -11,9 +11,6 @@ const TrashBin = ({ trashTask, workspaceId }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
-  const [showRestoreModal, setShowRestoreModal] = useState(false);
-  const [restoredTask, setRestoredTask] = useState(null);
-  const [restoreAllConfirm, setRestoreAllConfirm] = useState(false);
 
   useEffect(() => {
     fetchTasks(trashTask);
@@ -69,13 +66,12 @@ const TrashBin = ({ trashTask, workspaceId }) => {
         toast.error("User not logged in", { position: "top-right" });
         return;
       }
-  
+
       const requestBody = {
         taskId: parseInt(taskId, 10) || taskId,
         workspaceId: parseInt(workspaceId, 10) || workspaceId,
         userId: userData.userId,
       };
-
 
       const response = await fetch("http://localhost:5000/restoreTrashTask", {
         method: "POST",
@@ -189,7 +185,6 @@ const TrashBin = ({ trashTask, workspaceId }) => {
         toast.warning("Some tasks could not be restored", {
           position: "top-right",
         });
-        window.location.reload();
       }
     } catch (error) {
       toast.error("Error: " + (error.message || "Unknown error"), {
@@ -239,7 +234,6 @@ const TrashBin = ({ trashTask, workspaceId }) => {
         toast.warning("Some tasks could not be deleted", {
           position: "top-right",
         });
-        window.location.reload();
       }
     } catch (error) {
       toast.error("Error: " + (error.message || "Unknown error"), {
@@ -250,35 +244,17 @@ const TrashBin = ({ trashTask, workspaceId }) => {
     }
   };
 
-  const confirmRestoreTask = (id) => {
-    const task = tasks.find((t) => t.id === id);
-    setRestoredTask(task);
-    setShowRestoreModal(true);
+  // Direct restore (no confirmation modal)
+  const handleRestoreTask = (id) => {
+    if (isLoading) return;
+    const taskName = tasks.find((t) => t.id === id)?.title || "Task";
+    restoreTask(id);
   };
 
-  const handleRestoreConfirmed = () => {
-    restoreTask(restoredTask.id);
-    setShowRestoreModal(false);
-    setRestoredTask(null);
-  };
-
-  const handleCancelRestore = () => {
-    setShowRestoreModal(false);
-    setRestoredTask(null);
-  };
-
-  const confirmRestoreAll = () => {
-    if (tasks.length === 0) return;
-    setRestoreAllConfirm(true);
-  };
-
-  const handleRestoreAllConfirmed = () => {
+  // Direct restore all (no confirmation modal)
+  const handleRestoreAll = () => {
+    if (tasks.length === 0 || isLoading) return;
     restoreAllTasks();
-    setRestoreAllConfirm(false);
-  };
-
-  const handleCancelRestoreAll = () => {
-    setRestoreAllConfirm(false);
   };
 
   const confirmDeleteTask = (id) => {
@@ -326,6 +302,7 @@ const TrashBin = ({ trashTask, workspaceId }) => {
       text: "text-gray-600",
     },
   };
+
   const StageIndicator = ({ stage }) => (
     <div className="flex items-center gap-2">
       <div className={`h-2 w-2 rounded-full ${stageStyles[stage].dot}`}></div>
@@ -335,15 +312,15 @@ const TrashBin = ({ trashTask, workspaceId }) => {
     </div>
   );
 
-  // Priority badge styles
+  // Priority badge styles with improved amber color for Medium
   const priorityStyles = {
     High: {
       bg: "bg-red-100",
       text: "text-red-700",
     },
     Medium: {
-      bg: "bg-yellow-100",
-      text: "text-orange-700",
+      bg: "bg-amber-100", // Changed from yellow-100 to amber-100
+      text: "text-amber-700", // Changed from orange-700 to amber-700
     },
     Low: {
       bg: "bg-green-100",
@@ -361,11 +338,16 @@ const TrashBin = ({ trashTask, workspaceId }) => {
 
   return (
     <div className="bg-gray-50 min-h-screen relative">
+      <ToastContainer
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        draggable={false}
+      />
       <div className="flex justify-between items-center !mb-6">
         <h1 className="text-xl font-bold text-[#455294]">Trash Bin</h1>
         <div className="flex gap-8">
           <button
-            onClick={confirmRestoreAll}
+            onClick={handleRestoreAll}
             className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
               tasks.length === 0 || isLoading
                 ? "text-gray-300 cursor-not-allowed"
@@ -418,15 +400,15 @@ const TrashBin = ({ trashTask, workspaceId }) => {
                 </td>
                 <td className="!py-4 !px-8 flex justify-center gap-8">
                   <button
-                    onClick={() => confirmRestoreTask(task.id)}
-                    className="text-green-600 hover:scale-110 transition"
+                    onClick={() => handleRestoreTask(task.id)}
+                    className="text-green-600 hover:scale-110 transition cursor-pointer"
                     disabled={isLoading}
                   >
                     <FaUndoAlt />
                   </button>
                   <button
                     onClick={() => confirmDeleteTask(task.id)}
-                    className="text-red-600 hover:scale-110 transition"
+                    className="text-red-600 hover:scale-110 transition cursor-pointer"
                     disabled={isLoading}
                   >
                     <FaTrashAlt />
@@ -459,24 +441,6 @@ const TrashBin = ({ trashTask, workspaceId }) => {
           onConfirm={handleDeleteAllConfirmed}
           onCancel={handleCancelDeleteAll}
           message="Are you sure you want to permanently delete all tasks?"
-          isLoading={isLoading}
-        />
-      )}
-
-      {showRestoreModal && (
-        <RestoreModal
-          onConfirm={handleRestoreConfirmed}
-          onCancel={handleCancelRestore}
-          task={restoredTask}
-          isLoading={isLoading}
-        />
-      )}
-
-      {restoreAllConfirm && (
-        <RestoreModal
-          onConfirm={handleRestoreAllConfirmed}
-          onCancel={handleCancelRestoreAll}
-          task={null}
           isLoading={isLoading}
         />
       )}
