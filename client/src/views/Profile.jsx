@@ -12,7 +12,13 @@ const Profile = () => {
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const fileInputRef = useRef(null);
-
+const avatarColors = [
+            "bg-blue-700",
+            "bg-orange-500",
+            "bg-purple-600",
+            "bg-green-600",
+            "bg-red-600",
+];
   const fetchUser = async () => {
     try {
       setLoading(true);
@@ -81,6 +87,7 @@ const Profile = () => {
       });
       if (response.data.success) {
         toast.dismiss(loadingToast);
+
         // Show success modal instead of toast
         setShowUpdateSuccess(true);
       } else {
@@ -147,6 +154,7 @@ const Profile = () => {
         body: data,
       });
         const result = await response.json();
+        setAvatarUrl(result.updatedPhotoPath);
         console.log('Success:', result);  
         toast.success("Avatar updated successfully", {
         position: "top-right",
@@ -191,14 +199,6 @@ const Profile = () => {
     if (!name) return "";
     const words = name.split(" ");
     return `${words[0][0]}`.toUpperCase();
-    if (words.length >= 2) {
-      return `${words[0][0]}${words[1][0]}`.toUpperCase();
-    } else if (words.length === 1 && words[0].length >= 2) {
-      return `${words[0][0]}${words[0][1]}`.toUpperCase();
-    } else if (words.length === 1) {
-      return `${words[0][0]}`.toUpperCase();
-    }
-    return "";
   };
 
   const triggerFileInput = () => {
@@ -266,7 +266,7 @@ const Profile = () => {
                   className="relative group w-20 h-20 cursor-pointer"
                   onClick={triggerFileInput}
                 >
-                  <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-2xl font-medium">
+                  <div className={`w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-2xl text-white font-medium ${avatarColors[userData.id%avatarColors.length]}`}>
                     {getInitials(userData.username)}
                   </div>
                   <div className="absolute inset-0 bg-black bg-opacity-20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity flex items-center justify-center">
