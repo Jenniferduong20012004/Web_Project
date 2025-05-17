@@ -2,22 +2,19 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const bgColorPool = [
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-yellow-500",
-  "bg-red-500",
-  "bg-indigo-500",
-  "bg-teal-500",
-  "bg-orange-500",
+            "bg-blue-700",
+            "bg-orange-500",
+            "bg-purple-600",
+            "bg-green-600",
+            "bg-red-600",
 ];
 const userColors = new Map();
 
 const getUserColor = (user) => {
+  console.log (user)
   if (!userColors.has(user)) {
     const randomColor =
-      bgColorPool[Math.floor(Math.random() * bgColorPool.length)];
+      bgColorPool[user.id%bgColorPool.length];
     userColors.set(user, randomColor);
   }
   return userColors.get(user);

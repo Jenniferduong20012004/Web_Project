@@ -113,7 +113,8 @@ WHERE
       j.joinWorkSpace,
       j.role,
       u.photoPath,
-      u.name
+      u.name,
+      u.userId
     FROM 
       joinWorkSpace j 
     JOIN 
@@ -170,6 +171,7 @@ WHERE
               description: row.description || "",
               isPending: false,
               joinWorkSpace: row.joinWorkSpace,
+              bgColor: bgColorOptions[row.userId % bgColorOptions.length],
               photoPath: row.photoPath 
                 ? `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}` 
                 : null,

@@ -27,21 +27,16 @@ const getInitials = (name) => {
 };
 
 const avatarColors = [
-  "bg-orange-500",
-  "bg-green-500",
-  "bg-blue-500",
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-red-500",
-  "bg-yellow-500",
-  "bg-indigo-500",
+            "bg-blue-700",
+            "bg-orange-500",
+            "bg-purple-600",
+            "bg-green-600",
+            "bg-red-600",
 ];
 
-const getAvatarColor = (email) => {
-  const index =
-    [...email].reduce((sum, char) => sum + char.charCodeAt(0), 0) %
-    avatarColors.length;
-  return avatarColors[index];
+const getAvatarColor = (index) => {
+  return avatarColors[index %
+    avatarColors.length];
 };
 
 const ManageMembers = () => {
@@ -271,7 +266,7 @@ const ManageMembers = () => {
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold ${getAvatarColor(
-                          member.email
+                          member.userId
                         )}`}
                       >
                           {member.photoPath ? (

@@ -216,7 +216,8 @@ class DashBoard {
         u.email AS assignedUserEmail,
         jw.isManager,
         jw.role,
-        jw.dateJoin
+        jw.dateJoin,
+        jw.joinWorkSpace as joiny
       FROM Task t
       JOIN AssignTask at ON t.TaskId = at.TaskId
       JOIN joinWorkSpace jw ON at.joinWorkSpace = jw.joinWorkSpace
@@ -225,7 +226,7 @@ class DashBoard {
     `;
 
     const memberQuery = `
-      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace, u.photoPath, j.joinWorkSpace
+      SELECT u.userId, u.name, u.email, j.role, j.isManager, j.isPending, j.dateJoin, j.joinWorkSpace, u.photoPath
       FROM joinWorkSpace j
       JOIN User u ON j.userId = u.userId
       WHERE j.WorkSpace = ?;
@@ -268,7 +269,7 @@ class DashBoard {
             name: row.assignedUserName,
             email: row.assignedUserEmail,
             photoPath: photoLink,
-            joinId: row.joinWorkSpace,
+            joinId: row.joiny,
             initials,
             bgColor,
           };
@@ -492,7 +493,7 @@ const mappedMembers = results.map((row) => {
   `;
 
     const query2 = `
-    SELECT u.name, u.photoPath
+    SELECT u.name, u.photoPath, j.userId
     FROM AssignTask a
     JOIN joinWorkSpace j ON a.joinWorkSpace = j.joinWorkSpace
     JOIN User u ON j.userId = u.userId
@@ -519,6 +520,7 @@ const mappedMembers = results.map((row) => {
             photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
           }
           return {
+            id:u.userId,
             name: u.name,
             photoPath: photoLink,
           };

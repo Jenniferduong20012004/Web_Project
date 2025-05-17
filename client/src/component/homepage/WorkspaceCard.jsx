@@ -197,7 +197,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${workspace.bgColor}`}>
               {workspace.photoPath ? (
                 <img
                   src={workspace.photoPath}

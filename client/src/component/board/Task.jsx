@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 
 const Task = ({ task, workspaceId, onTrashTask }) => {
+
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
+    // alert (`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${task.assignedTo[0].bgColor}`)
     const handleClickOutside = (event) => {
+      
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
@@ -34,6 +37,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
   };
 
   const getPriorityBg = (priority) => {
+    
     switch (priority) {
       case "High":
         return "bg-red-100 text-red-700";
@@ -45,6 +49,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
         return "bg-gray-100 text-gray-700";
     }
   };
+  
 
   const handleTaskClick = () => {
     navigate(`/board/${workspaceId}/task/${task.id}`);
@@ -149,8 +154,11 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
 
         {/* Assigned Members */}
         <div className="flex !-space-x-1">
+         
           {task.assignedTo &&
             task.assignedTo.map((member, index) => (
+              
+              
               <div
                 key={index}
                 className={`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
@@ -163,7 +171,7 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
                     className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
-                  member.initials
+                  member.initials 
                 )}
               </div>
             ))}
