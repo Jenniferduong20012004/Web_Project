@@ -251,6 +251,7 @@ const ManageMembers = () => {
                   Email address
                 </th>
                 <th className="!py-4 !px-8 text-left font-semibold">Role</th>
+                <th className="!py-4 !px-8 text-left font-semibold">Status</th>
                 {isAdmin === 1 && (
                   <th className="!py-4 !px-8 text-center font-semibold">
                     Delete
@@ -331,6 +332,19 @@ const ManageMembers = () => {
                     </div>
                   </td>
 
+                  {/* Status column */}
+                  <td className="!py-4 !px-8 text-gray-700">
+                    {member.isPending === 1 ? (
+                      <span className="!px-2 !py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                        Pending
+                      </span>
+                    ) : (
+                      <span className="!px-2 !py-1 text-xs rounded-full bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    )}
+                  </td>
+
                   {/* Delete button */}
                   {isAdmin === 1 && (
                     <td className="!py-4 !px-8 text-center">
@@ -349,7 +363,7 @@ const ManageMembers = () => {
               ))}
               {members.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin === 1 ? "4" : "3"} className="!py-16 text-center text-gray-400">
+                  <td colSpan={isAdmin === 1 ? "5" : "4"} className="!py-16 text-center text-gray-400">
                     No members found.
                   </td>
                 </tr>
