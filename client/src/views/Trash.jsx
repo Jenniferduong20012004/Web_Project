@@ -10,6 +10,7 @@ const Trash = () => {
   const [trashTask, setTrashTask] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [workspaceRole, setWorkspaceRole] = useState(null);
+  const [isManager, setIsManager] = useState(false);
 
   // Function to check workspace role
   const checkWorkspaceRole = async (workspaceId) => {
@@ -33,7 +34,9 @@ const Trash = () => {
       const data = await response.json();
 
       if (data.success) {
-        setWorkspaceRole(data.isManager ? "myWorkspace" : "assignedWorkspace");
+        const isUserManager = data.isManager;
+        setIsManager(isUserManager);
+        setWorkspaceRole(isUserManager ? "myWorkspace" : "assignedWorkspace");
       }
     } catch (error) {
       console.error("Error checking workspace role:", error);
@@ -105,7 +108,11 @@ const Trash = () => {
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           {/* TRASH BIN */}
-          <TrashBin trashTask={trashTask} workspaceId={workspacedId} />
+          <TrashBin 
+            trashTask={trashTask} 
+            workspaceId={workspacedId} 
+            isManager={isManager} 
+          />
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ const Board = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [members, setMembers] = useState([]);
   const [workspaceRole, setWorkspaceRole] = useState(null);
+  const [isManager, setIsManager] = useState(false);
 
   const { workspacedId } = useParams();
 
@@ -40,7 +41,9 @@ const Board = () => {
       const data = await response.json();
 
       if (data.success) {
-        setWorkspaceRole(data.isManager ? "myWorkspace" : "assignedWorkspace");
+        const userIsManager = data.isManager;
+        setIsManager(userIsManager);
+        setWorkspaceRole(userIsManager ? "myWorkspace" : "assignedWorkspace");
       }
     } catch (error) {
       console.error("Error checking workspace role:", error);
@@ -219,12 +222,14 @@ const Board = () => {
                   </button>
                 ))}
               </div>
-              <button
-                className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium cursor-pointer"
-                onClick={openTaskForm}
-              >
-                + Add task
-              </button>
+              {isManager && (
+                <button
+                  className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium cursor-pointer"
+                  onClick={openTaskForm}
+                >
+                  + Add task
+                </button>
+              )}
             </div>
           </div>
 
@@ -236,6 +241,7 @@ const Board = () => {
                 task={task}
                 workspaceId={workspacedId}
                 onTrashTask={handleTrashTask} // Pass the trash function to Task component
+                isManager={isManager} // Pass isManager to Task component so trash functionality can be controlled there too
               />
             ))}
           </div>
@@ -243,13 +249,15 @@ const Board = () => {
       </div>
 
       {/* TASK FORM */}
-      <TaskForm
-        isOpen={isTaskFormOpen}
-        onClose={closeTaskForm}
-        onSave={handleAddTask}
-        members={members}
-        workspaceId={workspacedId}
-      />
+      {isManager && (
+        <TaskForm
+          isOpen={isTaskFormOpen}
+          onClose={closeTaskForm}
+          onSave={handleAddTask}
+          members={members}
+          workspaceId={workspacedId}
+        />
+      )}
     </div>
   );
 };
