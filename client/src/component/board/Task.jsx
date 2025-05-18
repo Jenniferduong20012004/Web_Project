@@ -2,16 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 
-const Task = ({ task, workspaceId, onTrashTask }) => {
-
+const Task = ({ task, workspaceId, onTrashTask, refreshBoard, isManager }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
-    // alert (`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${task.assignedTo[0].bgColor}`)
     const handleClickOutside = (event) => {
-      
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
@@ -37,7 +34,6 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
   };
 
   const getPriorityBg = (priority) => {
-    
     switch (priority) {
       case "High":
         return "bg-red-100 text-red-700";
@@ -50,7 +46,6 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
     }
   };
   
-
   const handleTaskClick = () => {
     navigate(`/board/${workspaceId}/task/${task.id}`);
   };
@@ -66,6 +61,9 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
 
     if (onTrashTask) {
       onTrashTask(task.id);
+      if (refreshBoard) {
+        refreshBoard();
+      }
     }
   };
 
@@ -77,7 +75,6 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
       {/* Task Status & Menu */}
       <div className="flex justify-between items-center !mb-2">
         <div className="flex items-center">
-          
           <span
             className={`h-2 w-2 rounded-full ${getStatusColor(
               task.status
@@ -89,50 +86,52 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
         </div>
 
         {/* MENU BUTTON with Dropdown */}
-        <div className="relative" ref={menuRef}>
-          <button
-            className="text-gray-400 hover:text-gray-600 cursor-pointer"
-            onClick={handleMenuToggle}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+        {isManager && (
+          <div className="relative" ref={menuRef}>
+            <button
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              onClick={handleMenuToggle}
             >
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-
-          {/* Dropdown Menu -Move to Trash option */}
-          {isMenuOpen && (
-            <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10">
-              <button
-                className="w-full text-left !px-2 !py-3 text-sm text-red-500 hover:bg-gray-100"
-                onClick={handleMoveToTrash}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
-                <span className="flex items-center cursor-pointer">
-                  {/* svg for Trash icon */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 !mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  Move to Trash
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu -Move to Trash option */}
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10">
+                <button
+                  className="w-full text-left !px-2 !py-3 text-sm text-red-500 hover:bg-gray-100"
+                  onClick={handleMoveToTrash}
+                >
+                  <span className="flex items-center cursor-pointer">
+                    {/* svg for Trash icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 !mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    Move to Trash
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Task Title */}
@@ -154,11 +153,8 @@ const Task = ({ task, workspaceId, onTrashTask }) => {
 
         {/* Assigned Members */}
         <div className="flex !-space-x-1">
-         
           {task.assignedTo &&
             task.assignedTo.map((member, index) => (
-              
-              
               <div
                 key={index}
                 className={`w-8 h-8 rounded-full border border-white flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}

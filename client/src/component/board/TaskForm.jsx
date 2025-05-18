@@ -5,11 +5,15 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calendar from "./task-detail/Calendar";
 
-const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
+const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   const fileInputRef = useRef(null);
+  const formRef = useRef(null);
   const { workspacedId } = useParams();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeMembers, setActiveMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+
   const initialFormState = {
     title: "",
     description: "",
@@ -20,6 +24,73 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
     file: null,
   };
   const [formData, setFormData] = useState(initialFormState);
+
+  // Fetch active members from API
+  useEffect(() => {
+    if (isOpen && workspaceId) {
+      fetchActiveMembers();
+    }
+  }, [isOpen, workspaceId]);
+
+  // Handle clicking outside the form
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && formRef.current && !formRef.current.contains(event.target)) {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const fetchActiveMembers = async () => {
+    setLoadingMembers(true);
+    try {
+      // Get workspace ID from props or localStorage
+      const activeWorkspaceId =
+        workspaceId ||
+        (localStorage.getItem("workspace")
+          ? JSON.parse(localStorage.getItem("workspace")).WorkSpace
+          : null);
+
+      if (!activeWorkspaceId) {
+        console.warn("No workspace ID available to fetch members");
+        setLoadingMembers(false);
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/getActiveMembers",
+        {
+          workspaceId: activeWorkspaceId,
+        }
+      );
+
+      if (response.data.success) {
+        // Transform the API response to match the expected format for members
+        const formattedMembers = response.data.members.map((member) => ({
+          id: member.userId,
+          name: member.userName,
+          photoPath: member.photoPath,
+          bgColor: member.bgColor,
+          initials: member.initials,
+          role: member.role,
+        }));
+
+        setActiveMembers(formattedMembers);
+      }
+    } catch (error) {
+      console.error("Error fetching active members:", error);
+      toast.error("Failed to load workspace members", {
+        position: "top-right",
+      });
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
 
   const resetForm = () => {
     setFormData({ ...initialFormState });
@@ -91,67 +162,85 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
     });
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const dateCreate = new Date().toISOString().split("T")[0];
+
+    // Get workspace ID from props or localStorage
+    const activeWorkspaceId =
+      workspaceId ||
+      (localStorage.getItem("workspace")
+        ? JSON.parse(localStorage.getItem("workspace")).WorkSpace
+        : null);
+
+    if (!activeWorkspaceId) {
+      toast.error("No workspace selected. Please select a workspace first.", {
+        position: "top-right",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:5000/addTask", {
         taskname: formData.title,
         description: formData.description,
-        workspaceId: workspaceId,
+        workspaceId: activeWorkspaceId,
         StateCompletion: formData.status,
         priority: formData.priority,
         dateBegin: dateCreate,
         dateEnd: formData.dueDate,
         assignedTo: formData.assignedMembers.map((member) => ({
-        id: member.id,
-      })), 
-    });
+          id: member.id,
+        })),
+      });
 
       const result = response.data;
 
-      if (result.success ) {
-            if (formData.file != null){
-            const data = new FormData();
+      if (result.success) {
+        if (formData.file != null) {
+          const data = new FormData();
 
-            data.append('taskId',result.taskId);
-            data.append('uploaded_file', formData.file); 
-            try {
-              const response = await fetch("http://localhost:5000/addFile", {
-                method: 'POST',
-                body: data,
-              });
+          data.append("taskId", result.taskId);
+          data.append("uploaded_file", formData.file);
+          try {
+            const response = await fetch("http://localhost:5000/addFile", {
+              method: "POST",
+              body: data,
+            });
             const result = await response.json();
-            console.log('Success:', result);  
-        }
-            catch (err) {
-              console.error('Error uploading:', err);
-            }
-
+            console.log("Success:", result);
+          } catch (err) {
+            console.error("Error uploading:", err);
           }
-        toast.success("Workspace created successfully!", {
+        }
+
+        toast.success("Task created successfully!", {
           position: "top-right",
         });
-
-        onClose();
+        
+        if (onSave) {
+          onSave();
+        }
       } else {
-        toast.error("Failed to create workspace", {
+        toast.error("Failed to create task", {
           position: "top-right",
         });
       }
     } catch (error) {
       toast.error(
-        "Error creating workspace: " +
+        "Error creating task: " +
           (error.response ? error.response.data.message : error.message),
         {
           position: "top-right",
         }
       );
-      console.error("Error creating workspace:", error);
+      console.error("Error creating task:", error);
     } finally {
       setLoading(false);
+      handleClose();
     }
-    handleClose();
   };
 
   useEffect(() => {
@@ -170,8 +259,12 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-xl">
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      {/* Darker backdrop */}
+      <div className="absolute inset-0 bg-black/70" onClick={handleClose}></div>
+      
+      {/* Form content */}
+      <div ref={formRef} className="relative bg-white rounded-lg shadow-lg w-full max-w-xl z-10">
         {/* FORM TITLE */}
         <div className="flex justify-between items-center !pt-6 !px-10">
           <h2 className="text-xl font-semibold">Task</h2>
@@ -184,7 +277,11 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
         </div>
 
         {/* FORM CONTENT */}
-        <form onSubmit={handleSubmit} className="!px-10 !py-6" encType="multipart/form-data">
+        <form
+          onSubmit={handleSubmit}
+          className="!px-10 !py-6"
+          encType="multipart/form-data"
+        >
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
               <label className="block text-sm font-medium !mb-1">Title</label>
@@ -297,31 +394,59 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
                 {/* Dropdown options */}
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full !mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {members.map((member) => (
-                      <div
-                        key={member.id}
-                        className={`!px-4 !py-2 cursor-pointer hover:bg-gray-100 flex items-center text-sm ${
-                          formData.assignedMembers?.some(
-                            (m) => m.id === member.id
-                          )
-                            ? "bg-blue-50"
-                            : ""
-                        }`}
-                        onClick={() => handleSelectMember(member)}
-                      >
-                        <input
-                          type="checkbox"
-                          className="!mr-2"
-                          checked={
+                    {loadingMembers ? (
+                      <div className="flex justify-center items-center py-4">
+                        <div className="w-5 h-5 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
+                        <span className="ml-2 text-sm text-gray-600">
+                          Loading members...
+                        </span>
+                      </div>
+                    ) : activeMembers.length === 0 ? (
+                      <div className="px-4 py-2 text-sm text-gray-500 text-center">
+                        No active members in this workspace
+                      </div>
+                    ) : (
+                      activeMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          className={`!px-4 !py-2 cursor-pointer hover:bg-gray-100 flex items-center text-sm ${
                             formData.assignedMembers?.some(
                               (m) => m.id === member.id
-                            ) || false
-                          }
-                          readOnly
-                        />
-                        {member.name}
-                      </div>
-                    ))}
+                            )
+                              ? "bg-blue-50"
+                              : ""
+                          }`}
+                          onClick={() => handleSelectMember(member)}
+                        >
+                          <input
+                            type="checkbox"
+                            className="!mr-2"
+                            checked={
+                              formData.assignedMembers?.some(
+                                (m) => m.id === member.id
+                              ) || false
+                            }
+                            readOnly
+                          />
+                          <div className="flex items-center">
+                            <div
+                              className={`!w-6 !h-6 rounded-full flex items-center justify-center text-xs text-white font-medium !mr-2 ${member.bgColor}`}
+                            >
+                              {member.photoPath ? (
+                                <img
+                                  src={member.photoPath}
+                                  alt={member.name}
+                                  className="w-full h-full object-cover rounded-full"
+                                />
+                              ) : (
+                                member.initials
+                              )}
+                            </div>
+                            {member.name}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
@@ -331,10 +456,9 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
               <label className="block text-sm font-medium !mb-1">Due to</label>
-              {/* Replaced DatePicker with our Calendar component */}
-              <Calendar 
-                selectedDate={formData.dueDate} 
-                onDateChange={handleDateChange} 
+              <Calendar
+                selectedDate={formData.dueDate}
+                onDateChange={handleDateChange}
               />
             </div>
 
@@ -383,8 +507,9 @@ const TaskForm = ({ isOpen, onClose, onSave, members, workspaceId }) => {
             <button
               type="submit"
               className="!px-7 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 cursor-pointer"
+              disabled={loading}
             >
-              ADD
+              {loading ? "ADDING..." : "ADD"}
             </button>
           </div>
         </form>

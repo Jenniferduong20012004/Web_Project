@@ -16,6 +16,7 @@ const Board = () => {
   const [members, setMembers] = useState([]);
   const [workspaceRole, setWorkspaceRole] = useState(null);
   const [isManager, setIsManager] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Add refresh key state
 
   const { workspacedId } = useParams();
 
@@ -141,10 +142,14 @@ const Board = () => {
     }
   };
 
+  const refreshBoard = () => {
+    fetchBoard(workspacedId);
+  };
+
   useEffect(() => {
     fetchBoard(workspacedId);
     checkWorkspaceRole(workspacedId);
-  }, [workspacedId]);
+  }, [workspacedId, refreshKey]);
 
   const filters = [
     { id: "ALL", label: "ALL" },
@@ -160,8 +165,9 @@ const Board = () => {
     return tasks.filter((task) => task.status === activeFilter);
   };
 
-  const handleAddTask = (newTask) => {
-    setTasks([...tasks, newTask]);
+  const handleTaskCreated = () => {
+    setRefreshKey(prevKey => prevKey + 1);
+    closeTaskForm();
   };
 
   const openTaskForm = () => {
@@ -180,8 +186,10 @@ const Board = () => {
         draggable={false}
       />
       <div className="fixed top-0 right-0 left-0 z-20">
-        {/* Pass the active tab to Navbar based on workspace role */}
-        <Navbar activeTab={workspaceRole} />
+        <Navbar 
+          activeTab={workspaceRole} 
+          refreshBoard={refreshBoard}
+        />
       </div>
 
       <div className="fixed left-0 top-16 h-screen z-10">
@@ -235,15 +243,27 @@ const Board = () => {
 
           {/* TASK CONTAINER */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-8">
-            {getFilteredTasks().map((task) => (
-              <Task
-                key={task.id}
-                task={task}
-                workspaceId={workspacedId}
-                onTrashTask={handleTrashTask} // Pass the trash function to Task component
-                isManager={isManager} // Pass isManager to Task component so trash functionality can be controlled there too
-              />
-            ))}
+            {isLoading ? (
+              <div className="col-span-3 flex justify-center items-center py-10">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+              </div>
+            ) : getFilteredTasks().length === 0 ? (
+              <div className="col-span-3 text-center py-10 text-gray-500">
+                No tasks found.{" "}
+                {isManager && "Click on '+ Add task' to create a new task."}
+              </div>
+            ) : (
+              getFilteredTasks().map((task) => (
+                <Task
+                  key={task.id}
+                  task={task}
+                  workspaceId={workspacedId}
+                  onTrashTask={handleTrashTask} // Pass the trash function to Task component
+                  isManager={isManager} // Pass isManager to Task component so trash functionality can be controlled there too
+                  refreshBoard={refreshBoard} // Pass refreshBoard function to Task component
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -253,9 +273,9 @@ const Board = () => {
         <TaskForm
           isOpen={isTaskFormOpen}
           onClose={closeTaskForm}
-          onSave={handleAddTask}
-          members={members}
+          onSave={handleTaskCreated}
           workspaceId={workspacedId}
+          members={members}
         />
       )}
     </div>
