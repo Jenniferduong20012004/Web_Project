@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner"; // Import toast from sonner
 
 const Sidebar = ({ workspaceId }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Dashboard");;
+  const [activeTab, setActiveTab] = useState("Dashboard");
   const [workspaceName, setWorkspaceName] = useState("");
 
   useEffect(() => {
@@ -17,20 +18,36 @@ const Sidebar = ({ workspaceId }) => {
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes(`/dashboard/${workspaceId}`) && !path.includes("/task/")) {
+    if (
+      path.includes(`/dashboard/${workspaceId}`) &&
+      !path.includes("/task/")
+    ) {
       setActiveTab("Dashboard");
-    } else if (path.includes(`/board/${workspaceId}`) && !path.includes("/task/")) {
+    } else if (
+      path.includes(`/board/${workspaceId}`) &&
+      !path.includes("/task/")
+    ) {
       setActiveTab("Board");
     } else if (path.includes(`/trash/${workspaceId}`)) {
       setActiveTab("Trash");
     } else if (path.includes(`/members/${workspaceId}`)) {
       setActiveTab("Members");
-    }
-    else if (path.includes(`/task/`)){
+    } else if (path.includes(`/task/`)) {
       const last = localStorage.getItem("lastMainTab") || "Dashboard";
-    setActiveTab(last);
+      setActiveTab(last);
     }
   }, [location]);
+
+  // Added logout handler function
+  const handleLogout = () => {
+    // Clear user data and token from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    toast.success("Logged out successfully");
+
+    navigate("/login");
+  };
 
   // Navigation items with their icons
   const navItems = [
@@ -185,10 +202,10 @@ const Sidebar = ({ workspaceId }) => {
           </ul>
         </nav>
 
-        {/* Logout button at bottom */}
+        {/* Updated Logout button with handleLogout function */}
         <div className="!mt-33">
-          <Link
-            to="/login"
+          <button
+            onClick={handleLogout}
             className="flex gap-3 items-center text-gray-500 !py-3 text-sm hover:text-gray-700"
           >
             <svg
@@ -208,7 +225,7 @@ const Sidebar = ({ workspaceId }) => {
             </svg>
 
             <span>Log out</span>
-          </Link>
+          </button>
         </div>
       </div>
     </div>

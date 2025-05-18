@@ -77,12 +77,11 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
     localStorage.setItem("workspace", JSON.stringify(workspaceData));
 
-    console.log("Workspace selected and saved to localStorage:", workspaceData);
-
     if (onClick) {
       onClick(workspace);
     } else {
       // Default action - navigate to members page with workspace ID
+      const workspaceId = workspace.WorkSpace || workspace.id;
       navigate(`/members/${workspaceId}`);
     }
   };
@@ -284,6 +283,11 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     setIsEditFormOpen(true);
   };
 
+  // Filter out manager from members list
+  const filteredMembers = workspace.members
+    ? workspace.members.filter((member) => !member.isManager)
+    : [];
+
   return (
     <>
       <div
@@ -425,14 +429,18 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           </div>
         </div>
 
-        <div className="flex" style={{ marginBottom: "10px" }}>
-          {workspace.members &&
-            workspace.members.map((member, idx) => (
+        {/* Fixed member avatars container - using filteredMembers and justified to the right */}
+        <div
+          className="flex justify-end !pr-2"
+          style={{ marginBottom: "10px" }}
+        >
+          {filteredMembers.length > 0 &&
+            filteredMembers.map((member, idx) => (
               <div
                 key={member.id}
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
                 style={{
-                  marginLeft: idx > 0 ? "-3px" : "0",
+                  marginRight: idx < filteredMembers.length - 1 ? "-3px" : "0",
                 }}
               >
                 {member.photoPath ? (

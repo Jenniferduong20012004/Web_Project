@@ -126,7 +126,7 @@ const ManageMembers = () => {
   };
 
   const handleUpdateRoleClick = (member) => {
-    // only admin can update member role.
+    // only admin can update member role
     if (isAdmin !== 1) {
       toast.error("Only admin can update member's role.", {
         position: "top-right"
@@ -331,7 +331,7 @@ const ManageMembers = () => {
                     </div>
                   </td>
 
-                  {/* Delete button - chỉ hiển thị nếu người dùng là admin */}
+                  {/* Delete button */}
                   {isAdmin === 1 && (
                     <td className="!py-4 !px-8 text-center">
                       {member.isManager !== 1 && (
