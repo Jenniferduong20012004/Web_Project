@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { DeleteWorkspaceModal, EditWorkspaceModal } from "./WorkspaceModals";
+import {
+  DeleteWorkspaceModal,
+  EditWorkspaceModal,
+  LeaveWorkspaceModal,
+} from "./WorkspaceModals";
 
 const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -17,11 +20,15 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   const [editedDescription, setEditedDescription] = useState(
     workspace.description || ""
   );
+  const [isManager, setIsManager] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
+    // Check if user is a manager when component mounts
+    checkWorkspaceRole();
   }, [workspace]);
 
   useEffect(() => {
@@ -36,6 +43,30 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Check if the current user is a manager of this workspace
+  const checkWorkspaceRole = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) return;
+
+      const workspaceId = workspace.WorkSpace || workspace.id;
+
+      const response = await axios.post(
+        "http://localhost:5000/checkWorkspaceRole",
+        {
+          userId: userData.userId,
+          workspaceId: workspaceId,
+        }
+      );
+
+      if (response.data.success) {
+        setIsManager(response.data.isManager);
+      }
+    } catch (error) {
+      console.error("Error checking workspace role:", error);
+    }
+  };
 
   const handleWorkspaceClick = () => {
     const workspaceData = {
@@ -109,6 +140,71 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     setShowConfirm(true);
   };
 
+  const handleLeaveWorkspace = async () => {
+    setIsMenuOpen(false);
+    setShowLeaveConfirm(true);
+  };
+
+  const handleLeaveConfirmed = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        toast.error("User not logged in", { position: "top-right" });
+        return;
+      }
+
+      const workspaceId = workspace.WorkSpace || workspace.id;
+
+      const response = await axios.post(
+        "http://localhost:5000/leaveWorkspace",
+        {
+          userId: userData.userId,
+          workspaceId: workspaceId,
+        }
+      );
+
+      const result = response.data;
+
+      if (result.success) {
+        // Remove workspace from localStorage if it's the current one
+        const currentWorkspace = JSON.parse(localStorage.getItem("workspace"));
+        if (
+          currentWorkspace &&
+          (currentWorkspace.WorkSpace === workspaceId ||
+            currentWorkspace.WorkSpace === workspace.id)
+        ) {
+          localStorage.removeItem("workspace");
+        }
+
+        toast.success("You have left the workspace successfully!", {
+          position: "top-right",
+        });
+
+        setShowLeaveConfirm(false);
+
+        // Refresh workspaces list
+        if (onFetchWorkspaces) {
+          onFetchWorkspaces();
+        }
+      } else {
+        toast.error(result.message || "Failed to leave workspace", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      console.error("Leave workspace error:", error);
+      toast.error(
+        "Error leaving workspace: " +
+          (error.response
+            ? error.response.data.message
+            : error.message || "Unknown error"),
+        {
+          position: "top-right",
+        }
+      );
+    }
+  };
+
   const handleDeleteConfirmed = async () => {
     try {
       const workspaceId = workspaceToDelete.WorkSpace || workspaceToDelete.id;
@@ -166,6 +262,10 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     setWorkspaceToDelete(null);
   };
 
+  const handleCancelLeave = () => {
+    setShowLeaveConfirm(false);
+  };
+
   const handleCancelEdit = () => {
     // Reset form values and close
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
@@ -197,7 +297,9 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
+            <div
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${workspace.bgColor}`}
+            >
               {workspace.photoPath ? (
                 <img
                   src={workspace.photoPath}
@@ -239,53 +341,85 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
             {/* Dropdown Menu */}
             {isMenuOpen && (
               <div className="absolute right-0 !mt-1 w-36 bg-white rounded-md shadow-lg z-10 !py-1">
-                <button
-                  className="w-full text-left !px-4 !py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={handleEditOption}
-                >
-                  <span className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 !mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                {isManager ? (
+                  <>
+                    {/* Options for manager: Edit and Delete */}
+                    <button
+                      className="w-full text-left !px-4 !py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={handleEditOption}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    Edit
-                  </span>
-                </button>
-                <button
-                  className="w-full text-left !px-4 !py-2 text-sm text-red-600 hover:bg-gray-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteWorkspace();
-                  }}
-                >
-                  <span className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 !mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      <span className="flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 !mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </span>
+                    </button>
+                    <button
+                      className="w-full text-left !px-4 !py-2 text-sm text-red-600 hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteWorkspace();
+                      }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    Delete
-                  </span>
-                </button>
+                      <span className="flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 !mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Delete
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  // Option for non-manager: Only Leave Workspace
+                  <button
+                    className="w-full text-left !px-4 !py-2 text-sm text-red-600 hover:bg-gray-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLeaveWorkspace();
+                    }}
+                  >
+                    <span className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 !mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
+                      Leave
+                    </span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -334,6 +468,14 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           workspace={workspaceToDelete}
           onConfirm={handleDeleteConfirmed}
           onCancel={handleCancelDelete}
+        />
+      )}
+
+      {/* Leave Workspace Confirmation Modal */}
+      {showLeaveConfirm && (
+        <LeaveWorkspaceModal
+          onConfirm={handleLeaveConfirmed}
+          onCancel={handleCancelLeave}
         />
       )}
     </>

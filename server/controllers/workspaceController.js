@@ -30,32 +30,21 @@ exports.updateWorkSpace = (req, res) => {
   const { id, workspacename, description } = req.body;
 
   if (!id || !workspacename || !description) {
-    return res
-      .status(400)
-      .json({
-        error: true,
-        message: "Please provide workspace ID, name, and description",
-      });
+    return res.status(400).json({
+      error: true,
+      message: "Please provide workspace ID, name, and description",
+    });
   }
-
-  // Log the request data for debugging
-  // console.log("Update workspace request data:", {
-  //   id,
-  //   workspacename,
-  //   description,
-  // });
 
   const workspaceData = { id, workspacename, description };
 
   Workspace.update(workspaceData, (err, result) => {
     if (err) {
       console.error("Error updating workspace:", err);
-      return res
-        .status(500)
-        .json({
-          error: true,
-          message: "Error when updating workspace: " + err.message,
-        });
+      return res.status(500).json({
+        error: true,
+        message: "Error when updating workspace: " + err.message,
+      });
     }
 
     console.log("Update workspace successful!");
@@ -79,12 +68,10 @@ exports.deleteWorkSpace = (req, res) => {
   Workspace.delete(id, (err, result) => {
     if (err) {
       console.error("Error deleting workspace:", err);
-      return res
-        .status(500)
-        .json({
-          error: true,
-          message: "Error when deleting workspace: " + err.message,
-        });
+      return res.status(500).json({
+        error: true,
+        message: "Error when deleting workspace: " + err.message,
+      });
     }
 
     console.log("Delete workspace successful!");
@@ -221,5 +208,32 @@ exports.createTask = (req, res) => {
     } else {
       return res.status(201).json({ success: true, task: result });
     }
+  });
+};
+
+// leave ws function, for member role
+exports.leaveWorkspace = (req, res) => {
+  const { userId, workspaceId } = req.body;
+
+  if (!userId || !workspaceId) {
+    return res.status(400).json({
+      success: false,
+      message: "Both userId and workspaceId are required",
+    });
+  }
+
+  Workspace.leaveWorkspace(userId, workspaceId, (err, result) => {
+    if (err) {
+      console.error("Error leaving workspace:", err);
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Error leaving workspace",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully left the workspace",
+    });
   });
 };
