@@ -9,13 +9,12 @@ import NotificationDropdown from "./noti/NotificationDropdown";
 const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const params = useParams(); // Get URL parameters
-  const workspaceId = params.workspacedId; // Get workspace ID from URL
+  const params = useParams();
+  const workspaceId = params.workspacedId;
   const [highlightedTab, setHighlightedTab] = useState(activeTab);
 
   // Check if user is manager of current workspace
   useEffect(() => {
-    // Only run this effect if we're on a dashboard page with a workspace ID
     if (location.pathname.includes("/dashboard/") && workspaceId) {
       checkWorkspaceRole(workspaceId);
     } else {
@@ -24,7 +23,7 @@ const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
     }
   }, [location.pathname, workspaceId, activeTab]);
 
-  // Function to check if current user is a manager of this workspace
+  // check if current user is a manager of this workspace
   const checkWorkspaceRole = async (workspaceId) => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));

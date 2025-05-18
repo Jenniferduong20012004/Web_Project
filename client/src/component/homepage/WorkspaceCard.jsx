@@ -22,12 +22,17 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   );
   const [isManager, setIsManager] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [activeMembers, setActiveMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const menuRef = useRef(null);
 
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
     checkWorkspaceRole();
+    
+    // Fetch active members when component mounts
+    fetchActiveMembers();
   }, [workspace]);
 
   useEffect(() => {
@@ -42,6 +47,36 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Fetch active members for this workspace
+  const fetchActiveMembers = async () => {
+    try {
+      setIsLoading(true);
+      const workspaceId = workspace.WorkSpace || workspace.id;
+      
+      const response = await axios.post(
+        "http://localhost:5000/getActiveMembers",
+        {
+          workspaceId: workspaceId,
+        }
+      );
+
+      if (response.data.success) {
+        // Filter out managers to show only regular members
+        const filteredMembers = response.data.members.filter(
+          (member) => !member.isManager
+        );
+        setActiveMembers(filteredMembers);
+      }
+    } catch (error) {
+      console.error("Error fetching active members:", error);
+      toast.error("Failed to load workspace members", {
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Check if the current user is a manager of this workspace
   const checkWorkspaceRole = async () => {
@@ -76,12 +111,11 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
     localStorage.setItem("workspace", JSON.stringify(workspaceData));
 
-    console.log("Workspace selected and saved to localStorage:", workspaceData);
-
     if (onClick) {
       onClick(workspace);
     } else {
       // Default action - navigate to members page with workspace ID
+      const workspaceId = workspace.WorkSpace || workspace.id;
       navigate(`/members/${workspaceId}`);
     }
   };
@@ -424,27 +458,38 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           </div>
         </div>
 
-        <div className="flex" style={{ marginBottom: "10px" }}>
-          {workspace.members &&
-            workspace.members.map((member, idx) => (
+        {/* Member avatars container */}
+        <div
+          className="flex justify-end !pr-2"
+          style={{ marginBottom: "10px" }}
+        >
+          {isLoading ? (
+            <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse"></div>
+          ) : activeMembers.length > 0 ? (
+            activeMembers.map((member, idx) => (
               <div
-                key={member.id}
+                key={member.joinWorkSpace}
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
                 style={{
-                  marginLeft: idx > 0 ? "-3px" : "0",
+                  marginRight: idx < activeMembers.length - 1 ? "-3px" : "0",
+                  zIndex: activeMembers.length - idx,
                 }}
+                title={member.userName}
               >
                 {member.photoPath ? (
                   <img
                     src={member.photoPath}
-                    alt={member.name}
+                    alt={member.userName}
                     className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
                   member.initials
                 )}
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="text-xs text-gray-400">No active members</div>
+          )}
         </div>
       </div>
 

@@ -58,13 +58,6 @@ const getAvatarColor = (index) => {
     },
     {
       icon: (
-        <MdHelpCenter className="w-5 h-5 text-gray-400 group-hover:text-blue-900" />
-      ),
-      label: "Help Center",
-      // onClick: () => navigate("/help"),
-    },
-    {
-      icon: (
         <MdLogout className="w-5 h-5 text-gray-400 group-hover:text-blue-900" />
       ),
       label: "Log Out",

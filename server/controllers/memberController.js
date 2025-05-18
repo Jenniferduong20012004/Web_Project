@@ -86,6 +86,27 @@ exports.getMembers = (req, res) => {
   });
 };
 
+exports.getActiveMembers = (req, res) => {
+  const { workspaceId } = req.body;
+
+  if (!workspaceId) {
+    return res
+      .status(400)
+      .json({ error: true, message: "Workspace ID is required!" });
+  }
+
+  Member.getActiveMembers(workspaceId, (err, results) => {
+    if (err) {
+      console.error("Error fetching active members:", err);
+      return res
+        .status(500)
+        .json({ error: true, message: "Error fetching active members" });
+    }
+
+    res.status(200).json({ success: true, members: results });
+  });
+};
+
 exports.deleteMember = (req, res) => {
   const { joinWorkSpace, userId } = req.body;
 
@@ -188,14 +209,15 @@ exports.getCurrentUserRole = (req, res) => {
         .json({ error: true, message: "Error fetching user role" });
     }
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       isAdmin: result?.isManager || 0,
-      role: result?.role || "Member"
+      role: result?.role || "Member",
     });
   });
 };
 
+// Accept/Decline workspace inviation
 exports.respondToInvitation = (req, res) => {
   const { joinWorkSpace, accept } = req.body;
 
