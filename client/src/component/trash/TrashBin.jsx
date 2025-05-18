@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaUndoAlt, FaTrashAlt } from "react-icons/fa";
 import ConfirmationModal from "./ConfirmationModal";
 
-const TrashBin = ({ trashTask, workspaceId }) => {
+const TrashBin = ({ trashTask, workspaceId, isManager }) => {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -319,8 +319,8 @@ const TrashBin = ({ trashTask, workspaceId }) => {
       text: "text-red-700",
     },
     Medium: {
-      bg: "bg-amber-100", // Changed from yellow-100 to amber-100
-      text: "text-amber-700", // Changed from orange-700 to amber-700
+      bg: "bg-amber-100", 
+      text: "text-amber-700",
     },
     Low: {
       bg: "bg-green-100",
@@ -345,30 +345,32 @@ const TrashBin = ({ trashTask, workspaceId }) => {
       />
       <div className="flex justify-between items-center !mb-6">
         <h1 className="text-xl font-bold text-[#455294]">Trash Bin</h1>
-        <div className="flex gap-8">
-          <button
-            onClick={handleRestoreAll}
-            className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
-              tasks.length === 0 || isLoading
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-green-600 hover:bg-green-100 hover:text-green-700"
-            }`}
-            disabled={tasks.length === 0 || isLoading}
-          >
-            Restore all
-          </button>
-          <button
-            onClick={confirmDeleteAll}
-            className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
-              tasks.length === 0 || isLoading
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-red-600 hover:bg-red-100 hover:text-red-700"
-            }`}
-            disabled={tasks.length === 0 || isLoading}
-          >
-            Delete all
-          </button>
-        </div>
+        {isManager && (
+          <div className="flex gap-8">
+            <button
+              onClick={handleRestoreAll}
+              className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
+                tasks.length === 0 || isLoading
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-green-600 hover:bg-green-100 hover:text-green-700"
+              }`}
+              disabled={tasks.length === 0 || isLoading}
+            >
+              Restore all
+            </button>
+            <button
+              onClick={confirmDeleteAll}
+              className={`transition-colors duration-200 !px-4 !py-2 rounded-lg cursor-pointer ${
+                tasks.length === 0 || isLoading
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-red-600 hover:bg-red-100 hover:text-red-700"
+              }`}
+              disabled={tasks.length === 0 || isLoading}
+            >
+              Delete all
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
@@ -380,7 +382,9 @@ const TrashBin = ({ trashTask, workspaceId }) => {
               </th>
               <th className="!py-4 !px-8 text-left font-semibold">Stage</th>
               <th className="!py-4 !px-8 text-left font-semibold">Priority</th>
-              <th className="!py-4 !px-8 text-center font-semibold">Actions</th>
+              {isManager && (
+                <th className="!py-4 !px-8 text-center font-semibold">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -398,27 +402,29 @@ const TrashBin = ({ trashTask, workspaceId }) => {
                 <td className="!py-4 !px-8">
                   <PriorityBadge priority={task.priority} />
                 </td>
-                <td className="!py-4 !px-8 flex justify-center gap-8">
-                  <button
-                    onClick={() => handleRestoreTask(task.id)}
-                    className="text-green-600 hover:scale-110 transition cursor-pointer"
-                    disabled={isLoading}
-                  >
-                    <FaUndoAlt />
-                  </button>
-                  <button
-                    onClick={() => confirmDeleteTask(task.id)}
-                    className="text-red-600 hover:scale-110 transition cursor-pointer"
-                    disabled={isLoading}
-                  >
-                    <FaTrashAlt />
-                  </button>
-                </td>
+                {isManager && (
+                  <td className="!py-4 !px-8 flex justify-center gap-8">
+                    <button
+                      onClick={() => handleRestoreTask(task.id)}
+                      className="text-green-600 hover:scale-110 transition cursor-pointer"
+                      disabled={isLoading}
+                    >
+                      <FaUndoAlt />
+                    </button>
+                    <button
+                      onClick={() => confirmDeleteTask(task.id)}
+                      className="text-red-600 hover:scale-110 transition cursor-pointer"
+                      disabled={isLoading}
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
             {tasks.length === 0 && (
               <tr>
-                <td colSpan="4" className="!py-16 text-center text-gray-400">
+                <td colSpan={isManager ? "4" : "3"} className="!py-16 text-center text-gray-400">
                   Trash is empty.
                 </td>
               </tr>

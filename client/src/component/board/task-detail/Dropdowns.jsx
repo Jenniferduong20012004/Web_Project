@@ -10,7 +10,7 @@ const STATUS_OPTIONS = [
 const PRIORITY_OPTIONS = [
   { id: "High", label: "High", class: "bg-red-100 text-red-700" },
   { id: "Medium", label: "Medium", class: "bg-orange-100 text-orange-700" },
-  { id: "Low", label: "Low", class: "bg-blue-100 text-blue-700" },
+  { id: "Low", label: "Low", class: "bg-green-100 text-green-700" },
 ];
 
 // Base dropdown component

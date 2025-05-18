@@ -35,10 +35,8 @@ export const DeleteWorkspaceModal = ({ workspace, onConfirm, onCancel }) => {
           </svg>
         </div>
 
-        {/* Delete header - all caps, red text */}
         <h2 className="text-xl font-bold text-red-500 !mb-4">DELETE</h2>
 
-        {/* Message - darker text, centered */}
         <p className="text-gray-700 !mb-2">
           Are you sure to delete workspace <br />
           <span className="text-red-500 font-semibold">
@@ -47,12 +45,10 @@ export const DeleteWorkspaceModal = ({ workspace, onConfirm, onCancel }) => {
           ?
         </p>
 
-        {/* Subtext - smaller, lighter gray */}
         <p className="text-gray-500 text-sm !mb-6">
           This action cannot be undone.
         </p>
 
-        {/* Buttons - side by side with matching style to image */}
         <div className="flex justify-center gap-4">
           <button
             onClick={onCancel}
@@ -167,7 +163,60 @@ export const EditWorkspaceModal = ({
   );
 };
 
-export default {
-  DeleteWorkspaceModal,
-  EditWorkspaceModal,
+// Leave Workspace Modal
+export const LeaveWorkspaceModal = ({ onConfirm, onCancel }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    await onConfirm();
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 !z-50 flex items-center justify-center">
+      {/* Darker backdrop */}
+      <div className="absolute inset-0 bg-black/70" onClick={onCancel}></div>
+
+      {/* Modal content */}
+      <div className="relative bg-white rounded-lg shadow-md !p-6 w-[450px] text-center max-w-[95%] mx-auto !z-10">
+        <h2 className="text-xl font-bold text-red-500 !mb-4 !mt-6">
+          LEAVE WORKSPACE
+        </h2>
+
+        <p className="text-gray-700 !mb-6">
+          Are you sure you want to leave this workspace?
+        </p>
+
+        <div className="flex justify-center gap-4 !mb-4">
+          <button
+            onClick={onCancel}
+            className="!px-5 !py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors font-medium cursor-pointer"
+            disabled={isLoading}
+          >
+            CANCEL
+          </button>
+          <button
+            onClick={handleConfirm}
+            className="!px-6 !py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors font-medium cursor-pointer"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <span className="animate-spin h-4 w-4 !mr-2 border-t-2 border-white rounded-full"></span>
+                LEAVING...
+              </span>
+            ) : (
+              "LEAVE"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
+
+// Export individual components directly instead of an object
+// This fixes the "default export is incompatible" issue with Fast Refresh
+// Don't use:
+// export default { DeleteWorkspaceModal, EditWorkspaceModal, LeaveWorkspaceModal };

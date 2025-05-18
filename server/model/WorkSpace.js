@@ -227,6 +227,94 @@ class WorkSpace {
       });
     });
   }
+
+  static leaveWorkspace(userId, workspaceId, callback) {
+    // First, check if the user is part of this workspace
+    const checkQuery =
+      "SELECT joinWorkSpace, isManager FROM joinWorkSpace WHERE userId = ? AND WorkSpace = ?";
+
+    pool.query(checkQuery, [userId, workspaceId], (err, results) => {
+      if (err) {
+        console.error("Error checking workspace membership:", err);
+        return callback(err, null);
+      }
+
+      if (results.length === 0) {
+        return callback(
+          { message: "User is not a member of this workspace" },
+          null
+        );
+      }
+
+      const isManager = results[0].isManager;
+
+      // If the user is a manager, check if they are the ONLY manager before allowing them to leave
+      if (isManager) {
+        const checkManagersQuery =
+          "SELECT COUNT(*) as managerCount FROM joinWorkSpace WHERE WorkSpace = ? AND isManager = true";
+
+        pool.query(checkManagersQuery, [workspaceId], (err, managerResults) => {
+          if (err) {
+            console.error("Error checking managers count:", err);
+            return callback(err, null);
+          }
+
+          const totalManagers = managerResults[0]?.managerCount || 0;
+
+          // If they're the only manager, don't allow them to leave
+          if (totalManagers === 1) {
+            return callback(
+              {
+                message:
+                  "You are the only manager of this workspace. Please assign another manager or delete the workspace instead.",
+              },
+              null
+            );
+          } else {
+            // If there are other managers, proceed with removing their association
+            const deleteJoinQuery =
+              "DELETE FROM joinWorkSpace WHERE userId = ? AND WorkSpace = ?";
+
+            pool.query(
+              deleteJoinQuery,
+              [userId, workspaceId],
+              (err, deleteResult) => {
+                if (err) {
+                  console.error("Error removing user from workspace:", err);
+                  return callback(err, null);
+                }
+
+                return callback(null, {
+                  success: true,
+                  message: "Successfully left the workspace",
+                });
+              }
+            );
+          }
+        });
+      } else {
+        // If they're not a manager, they can leave freely
+        const deleteJoinQuery =
+          "DELETE FROM joinWorkSpace WHERE userId = ? AND WorkSpace = ?";
+
+        pool.query(
+          deleteJoinQuery,
+          [userId, workspaceId],
+          (err, deleteResult) => {
+            if (err) {
+              console.error("Error removing user from workspace:", err);
+              return callback(err, null);
+            }
+
+            return callback(null, {
+              success: true,
+              message: "Successfully left the workspace",
+            });
+          }
+        );
+      }
+    });
+  }
 }
 
 module.exports = WorkSpace;
