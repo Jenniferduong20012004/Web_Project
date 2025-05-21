@@ -9,13 +9,14 @@ import Board from "./views/Board";
 import TaskDetail from "./views/TaskDetail"; 
 import Members from "./views/Members"; 
 import ProtectedRoute from "./redux/ProtectedRoute";
-
+import LandingPage from "./views/LandingPage";
 
 function App() {
-
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/landing" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
