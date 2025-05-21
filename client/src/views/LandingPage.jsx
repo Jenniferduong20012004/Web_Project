@@ -11,7 +11,7 @@ const LandingPage = () => {
       <nav className="flex justify-between items-center !px-8 !py-4">
         <div className="flex items-center gap-3 cursor-pointer">
           <img src={logo} alt="Logo" className="w-9 h-9 object-contain" />
-          <h2 className="text-2xl bg-gradient-to-r from-[#3E4177] to-[#C271AB] text-transparent bg-clip-text inline-block font-bold">
+          <h2 className="text-2xl bg-gradient-to-r from-[#C271AB] to-[#5784C7] text-transparent bg-clip-text inline-block font-bold">
             TaskUP
           </h2>
         </div>
@@ -36,13 +36,13 @@ const LandingPage = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/login"
-            className="bg-white text-[#3E4177] !px-6 !py-2 rounded-full border border-gray-200 hover:shadow-md transition duration-300"
+            className="bg-white text-[#C271AB] !px-6 !py-2 rounded-full border border-gray-200 hover:shadow-md transition duration-300"
           >
             Log In
           </Link>
           <Link
             to="/signup"
-            className="bg-gradient-to-r from-[#3E4177] to-[#C271AB] text-white !px-6 !py-2 rounded-full hover:shadow-lg transition duration-300 font-medium"
+            className="bg-gradient-to-r from-[#C271AB] to-[#5784C7] text-white !px-6 !py-2 rounded-full hover:shadow-lg transition duration-300 font-medium"
           >
             Sign Up
           </Link>
@@ -65,7 +65,7 @@ const LandingPage = () => {
           <div className="flex flex-wrap gap-4">
             <Link
               to="/login"
-              className="bg-gradient-to-r from-[#3E4177] to-[#C271AB] text-white !px-8 !py-3 rounded-full flex items-center gap-2 hover:shadow-lg transition duration-300"
+              className="bg-gradient-to-r from-[#C271AB] to-[#5784C7] text-white !px-8 !py-3 rounded-full flex items-center gap-2 hover:shadow-lg transition duration-300"
             >
               Get Started <ArrowRight size={16} />
             </Link>
@@ -93,7 +93,7 @@ const LandingPage = () => {
             {/* Main laptop illustration */}
             <div className="relative">
               <div className="bg-white rounded-lg shadow-xl w-140 h-90 transform rotate-3d perspective-laptop">
-                <div className="bg-gradient-to-r from-[#3E4177] to-[#C271AB] h-full rounded-lg !p-4 flex items-center justify-center">
+                <div className="bg-gradient-to-r from-[#C271AB] to-[#5784C7] h-full rounded-lg !p-4 flex items-center justify-center">
                   <div className="text-white text-center relative w-full h-full flex flex-col items-center justify-center">
                     <img
                       src={landingSvg}
@@ -103,23 +103,6 @@ const LandingPage = () => {
                     <div className="w-16 h-1 bg-white mx-auto !mb-4 relative z-0"></div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* People illustrations */}
-            <div className="absolute bottom-0 left-0">
-              <div className="bg-[#f0e6f5] p-4 rounded-lg">
-                <div className="w-16 h-12 bg-[#e6c9e6] !mb-2 rounded"></div>
-                <div className="flex justify-between">
-                  <div className="w-6 h-6 rounded-full bg-[#5B82C5]"></div>
-                  <div className="w-6 h-6 rounded-full bg-[#5B82C5]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute bottom-0 right-0">
-              <div className="bg-[#f0e6f5] p-4 rounded-lg">
-                <div className="w-8 h-16 bg-[#5B82C5] rounded-full"></div>
               </div>
             </div>
           </div>
