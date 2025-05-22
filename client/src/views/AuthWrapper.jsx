@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
 import bgImage from "../assets/login-signup-gradient-background.jpg";
@@ -12,11 +12,6 @@ const AuthWrapper = () => {
   const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(location.pathname === "/signup");
   const [isAnimating, setIsAnimating] = useState(false);
-
-  console.log("=== AuthWrapper ===");
-  console.log("Location:", location.pathname);
-  console.log("IsSignup:", isSignup);
-  console.log("Animating:", isAnimating);
 
   // Custom navigation handler
   const handleFormNavigation = (path) => {
@@ -63,9 +58,14 @@ const AuthWrapper = () => {
               }}
             />
 
-            {/* Logo Container */}
             <div className="absolute top-5 left-3 z-10">
-              <img src={logo} alt="TaskUP Logo" className="w-10 h-auto" />
+              <Link to="/landing">
+                <img
+                  src={logo}
+                  alt="TaskUP Logo"
+                  className="w-10 h-auto cursor-pointer"
+                />
+              </Link>
             </div>
 
             {/* Image */}
@@ -100,7 +100,13 @@ const AuthWrapper = () => {
 
             {/* Logo Container */}
             <div className="absolute top-5 left-3 z-10">
-              <img src={logo} alt="TaskUP Logo" className="w-10 h-auto" />
+              <Link to="/landing">
+                <img
+                  src={logo}
+                  alt="TaskUP Logo"
+                  className="w-10 h-auto cursor-pointer"
+                />
+              </Link>
             </div>
 
             {/* Image */}
