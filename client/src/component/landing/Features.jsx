@@ -132,7 +132,7 @@ const Features = () => {
                 color: "bg-blue-100 text-blue-700 border border-blue-200",
               },
               {
-                label: "✉️ Invitation",
+                label: "📧 Invitation",
                 color: "bg-yellow-100 text-yellow-700 border border-yellow-200",
               },
             ].map((tag, index) => (
@@ -205,76 +205,16 @@ const Features = () => {
             </div>
           </div>
 
-          {/* Right Side - Feature List */}
-          {/* <div className="!space-y-8">
-            <div className="!space-y-6">
-              <div className="flex items-start !space-x-4">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-purple-600 font-semibold">📋</span>
-                </div>
-                <div>
-                  <h4 className="text-xl font-semibold text-gray-900 !mb-2">
-                    Streamlined Task Organization
-                  </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Here at TaskUP we focus on markets where technology,
-                    innovation, and capital.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start !space-x-4">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-blue-600 font-semibold">👁️</span>
-                </div>
-                <div>
-                  <h4 className="text-xl font-semibold text-gray-900 !mb-2">
-                    Visualize Your Workflow
-                  </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Here at TaskUP we focus on markets where technology,
-                    innovation, and capital.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start !space-x-4">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-green-600 font-semibold">📅</span>
-                </div>
-                <div>
-                  <h4 className="text-xl font-semibold text-gray-900 !mb-2">
-                    Manage Tasks by Date
-                  </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Here at TaskUP we focus on markets where technology,
-                    innovation, and capital.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div> */}
           <div>
             <h3 className="text-3xl font-bold text-gray-900 !mb-6">
               Key Features
             </h3>
+
             <div className="!space-y-4">
+              {/* workspace */}
               <div className="flex items-start !space-x-4">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-purple-600 font-semibold">📊</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-800 !mb-1">
-                    Interactive Dashboards
-                  </h4>
-                  <p className="text-gray-600">
-                    Real-time progress tracking and analytics
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start !space-x-4">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-blue-600 font-semibold">🏗️</span>
+                  📁
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800 !mb-1">
@@ -285,9 +225,52 @@ const Features = () => {
                   </p>
                 </div>
               </div>
+              {/* dashboard */}
               <div className="flex items-start !space-x-4">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-green-600 font-semibold">👨‍💼</span>
+                  📊
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Interactive Dashboards
+                  </h4>
+                  <p className="text-gray-600">
+                    Real-time progress tracking and analytics
+                  </p>
+                </div>
+              </div>
+              {/* board */}
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  📋
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Visual Board
+                  </h4>
+                  <p className="text-gray-600">
+                    Collaborative workspace for team coordination
+                  </p>
+                </div>
+              </div>
+              {/* trash */}
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  🔄
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Task Recovery
+                  </h4>
+                  <p className="text-gray-600">
+                    Advanced trash and restore functionality
+                  </p>
+                </div>
+              </div>
+              {/* team */}
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  👥
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800 !mb-1">
@@ -308,19 +291,6 @@ const Features = () => {
                   </h4>
                   <p className="text-gray-600">
                     Seamless user onboarding system
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start !space-x-4">
-                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
-                  <span className="text-red-600 font-semibold">🔄</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-800 !mb-1">
-                    Task Recovery
-                  </h4>
-                  <p className="text-gray-600">
-                    Advanced trash and restore functionality
                   </p>
                 </div>
               </div>

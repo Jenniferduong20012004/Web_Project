@@ -1,4 +1,7 @@
 import React from "react";
+import react from "../../assets/react.svg";
+import nodejs from "../../assets/nodejs.svg";
+import mysql from "../../assets/mysql.svg";
 
 const AboutProject = () => {
   return (
@@ -93,7 +96,7 @@ const AboutProject = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center !mx-auto !mb-4">
-                <span className="text-3xl">⚛️</span>
+                <img src={react} alt="React" className="w-10 h-10" />
               </div>
               <h4 className="text-xl font-semibold text-gray-800 !mb-3">
                 React JS
@@ -105,7 +108,7 @@ const AboutProject = () => {
             </div>
             <div className="text-center">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center !mx-auto !mb-4">
-                <span className="text-3xl">🟢</span>
+                <img src={nodejs} alt="nodejs" className="w-10 h-10" />
               </div>
               <h4 className="text-xl font-semibold text-gray-800 !mb-3">
                 Node.js
@@ -117,7 +120,7 @@ const AboutProject = () => {
             </div>
             <div className="text-center">
               <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center !mx-auto !mb-4">
-                <span className="text-3xl">🗄️</span>
+                <img src={mysql} alt="mysql" className="w-10 h-10" />
               </div>
               <h4 className="text-xl font-semibold text-gray-800 !mb-3">
                 MySQL
