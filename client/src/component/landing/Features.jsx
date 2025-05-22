@@ -206,7 +206,7 @@ const Features = () => {
           </div>
 
           {/* Right Side - Feature List */}
-          <div className="!space-y-8">
+          {/* <div className="!space-y-8">
             <div className="!space-y-6">
               <div className="flex items-start !space-x-4">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
@@ -249,6 +249,78 @@ const Features = () => {
                   <p className="text-gray-600 leading-relaxed">
                     Here at TaskUP we focus on markets where technology,
                     innovation, and capital.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div> */}
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 !mb-6">
+              Key Features
+            </h3>
+            <div className="!space-y-4">
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  <span className="text-purple-600 font-semibold">📊</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Interactive Dashboards
+                  </h4>
+                  <p className="text-gray-600">
+                    Real-time progress tracking and analytics
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  <span className="text-blue-600 font-semibold">🏗️</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Workspace Organization
+                  </h4>
+                  <p className="text-gray-600">
+                    Structured project and board management
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  <span className="text-green-600 font-semibold">👨‍💼</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Team Collaboration
+                  </h4>
+                  <p className="text-gray-600">
+                    Member management and role assignments
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  <span className="text-yellow-600 font-semibold">📧</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Smart Invitations
+                  </h4>
+                  <p className="text-gray-600">
+                    Seamless user onboarding system
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start !space-x-4">
+                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 !mt-1">
+                  <span className="text-red-600 font-semibold">🔄</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 !mb-1">
+                    Task Recovery
+                  </h4>
+                  <p className="text-gray-600">
+                    Advanced trash and restore functionality
                   </p>
                 </div>
               </div>
