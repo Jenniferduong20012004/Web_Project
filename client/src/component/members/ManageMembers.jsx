@@ -166,6 +166,10 @@ const ManageMembers = () => {
 
     if (result === true) {
       setShowAddModal(false);
+
+      // Refetch members list immediately after successful add
+      await loadMembers(workspace);
+
       return true;
     } else if (result && result.userNotFound) {
       setNotFoundEmail(email);
