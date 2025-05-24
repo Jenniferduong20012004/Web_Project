@@ -68,6 +68,53 @@ class WorkSpace {
     });
   }
 
+  static getWorkspaceManager(workspaceId, callback) {
+    const query = `
+    SELECT 
+      u.userId, 
+      u.name, 
+      u.email, 
+      u.photoPath,
+      j.role,
+      j.dateJoin
+    FROM joinWorkSpace j
+    JOIN User u ON j.userId = u.userId
+    WHERE j.WorkSpace = ? AND j.isManager = 1
+    LIMIT 1
+  `;
+
+    pool.query(query, [workspaceId], (err, results) => {
+      if (err) {
+        console.error("Error fetching workspace manager:", err);
+        return callback(err, null);
+      }
+
+      if (results.length === 0) {
+        return callback(null, {
+          found: false,
+          message: "No manager found for this workspace",
+        });
+      }
+
+      const manager = results[0];
+      const photoLink = manager.photoPath
+        ? `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${manager.photoPath}`
+        : null;
+
+      return callback(null, {
+        found: true,
+        manager: {
+          userId: manager.userId,
+          name: manager.name,
+          email: manager.email,
+          photoPath: photoLink,
+          role: manager.role,
+          dateJoin: manager.dateJoin,
+        },
+      });
+    });
+  }
+
   static createTask(TaskData, callback) {
     const query =
       "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";

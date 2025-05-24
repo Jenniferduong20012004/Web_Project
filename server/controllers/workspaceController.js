@@ -1,5 +1,39 @@
 const Workspace = require("../model/WorkSpace");
 
+// Get workspace manager information
+exports.getWorkspaceManager = (req, res) => {
+  const { workspaceId } = req.body;
+
+  if (!workspaceId) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide workspaceId"
+    });
+  }
+
+  Workspace.getWorkspaceManager(workspaceId, (err, result) => {
+    if (err) {
+      console.error("Error getting workspace manager:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Error getting workspace manager: " + err.message
+      });
+    }
+
+    if (!result.found) {
+      return res.status(404).json({
+        success: false,
+        message: result.message
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      manager: result.manager
+    });
+  });
+};
+
 // Create a new workspace
 exports.addWorkSpace = (req, res) => {
   const { workspacename, description, dateCreate, userId } = req.body;

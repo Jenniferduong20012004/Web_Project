@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
 
 const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,12 +44,12 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
       );
 
       if (response.data.success) {
-        const formattedMembers = response.data.members.map((member) => ({
+        const formattedMembers = response.data.members.map((member, index) => ({
           id: member.userId,
           name: member.userName,
           photoPath: member.photoPath,
-          bgColor: member.bgColor,
-          initials: member.initials,
+          bgColor: getAvatarColor(member.userId), // Generate bgColor on client side using userId
+          initials: getInitials(member.userName), // Use utility function for consistency
           role: member.role,
         }));
 

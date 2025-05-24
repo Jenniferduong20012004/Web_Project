@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { getInitials, getAvatarColor } from "../../utils/avatarUtils";
 import {
   DeleteWorkspaceModal,
   EditWorkspaceModal,
@@ -21,6 +22,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     workspace.description || ""
   );
   const [isManager, setIsManager] = useState(false);
+  const [managerData, setManagerData] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [activeMembers, setActiveMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,10 +31,10 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
-    checkWorkspaceRole();
 
-    // Fetch active members when component mounts
+    // Fetch active members and manager data + check role in one go
     fetchActiveMembers();
+    fetchWorkspaceManagerAndCheckRole(); // Replaces both checkWorkspaceRole() and fetchWorkspaceManager()
   }, [workspace]);
 
   useEffect(() => {
@@ -63,13 +65,17 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
 
       if (response.data.success) {
         // Filter out managers to show only regular members
-        const filteredMembers = response.data.members.filter(
-          (member) => !member.isManager
-        );
+        const filteredMembers = response.data.members
+          .filter((member) => !member.isManager)
+          .map((member) => ({
+            ...member,
+            // Generate initials and color using utils
+            initials: getInitials(member.userName || member.name || ""),
+            bgColor: getAvatarColor(member.userId || member.id || 0),
+          }));
         setActiveMembers(filteredMembers);
       }
     } catch (error) {
-      console.error("Error fetching active members:", error);
       toast.error("Failed to load workspace members", {
         position: "top-right",
       });
@@ -78,27 +84,38 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     }
   };
 
-  // Check if the current user is a manager of this workspace
-  const checkWorkspaceRole = async () => {
+  const fetchWorkspaceManagerAndCheckRole = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
-      if (!userData) return;
-
       const workspaceId = workspace.WorkSpace || workspace.id;
 
       const response = await axios.post(
-        "http://localhost:5000/checkWorkspaceRole",
+        "http://localhost:5000/getWorkspaceManager",
         {
-          userId: userData.userId,
           workspaceId: workspaceId,
         }
       );
 
       if (response.data.success) {
-        setIsManager(response.data.isManager);
+        const manager = response.data.manager;
+        setManagerData(manager);
+
+        // Check if current user is the manager by comparing userId
+        if (userData && userData.userId === manager.userId) {
+          setIsManager(true);
+        } else {
+          setIsManager(false);
+        }
+      } else {
+        // No manager found, current user cannot be manager
+        setIsManager(false);
+        setManagerData(null);
       }
     } catch (error) {
-      console.error("Error checking workspace role:", error);
+      console.error("Error fetching manager and checking role:", error);
+      
+      setIsManager(false);
+      setManagerData(null);
     }
   };
 
@@ -225,7 +242,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         });
       }
     } catch (error) {
-      console.error("Leave workspace error:", error);
       toast.error(
         "Error leaving workspace: " +
           (error.response
@@ -277,7 +293,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         });
       }
     } catch (error) {
-      console.error("Delete error:", error);
       toast.error(
         "Error deleting workspace: " +
           (error.response
@@ -317,30 +332,64 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     setIsEditFormOpen(true);
   };
 
-  // Render member avatar
+  // Render member avatar using utils functions
   const renderMemberAvatar = (member, idx) => {
     return (
       <div
-        key={member.joinWorkSpace}
+        key={member.joinWorkSpace || member.id || idx}
         className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
         style={{
           marginRight: idx < activeMembers.length - 1 ? "-3px" : "0",
           zIndex: activeMembers.length - idx,
         }}
-        title={member.userName}
+        title={member.userName || member.name}
       >
         {member.photoPath ? (
           <img
             src={member.photoPath}
-            alt={member.userName}
+            alt={member.userName || member.name}
             className="w-full h-full object-cover rounded-full"
+            onError={(e) => {
+              // If image fails to load, hide it and show initials
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
+            }}
           />
-        ) : (
-          member.initials
-        )}
+        ) : null}
+        {/* Initials fallback - always rendered but hidden if image loads */}
+        <span
+          className={`w-full h-full flex items-center justify-center ${
+            member.photoPath ? "hidden" : "flex"
+          }`}
+        >
+          {member.initials}
+        </span>
       </div>
     );
   };
+
+  const getAvatarData = () => {
+    if (managerData) {
+      // Use actual manager data from API
+      return {
+        initials: getInitials(managerData.name || "M"),
+        bgColor: getAvatarColor(managerData.userId || 0),
+        photoPath: managerData.photoPath,
+        displayName: managerData.name || "Manager",
+      };
+    } else {
+      // Fallback to workspace data if manager data not available
+      return {
+        initials: getInitials(
+          workspace.title || workspace.workspaceName || "W"
+        ),
+        bgColor: getAvatarColor(workspace.WorkSpace || workspace.id || 0),
+        photoPath: workspace.photoPath,
+        displayName: workspace.title || workspace.workspaceName || "Workspace",
+      };
+    }
+  };
+  const avatarData = getAvatarData();
 
   return (
     <>
@@ -350,23 +399,37 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         onClick={handleWorkspaceClick}
       >
         <div
-          className={`h-28 rounded-lg ${workspace.backgroundGradient}`}
+          className={`h-28 rounded-lg ${
+            workspace.backgroundGradient ||
+            "bg-gradient-to-r from-blue-400 to-purple-500"
+          }`}
         ></div>
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${workspace.bgColor}`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${avatarData.bgColor}`}
             >
-              {workspace.photoPath ? (
+              {avatarData.photoPath ? (
                 <img
-                  src={workspace.photoPath}
-                  alt={workspace.name}
+                  src={avatarData.photoPath}
+                  alt={avatarData.displayName}
                   className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    // If image fails to load, hide it and show initials
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
                 />
-              ) : (
-                workspace.initials
-              )}
+              ) : null}
+              {/* Avatar initials fallback */}
+              <span
+                className={`w-full h-full flex items-center justify-center ${
+                  avatarData.photoPath ? "hidden" : "flex"
+                }`}
+              >
+                {avatarData.initials}
+              </span>
             </div>
             <div>
               <div className="text-sm font-medium">
@@ -483,7 +546,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           </div>
         </div>
 
-        {/* Member avatars container - now using server-provided data */}
+        {/* Member avatars container - now using utils-generated data */}
         <div
           className="flex justify-end !pr-2"
           style={{ marginBottom: "10px" }}

@@ -7,5 +7,6 @@ router.post("/updateWorkSpace", workspaceController.updateWorkSpace);
 router.post("/deleteWorkSpace", workspaceController.deleteWorkSpace);
 router.post("/checkWorkspaceRole", workspaceController.checkWorkspaceRole);
 router.post("/leaveWorkspace", workspaceController.leaveWorkspace);
+router.post("/getWorkspaceManager", workspaceController.getWorkspaceManager); 
 
 module.exports = router;

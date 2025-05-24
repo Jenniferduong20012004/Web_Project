@@ -117,26 +117,6 @@ class Member {
       }
 
       const formattedResults = results.map((row) => {
-        // Generate initial letters from name if photo is not available
-        const nameParts = row.userName.split(" ");
-        const initials =
-          nameParts.length > 1
-            ? `${nameParts[0][0]}${nameParts[1][0]}`
-            : row.userName.substring(0, 2);
-
-        // Generate a background color based on the user ID for consistency
-        const colorOptions = [
-          "bg-blue-500",
-          "bg-red-500",
-          "bg-green-500",
-          "bg-purple-500",
-          "bg-yellow-500",
-          "bg-pink-500",
-          "bg-indigo-500",
-          "bg-teal-500",
-        ];
-        const bgColor = colorOptions[row.userId % colorOptions.length];
-
         const photoLink = row.photoPath
           ? `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`
           : null;
@@ -144,8 +124,6 @@ class Member {
         return {
           ...row,
           photoPath: photoLink,
-          initials: initials.toUpperCase(),
-          bgColor: bgColor,
         };
       });
 
