@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../component/Sidebar";
+import Navbar from "../component/Navbar"; // ADD: Import Navbar
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import PageLayout from "../component/board/task-detail/PageLayout";
@@ -12,7 +13,7 @@ import mockTaskDetailData from "../mock-data/mockTaskDetailData";
 import { BackButton } from "../component/board/task-detail/Buttons";
 
 function TaskDetail() {
-  const {workspaceId, taskId } = useParams();
+  const { workspaceId, taskId } = useParams();
   const [task, setTask] = useState(null);
   const [originalTask, setOriginalTask] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -23,7 +24,42 @@ function TaskDetail() {
     status: false,
     priority: false,
   });
-  
+
+  // ADD: Workspace role tracking (same pattern as Trash component)
+  const [workspaceRole, setWorkspaceRole] = useState(null);
+  const [isManager, setIsManager] = useState(false);
+
+  // ADD: Function to check workspace role (copied from Trash component)
+  const checkWorkspaceRole = async (workspaceId) => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/checkWorkspaceRole", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userData.userId,
+          workspaceId: workspaceId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const isUserManager = data.isManager;
+        setIsManager(isUserManager);
+        setWorkspaceRole(isUserManager ? "myWorkspace" : "assignedWorkspace");
+      }
+    } catch (error) {
+      console.error("Error checking workspace role:", error);
+    }
+  };
+
   const fetchTaskDetail = async () => {
     try {
       setLoading(true);
@@ -33,7 +69,7 @@ function TaskDetail() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          taskId: taskId ,
+          taskId: taskId,
           workspaceId: workspaceId,
         }),
       });
@@ -45,7 +81,7 @@ function TaskDetail() {
           description: data.task.description,
           status: data.task.status,
           priority: data.task.priority,
-          dueDate : data.task.dueDate,
+          dueDate: data.task.dueDate,
           assignedTo: data.task.assignedTo,
           assets: data.task.assets,
           availableMembers: data.task.availableMembers,
@@ -53,7 +89,6 @@ function TaskDetail() {
         };
         setTask(task);
         setOriginalTask(JSON.parse(JSON.stringify(task)));
-        // alert (task.id);
       } else {
         toast.error(data.message || "Failed to fetch user", {
           position: "top-right",
@@ -67,13 +102,12 @@ function TaskDetail() {
       setLoading(false);
     }
   };
+
   // Fetch task data
   useEffect(() => {
     fetchTaskDetail();
-    // const taskData = mockTaskDetailData.getTaskDetail(parseInt(taskId));
-    // setTask(taskData);
-    // setOriginalTask(JSON.parse(JSON.stringify(taskData)));
-  }, [taskId]);
+    checkWorkspaceRole(workspaceId); // ADD: Check workspace role when component mounts
+  }, [taskId, workspaceId]); // ADD: workspaceId as dependency
 
   // Detect changes
   useEffect(() => {
@@ -103,34 +137,34 @@ function TaskDetail() {
   }, []);
 
   const handleUpdateTask = useCallback(async () => {
-            try {
-            const userData = JSON.parse(localStorage.getItem("user"));
-            if (!userData) {
-                return;
-            }
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData) {
+        return;
+      }
 
-            const response = await fetch("http://localhost:5000/updateTask", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    newTask: task,
-                    originalTask: originalTask,
-                }),
-            });
+      const response = await fetch("http://localhost:5000/updateTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          newTask: task,
+          originalTask: originalTask,
+        }),
+      });
 
-            const data = await response.json();
-            
-            if (data.success) {
-                console.log("Updating task with new data:", task);
-    setOriginalTask(JSON.parse(JSON.stringify(task)));
-    setHasChanges(false);
-    alert("Task updated successfully!");
-            }
-        } catch (error) {
-            console.error("Error update task:", error);
-        }
+      const data = await response.json();
+
+      if (data.success) {
+        console.log("Updating task with new data:", task);
+        setOriginalTask(JSON.parse(JSON.stringify(task)));
+        setHasChanges(false);
+        alert("Task updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error update task:", error);
+    }
   }, [task, originalTask]);
 
   if (!task) {
@@ -138,83 +172,97 @@ function TaskDetail() {
   }
 
   return (
-    <PageLayout>
-      <div className="!mb-6">
-        <BackButton workspaceId={workspaceId} />
+    <div className="w-full min-h-screen flex flex-col">
+      {/* ADD: Fixed Navbar with workspace role (same pattern as Trash component) */}
+      <div className="fixed top-0 right-0 left-0 z-20">
+        <Navbar activeTab={workspaceRole} />
       </div>
 
-      <div className="bg-white rounded-lg shadow !p-8 !mb-6">
-        {/* Task Header */}
-        <TaskHeader
-          task={task}
-          editMode={editMode}
-          toggleEditMode={toggleEditMode}
-          handleSaveField={handleSaveField}
-        />
-            <div className="fixed left-0 top-16 h-screen z-10">
-                <Sidebar workspaceId={workspaceId} />
-            </div>
+      {/* ADD: Fixed Sidebar */}
+      <div className="fixed left-0 top-16 h-screen z-10">
+        <Sidebar workspaceId={workspaceId} />
+      </div>
 
-        {/* Task Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 !mt-8">
-          {/* Left column - Task Description and Subtasks */}
-          <div className="col-span-2">
-            <TaskDescription
-              description={task.description}
-              editMode={editMode.description}
-              toggleEditMode={() => toggleEditMode("description")}
-              handleSaveField={(value) => handleSaveField("description", value)}
+      {/* MODIFY: PageLayout to account for fixed navbar and sidebar */}
+      <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
+        <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
+          <div className="!mb-6">
+            <BackButton workspaceId={workspaceId} />
+          </div>
+
+          <div className="bg-white rounded-lg shadow !p-8 !mb-6">
+            {/* Task Header */}
+            <TaskHeader
+              task={task}
+              editMode={editMode}
+              toggleEditMode={toggleEditMode}
+              handleSaveField={handleSaveField}
             />
 
-            {/* Subtasks */}
-            <div className="!mt-8">
-              <h3 className="font-medium text-gray-900 !mb-3">Subtasks:</h3>
-              <SubtaskList
-                subtasks={task.subtasks}
-                onSubtasksChange={handleSubtasksChange}
-              />
+            {/* Task Content */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 !mt-8">
+              {/* Left column - Task Description and Subtasks */}
+              <div className="col-span-2">
+                <TaskDescription
+                  description={task.description}
+                  editMode={editMode.description}
+                  toggleEditMode={() => toggleEditMode("description")}
+                  handleSaveField={(value) =>
+                    handleSaveField("description", value)
+                  }
+                />
+
+                {/* Subtasks */}
+                <div className="!mt-8">
+                  <h3 className="font-medium text-gray-900 !mb-3">Subtasks:</h3>
+                  <SubtaskList
+                    subtasks={task.subtasks}
+                    onSubtasksChange={handleSubtasksChange}
+                  />
+                </div>
+              </div>
+
+              {/* Right column - Assignees and Assets */}
+              <div className="col-span-1 max-w-[260px]">
+                {/* Assignees section */}
+                <div className="!mb-8">
+                  <h3 className="font-medium text-gray-900 !mb-3">
+                    Assigned members:
+                  </h3>
+                  <AssigneesDropdown
+                    assignees={task.assignedTo}
+                    availableMembers={task.availableMembers}
+                    onAssigneesChange={handleAssigneesChange}
+                  />
+                </div>
+
+                {/* Assets section */}
+                <div className="!mb-6">
+                  <h3 className="font-medium text-gray-900 !mb-3">Assets</h3>
+                  <AssetsList assets={task.assets} />
+                </div>
+              </div>
+            </div>
+
+            {/* Update button */}
+            <div className="!mt-10 flex justify-end">
+              <button
+                className={`!px-6 !py-2 !mr-8 rounded-md text-white font-medium 
+                  ${
+                    hasChanges
+                      ? "bg-blue-400 hover:bg-blue-900 cursor-pointer"
+                      : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                disabled={!hasChanges}
+                onClick={handleUpdateTask}
+              >
+                Update
+              </button>
             </div>
           </div>
-
-          {/* Right column - Assignees and Assets */}
-          <div className="col-span-1 max-w-[260px]">
-            {/* Assignees section */}
-            <div className="!mb-8">
-              <h3 className="font-medium text-gray-900 !mb-3">
-                Assigned members:
-              </h3>
-              <AssigneesDropdown
-                assignees={task.assignedTo}
-                availableMembers={task.availableMembers}
-                onAssigneesChange={handleAssigneesChange}
-              />
-            </div>
-
-            {/* Assets section */}
-            <div className="!mb-6">
-              <h3 className="font-medium text-gray-900 !mb-3">Assets</h3>
-              <AssetsList assets={task.assets} />
-            </div>
-          </div>
-        </div>
-
-        {/* Update button */}
-        <div className="!mt-10 flex justify-end">
-          <button
-            className={`!px-6 !py-2 !mr-8 rounded-md text-white font-medium 
-              ${
-                hasChanges
-                  ? "bg-blue-400 hover:bg-blue-900 cursor-pointer"
-                  : "bg-gray-300 cursor-not-allowed"
-              }`}
-            disabled={!hasChanges}
-            onClick={handleUpdateTask}
-          >
-            Update
-          </button>
         </div>
       </div>
-    </PageLayout>
+    </div>
   );
 }
 
