@@ -30,7 +30,7 @@ const Homepage = () => {
       setUserId(userData.userId);
 
       // Fetch workspaces from API - only for the specific userId
-      const response = await fetch("http://localhost:5000/getWorkSpace", {
+      const response = await fetch("http://localhost:5000/getWorkspaces", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
