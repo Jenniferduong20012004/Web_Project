@@ -1,49 +1,5 @@
 const Workspace = require("../model/WorkSpace");
 
-// GET /workspaces/:userId - Get all workspaces for a user
-exports.getWorkspaces = (req, res) => {
-  const { userId } = req.params;
-  
-  if (!userId) {
-    return res.status(400).json({ 
-      success: false, 
-      message: "User ID is required" 
-    });
-  }
-  
-  // Get workspaces where user is a manager (owner)
-  Workspace.findMyWorkSpaceByUserId(userId, (err, managedWorkspaces) => {
-    if (err) {
-      console.error("Error fetching managed workspaces:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Error when finding managed workspaces!",
-      });
-    }
-    
-    // Get workspaces where user is assigned but not a manager
-    Workspace.findMyAssignedWorkSpaceByUserId(userId, (errA, assignedWorkspaces) => {
-      if (errA) {
-        console.error("Error fetching assigned workspaces:", errA);
-        return res.status(500).json({
-          success: false,
-          message: "Error when finding assigned workspaces!",
-        });
-      }
-            
-      // Return both managed and assigned workspaces
-      return res.status(200).json({
-        success: true,
-        message: "Workspaces retrieved successfully",
-        data: {
-          managedWorkspaces: managedWorkspaces,
-          assignedWorkspaces: assignedWorkspaces,
-        }
-      });
-    });
-  });
-};
-
 // Create a new workspace
 exports.addWorkSpace = (req, res) => {
   const { workspacename, description, dateCreate, userId } = req.body;
