@@ -14,7 +14,7 @@ const Homepage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // fetch workspace
+  // fetch workspace using RESTful API
   const fetchWorkspaces = async () => {
     try {
       setLoading(true);
@@ -29,45 +29,40 @@ const Homepage = () => {
 
       setUserId(userData.userId);
 
-      // Fetch workspaces from API - only for the specific userId
-      const response = await fetch("http://localhost:5000/getWorkspaces", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: userData.userId,
-        }),
-      });
+      // RESTful GET request - /workspaces/:userId
+      const response = await fetch(
+        `http://localhost:5000/workspaces/${userData.userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (data.success) {
         // Process managed workspaces
-        const managedWorkspaces = data.managedWorkspaces.map((workspace) => ({
-          ...workspace,
-          id: workspace.id,
-          title: workspace.workspaceName,
-          subtitle: `Created on ${new Date(
-            workspace.dateCreate
-          ).toLocaleDateString()}`,
-          backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-          members: workspace.members,
-          isOwner: true,
-          isPending: false, // Admin/owner is never pending
-        }));
+        const managedWorkspaces = data.data.managedWorkspaces.map(
+          (workspace) => ({
+            ...workspace,
+            id: workspace.id,
+            title: workspace.workspaceName,
+            description: workspace.description || "",
+            backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
+            // members: workspace.members,
+            isOwner: true,
+            isPending: false, // Admin/owner is never pending
+          })
+        );
 
         // Process assigned workspaces and filter out pending ones
-        const assignedWorkspaces = data.assignedWorkspaces
+        const assignedWorkspaces = data.data.assignedWorkspaces
           .map((workspace) => {
-
-            // Convert isPending to a proper boolean
-            // This handles cases where isPending is 1, "1", true, or any other truthy value
-            const isPendingStatus = Boolean(
-              workspace.isPending === 1 ||
-                workspace.isPending === "1" ||
-                workspace.isPending === true
-            );
+            // Convert isPending to proper boolean
+            // Handle both numeric (0/1) and boolean values
+            const isPendingStatus = Boolean(workspace.isPending);
 
             return {
               ...workspace,
@@ -76,12 +71,12 @@ const Homepage = () => {
               description: workspace.description || "",
               backgroundGradient:
                 "bg-gradient-to-br from-blue-300 to-purple-400",
-              members: workspace.members,
+              // members: workspace.members,
               isOwner: false,
               isPending: isPendingStatus,
             };
           })
-          .filter((workspace) => !workspace.isPending);
+          .filter((workspace) => !workspace.isPending); // Filter out pending workspaces (isPending = 1 or true)
 
         setWorkspaces([...managedWorkspaces, ...assignedWorkspaces]);
       } else {

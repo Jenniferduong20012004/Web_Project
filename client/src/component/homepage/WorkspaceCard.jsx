@@ -22,17 +22,12 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
   );
   const [isManager, setIsManager] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [activeMembers, setActiveMembers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const menuRef = useRef(null);
 
   useEffect(() => {
     setEditedWorkspaceName(workspace.workspaceName || workspace.title);
     setEditedDescription(workspace.description || "");
     checkWorkspaceRole();
-    
-    // Fetch active members when component mounts
-    fetchActiveMembers();
   }, [workspace]);
 
   useEffect(() => {
@@ -48,34 +43,29 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     };
   }, []);
 
-  // Fetch active members for this workspace
-  const fetchActiveMembers = async () => {
-    try {
-      setIsLoading(true);
-      const workspaceId = workspace.WorkSpace || workspace.id;
-      
-      const response = await axios.post(
-        "http://localhost:5000/getActiveMembers",
-        {
-          workspaceId: workspaceId,
-        }
-      );
-
-      if (response.data.success) {
-        // Filter out managers to show only regular members
-        const filteredMembers = response.data.members.filter(
-          (member) => !member.isManager
-        );
-        setActiveMembers(filteredMembers);
-      }
-    } catch (error) {
-      console.error("Error fetching active members:", error);
-      toast.error("Failed to load workspace members", {
-        position: "top-right",
-      });
-    } finally {
-      setIsLoading(false);
+  // Get active members from workspace prop instead of API call
+  const getActiveMembers = () => {
+    if (!workspace.members || !Array.isArray(workspace.members)) {
+      return [];
     }
+
+    // Filter out managers to show only regular members
+    // Assuming members have an isManager property or role property
+    return workspace.members.filter((member) => {
+      // Check if member has isManager property
+      if (member.hasOwnProperty("isManager")) {
+        return !member.isManager;
+      }
+      // Check if member has role property indicating manager
+      if (member.role) {
+        return (
+          member.role.toLowerCase() !== "manager" &&
+          member.role.toLowerCase() !== "admin"
+        );
+      }
+      // If no clear indication, include the member
+      return true;
+    });
   };
 
   // Check if the current user is a manager of this workspace
@@ -317,6 +307,9 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     setIsEditFormOpen(true);
   };
 
+  // Get active members from props
+  const activeMembers = getActiveMembers();
+
   return (
     <>
       <div
@@ -463,23 +456,21 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           className="flex justify-end !pr-2"
           style={{ marginBottom: "10px" }}
         >
-          {isLoading ? (
-            <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse"></div>
-          ) : activeMembers.length > 0 ? (
+          {activeMembers.length > 0 ? (
             activeMembers.map((member, idx) => (
               <div
-                key={member.joinWorkSpace}
+                key={member.id || member.joinWorkSpace || idx}
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
                 style={{
                   marginRight: idx < activeMembers.length - 1 ? "-3px" : "0",
                   zIndex: activeMembers.length - idx,
                 }}
-                title={member.userName}
+                title={member.name || member.userName}
               >
                 {member.photoPath ? (
                   <img
                     src={member.photoPath}
-                    alt={member.userName}
+                    alt={member.name || member.userName}
                     className="w-full h-full object-cover rounded-full"
                   />
                 ) : (

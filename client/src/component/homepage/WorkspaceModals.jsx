@@ -215,8 +215,3 @@ export const LeaveWorkspaceModal = ({ onConfirm, onCancel }) => {
     </div>
   );
 };
-
-// Export individual components directly instead of an object
-// This fixes the "default export is incompatible" issue with Fast Refresh
-// Don't use:
-// export default { DeleteWorkspaceModal, EditWorkspaceModal, LeaveWorkspaceModal };

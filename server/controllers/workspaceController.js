@@ -1,13 +1,13 @@
 const Workspace = require("../model/WorkSpace");
 
-// Get workspaces for a user
+// GET /workspaces/:userId - Get all workspaces for a user
 exports.getWorkspaces = (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req.params;
   
   if (!userId) {
     return res.status(400).json({ 
       success: false, 
-      message: "Cannot get UserId" 
+      message: "User ID is required" 
     });
   }
   
@@ -30,16 +30,15 @@ exports.getWorkspaces = (req, res) => {
           message: "Error when finding assigned workspaces!",
         });
       }
-      
-      console.log("Assigned workspaces:", assignedWorkspaces);
-      console.log("Managed workspaces:", managedWorkspaces);
-      
+            
       // Return both managed and assigned workspaces
       return res.status(200).json({
         success: true,
-        message: "Get workspace successful",
-        managedWorkspaces: managedWorkspaces,
-        assignedWorkspaces: assignedWorkspaces, 
+        message: "Workspaces retrieved successfully",
+        data: {
+          managedWorkspaces: managedWorkspaces,
+          assignedWorkspaces: assignedWorkspaces,
+        }
       });
     });
   });
