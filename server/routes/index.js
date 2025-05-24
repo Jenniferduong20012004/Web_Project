@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authRoutes = require("./authRoutes");
-const homePageRoute = require("./homePageRoute");
+// const homePageRoute = require("./homePageRoute");
 const profileRoute = require("./userProfileRoute");
 const dashBoardRoute = require("./dashboardRoute");
 const workspaceRoute = require("./workspaceRoute");
@@ -13,7 +13,7 @@ const taskDetailRoute = require ("./taskDetailRoute");
 
 // Authentication and user routes
 router.use("/", authRoutes);
-router.use("/", homePageRoute);
+// router.use("/", homePageRoute);
 router.use("/", profileRoute);
 
 // Workspace management routes
