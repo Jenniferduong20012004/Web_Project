@@ -1,8 +1,9 @@
-// ManageMembers.jsx
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt, FaEdit, FaCrown } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getInitials, getAvatarColor } from "../../utils/avatarUtils";
+
 import {
   fetchMembers,
   addMember,
@@ -16,28 +17,6 @@ import {
   UpdateRoleModal,
   UserNotFoundModal,
 } from "./MemberModals";
-
-const getInitials = (name) => {
-  const nameStr = String(name).trim();
-  return nameStr
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-};
-
-const avatarColors = [
-            "bg-blue-700",
-            "bg-orange-500",
-            "bg-purple-600",
-            "bg-green-600",
-            "bg-red-600",
-];
-
-const getAvatarColor = (index) => {
-  return avatarColors[index %
-    avatarColors.length];
-};
 
 const ManageMembers = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +40,7 @@ const ManageMembers = () => {
 
     if (storedWorkspace) {
       loadMembers(storedWorkspace);
-      checkAdminStatus(storedWorkspace); 
+      checkAdminStatus(storedWorkspace);
     } else {
       setIsLoading(false);
     }
@@ -71,10 +50,10 @@ const ManageMembers = () => {
   const checkAdminStatus = async (workspace) => {
     try {
       const userRole = await getCurrentUserRole(workspace);
-      setIsAdmin(userRole.isAdmin); 
+      setIsAdmin(userRole.isAdmin);
     } catch (error) {
       console.error("Error checking admin status:", error);
-      setIsAdmin(0); 
+      setIsAdmin(0);
     }
   };
 
@@ -85,7 +64,9 @@ const ManageMembers = () => {
       if (data.success) {
         const processedMembers = data.members.map((member) => ({
           ...member,
-          name: String(member.userName || member.name).replace(/\d+$/, "").trim(),
+          name: String(member.userName || member.name)
+            .replace(/\d+$/, "")
+            .trim(),
         }));
         setMembers(processedMembers);
       }
@@ -98,11 +79,11 @@ const ManageMembers = () => {
     // only admin can delete
     if (isAdmin !== 1) {
       toast.error("Only admin can delete.", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
-    
+
     setMemberToDelete(member);
     setShowConfirm(true);
   };
@@ -112,7 +93,7 @@ const ManageMembers = () => {
       toast.error("Only admin can delete.", { position: "top-right" });
       return;
     }
-    
+
     const success = await deleteMember(memberToDelete, members, setMembers);
     if (success) {
       setShowConfirm(false);
@@ -124,11 +105,11 @@ const ManageMembers = () => {
     // only admin can update member role
     if (isAdmin !== 1) {
       toast.error("Only admin can update member's role.", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
-    
+
     setMemberToUpdate(member);
     setUpdatedRole(member.role);
     setShowUpdateRoleModal(true);
@@ -139,7 +120,7 @@ const ManageMembers = () => {
       toast.error("Only admin can do", { position: "top-right" });
       return;
     }
-    
+
     if (!updatedRole.trim()) {
       toast.error("Role cannot be empty");
       return;
@@ -163,15 +144,15 @@ const ManageMembers = () => {
       toast.error("Please create a workspace first");
       return;
     }
-    
+
     // Only admin can add new member
     if (isAdmin !== 1) {
       toast.error("Only admin can add new member.", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
-    
+
     setShowAddModal(true);
   };
 
@@ -180,7 +161,7 @@ const ManageMembers = () => {
       toast.error("Only admin can add new member.", { position: "top-right" });
       return false;
     }
-    
+
     const result = await addMember(email, role, workspace, members, setMembers);
 
     if (result === true) {
@@ -270,16 +251,15 @@ const ManageMembers = () => {
                           member.userId
                         )}`}
                       >
-                          {member.photoPath ? (
-                      <img
-                        src={member.photoPath}
-                        alt={member.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      getInitials(String(member.name))
-                    )}
-                        
+                        {member.photoPath ? (
+                          <img
+                            src={member.photoPath}
+                            alt={member.name}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          getInitials(String(member.name))
+                        )}
                       </div>
 
                       <span className=" text-[#111827] font-medium">
@@ -358,7 +338,10 @@ const ManageMembers = () => {
               ))}
               {members.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin === 1 ? "5" : "4"} className="!py-16 text-center text-gray-400">
+                  <td
+                    colSpan={isAdmin === 1 ? "5" : "4"}
+                    className="!py-16 text-center text-gray-400"
+                  >
                     No members found.
                   </td>
                 </tr>

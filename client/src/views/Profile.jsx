@@ -3,6 +3,7 @@ import Navbar from "../component/Navbar";
 import axios from "axios";
 import { toast } from "react-toastify";
 import ProfileUpdateSuccessModal from "../component/profile/ProfileUpdateSuccessfulModal";
+import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
@@ -12,17 +13,12 @@ const Profile = () => {
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const fileInputRef = useRef(null);
-const avatarColors = [
-            "bg-blue-700",
-            "bg-orange-500",
-            "bg-purple-600",
-            "bg-green-600",
-            "bg-red-600",
-];
+
   const fetchUser = async () => {
     try {
       setLoading(true);
       let userData = JSON.parse(localStorage.getItem("user"));
+      
       if (!userData) {
         toast.error("User not found in localStorage", {
           position: "top-right",
@@ -30,6 +26,7 @@ const avatarColors = [
         setLoading(false);
         return;
       }
+
       const response = await fetch("http://localhost:5000/getProfile", {
         method: "POST",
         headers: {
@@ -41,17 +38,29 @@ const avatarColors = [
       });
 
       const data = await response.json();
+
       if (data.success && data.userInformation) {
         const userInfo = {
           id: userData.userId,
-          username: data.userInformation.name,
+          username: data.userInformation.name, // Map 'name' from API to 'username'
           email: data.userInformation.email,
           password: data.userInformation.password,
           photoPath: data.userInformation.photoPath || null,
         };
+        
         setUserData(userInfo);
         setFormData({ ...userInfo });
         setAvatarUrl(userInfo.photoPath);
+
+        // Update localStorage with latest data
+        const updatedUserData = {
+          ...userData,
+          name: data.userInformation.name,
+          email: data.userInformation.email,
+          photoPath: data.userInformation.photoPath
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUserData));
+        
       } else {
         toast.error(data.message || "Failed to fetch user", {
           position: "top-right",
@@ -71,8 +80,15 @@ const avatarColors = [
   }, []);
 
   const submitHandler = async (data) => {
+    if (!data.username || data.username.trim() === '') {
+      toast.error("Username cannot be empty", {
+        position: "top-right",
+      });
+      return;
+    }
+
     setLoading(true);
-    const loadingToast = toast.loading("Updating user name...", {
+    const loadingToast = toast.loading("Updating username...", {
       position: "top-right",
       pauseOnHover: false,
       closeOnClick: false,
@@ -80,28 +96,45 @@ const avatarColors = [
     });
 
     try {
-        const response = await axios.post("http://localhost:5000/updateProfile", {
+      const response = await axios.post("http://localhost:5000/updateProfile", {
         id: userData.id,
-        username: data.username,
-        // avatarUrl: avatarUrl,
+        username: data.username.trim(),
       });
+
       if (response.data.success) {
         toast.dismiss(loadingToast);
+        
+        // Update localStorage immediately
+        const currentUserData = JSON.parse(localStorage.getItem("user"));
+        const updatedUserData = {
+          ...currentUserData,
+          name: data.username.trim()
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUserData));
 
-        // Show success modal instead of toast
+        // Update local state
+        setUserData(prev => ({
+          ...prev,
+          username: data.username.trim()
+        }));
+
+        // Show success modal
         setShowUpdateSuccess(true);
+        
+        toast.success("Username updated successfully!", {
+          position: "top-right",
+        });
       } else {
+        toast.dismiss(loadingToast);
         toast.error(response.data.message || "Update failed", {
           position: "top-right",
         });
       }
-    
-      
-      
-
     } catch (error) {
+      toast.dismiss(loadingToast);
+      
       if (error.response) {
-        toast.error(error.response.data.message || "Error when update!", {
+        toast.error(error.response.data.message || "Error when updating!", {
           position: "top-right",
         });
       } else if (error.request) {
@@ -114,7 +147,6 @@ const avatarColors = [
         });
       }
     } finally {
-      toast.dismiss(loadingToast);
       setLoading(false);
     }
   };
@@ -130,8 +162,7 @@ const avatarColors = [
       return;
     }
 
-    // Maximum file size of 5MB
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) { // Maximum file size of 5MB
       toast.error('File is too large. Maximum size is 5MB', {
         position: "top-right",
       });
@@ -145,34 +176,47 @@ const avatarColors = [
       closeOnClick: false,
       autoClose: false,
     });
+
     const data = new FormData();
-      data.append('userId',userData.id);
-      data.append('uploaded_file', file); 
-      try {
-        const response = await fetch("http://localhost:5000/addProfilePicture", {
+    data.append('userId', userData.id);
+    data.append('uploaded_file', file);
+
+    try {
+      const response = await fetch("http://localhost:5000/addProfilePicture", {
         method: 'POST',
         body: data,
       });
-        const result = await response.json();
+      
+      const result = await response.json();
+      
+      if (result.success) {
         setAvatarUrl(result.updatedPhotoPath);
-        console.log('Success:', result);  
+        
+        // Update localStorage
+        const currentUserData = JSON.parse(localStorage.getItem("user"));
+        const updatedUserData = {
+          ...currentUserData,
+          photoPath: result.updatedPhotoPath
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUserData));
+        
         toast.success("Avatar updated successfully", {
+          position: "top-right",
+        });
+      } else {
+        toast.error(result.message || "Failed to upload avatar", {
+          position: "top-right",
+        });
+      }
+    } catch (err) {
+      toast.error(`Error updating avatar: ${err.message}`, {
         position: "top-right",
       });
-      }
-      catch (err) {
-        console.error('Error uploading:', err);
-        toast.error(`Error updating avatar: ${error.message}`, {
-        position: "top-right",
-      });
-      }
-     finally {
+    } finally {
       toast.dismiss(avatarToast);
       setAvatarLoading(false);
     }
-  }
-
-  
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -192,13 +236,6 @@ const avatarColors = [
 
   const handleRefreshProfile = () => {
     fetchUser();
-  };
-
-  // DEFAULT: when user not have avatar, get initials from username
-  const getInitials = (name) => {
-    if (!name) return "";
-    const words = name.split(" ");
-    return `${words[0][0]}`.toUpperCase();
   };
 
   const triggerFileInput = () => {
@@ -266,7 +303,7 @@ const avatarColors = [
                   className="relative group w-20 h-20 cursor-pointer"
                   onClick={triggerFileInput}
                 >
-                  <div className={`w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-2xl text-white font-medium ${avatarColors[userData.id%avatarColors.length]}`}>
+                  <div className={`w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-2xl text-white font-medium ${getAvatarColor(userData.id)}`}>
                     {getInitials(userData.username)}
                   </div>
                   <div className="absolute inset-0 bg-black bg-opacity-20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity flex items-center justify-center">
@@ -305,7 +342,7 @@ const avatarColors = [
             Personal Information
           </h2>
 
-          <div className="flex flex-col gap-4 ">
+          <div className="flex flex-col gap-4">
             {/* Username */}
             <div>
               <label
@@ -318,8 +355,9 @@ const avatarColors = [
                 type="text"
                 id="username"
                 name="username"
-                value={formData.username}
+                value={formData.username || ''}
                 onChange={handleInputChange}
+                placeholder="Enter your username"
                 className="w-full !px-3 !py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -336,10 +374,9 @@ const avatarColors = [
                 type="email"
                 id="email"
                 name="email"
-                value={formData.email}
-                // onChange={handleInputChange}
+                value={formData.email || ''}
                 disabled={true}
-                className="w-full !px-3 !py-2 border border-gray-300 bg-[3F4F7FA] text-gray-500 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full !px-3 !py-2 border border-gray-300 bg-gray-100 text-gray-500 rounded-md focus:outline-none"
               />
             </div>
 
@@ -355,9 +392,9 @@ const avatarColors = [
                 type="password"
                 id="password"
                 name="password"
-                value={userData.password}
+                value="••••••••"
                 disabled={true}
-                className="w-full !px-3 !py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full !px-3 !py-2 border border-gray-300 bg-gray-100 text-gray-500 rounded-md focus:outline-none"
               />
             </div>
 
@@ -365,7 +402,9 @@ const avatarColors = [
               <button
                 className="!ml-2 text-blue-500 text-sm hover:text-blue-700 cursor-pointer"
                 onClick={() => {
-                  /* Add password change functionality */
+                  toast.info("Change password feature coming soon!", {
+                    position: "top-right",
+                  });
                 }}
               >
                 Change Password
@@ -377,9 +416,9 @@ const avatarColors = [
               <button
                 onClick={handleUpdate}
                 disabled={loading}
-                className={`!px-3 !py-2 ${
-                  loading ? "bg-gray-400" : "bg-blue-400 hover:bg-blue-700"
-                } text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 cursor-pointer`}
+                className={`!px-6 !py-2 ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-700 cursor-pointer"
+                } text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors`}
               >
                 {loading ? "UPDATING..." : "UPDATE"}
               </button>
