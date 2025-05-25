@@ -12,10 +12,12 @@ import AssigneesDropdown from "../component/board/task-detail/AssigneesDropdown"
 import AssetsList from "../component/board/task-detail/AssetsList";
 import { BackButton } from "../component/board/task-detail/Buttons";
 
-import { fetchManagerAndCheckRole } from "../utils/workspaceUtils"; 
+import { fetchManagerAndCheckRole } from "../utils/workspaceUtils";
 
 function TaskDetail() {
   const { workspaceId, taskId } = useParams();
+  console.log("🔍 URL Params:", { workspaceId, taskId });
+  
   const [task, setTask] = useState(null);
   const [originalTask, setOriginalTask] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -33,20 +35,28 @@ function TaskDetail() {
 
   // Function to check workspace role using the new utility
   const checkWorkspaceRole = async (workspaceId) => {
+    console.log("🔑 Checking workspace role for:", workspaceId);
     try {
       const result = await fetchManagerAndCheckRole(workspaceId);
-      
+      console.log("🔑 Workspace role result:", result);
+
       if (result.success) {
         setIsManager(result.isManager);
-        setWorkspaceRole(result.isManager ? "myWorkspace" : "assignedWorkspace");
+        setWorkspaceRole(
+          result.isManager ? "myWorkspace" : "assignedWorkspace"
+        );
+        console.log("✅ Workspace role set:", {
+          isManager: result.isManager,
+          workspaceRole: result.isManager ? "myWorkspace" : "assignedWorkspace"
+        });
       } else {
-        console.log("Failed to fetch workspace manager:", result.error);
+        console.log("❌ Failed to fetch workspace manager:", result.error);
         // Set default values on error
         setIsManager(false);
         setWorkspaceRole("assignedWorkspace");
       }
     } catch (error) {
-      console.error("Error checking workspace role:", error);
+      console.error("💥 Error checking workspace role:", error);
       // Set default values on error
       setIsManager(false);
       setWorkspaceRole("assignedWorkspace");
@@ -54,6 +64,7 @@ function TaskDetail() {
   };
 
   const fetchTaskDetail = async () => {
+    console.log("📋 Fetching task detail for:", { taskId, workspaceId });
     try {
       setLoading(true);
       const response = await fetch("http://localhost:5000/getTaskDetail", {
@@ -66,7 +77,11 @@ function TaskDetail() {
           workspaceId: workspaceId,
         }),
       });
+      
+      console.log("📋 API Response status:", response.status);
       const data = await response.json();
+      console.log("📋 API Response data:", data);
+      
       if (data.success) {
         const task = {
           id: data.task.id,
@@ -80,29 +95,35 @@ function TaskDetail() {
           availableMembers: data.task.availableMembers,
           subtasks: data.task.subtasks,
         };
+        console.log("✅ Task data processed:", task);
         setTask(task);
         setOriginalTask(JSON.parse(JSON.stringify(task)));
       } else {
+        console.error("❌ API returned error:", data.message);
         toast.error(data.message || "Failed to fetch user", {
           position: "top-right",
         });
       }
     } catch (error) {
+      console.error("💥 Fetch task detail error:", error);
       toast.error("Error: " + (error.message || "Unknown error"), {
         position: "top-right",
       });
     } finally {
       setLoading(false);
+      console.log("📋 Loading set to false");
     }
   };
 
   // Fetch task data
   useEffect(() => {
+    console.log("🚀 useEffect: Fetching task detail");
     fetchTaskDetail();
   }, [taskId, workspaceId]);
 
   // Check workspace role - chỉ chạy 1 lần khi workspaceId thay đổi
   useEffect(() => {
+    console.log("🚀 useEffect: Checking workspace role");
     if (workspaceId) {
       checkWorkspaceRole(workspaceId);
     }
@@ -111,34 +132,53 @@ function TaskDetail() {
   // Detect changes
   useEffect(() => {
     if (task && originalTask) {
-      setHasChanges(JSON.stringify(task) !== JSON.stringify(originalTask));
+      const hasChangesValue = JSON.stringify(task) !== JSON.stringify(originalTask);
+      console.log("🔄 Changes detected:", hasChangesValue);
+      setHasChanges(hasChangesValue);
     }
   }, [task, originalTask]);
 
+  // Log current state
+  useEffect(() => {
+    console.log("📊 Current state:", {
+      task: task ? "loaded" : "null",
+      loading,
+      workspaceRole,
+      isManager,
+      hasChanges
+    });
+  }, [task, loading, workspaceRole, isManager, hasChanges]);
+
   // Toggle edit mode for a field
   const toggleEditMode = useCallback((field) => {
+    console.log("✏️ Toggling edit mode for:", field);
     setEditMode((prev) => ({ ...prev, [field]: !prev[field] }));
   }, []);
 
   // Save field value
   const handleSaveField = useCallback((field, value) => {
+    console.log("💾 Saving field:", { field, value });
     setTask((prev) => ({ ...prev, [field]: value }));
     setEditMode((prev) => ({ ...prev, [field]: false }));
   }, []);
 
   // Update handlers
   const handleSubtasksChange = useCallback((updatedSubtasks) => {
+    console.log("📝 Subtasks changed:", updatedSubtasks);
     setTask((prev) => ({ ...prev, subtasks: updatedSubtasks }));
   }, []);
 
   const handleAssigneesChange = useCallback((newAssignees) => {
+    console.log("👥 Assignees changed:", newAssignees);
     setTask((prev) => ({ ...prev, assignedTo: newAssignees }));
   }, []);
 
   const handleUpdateTask = useCallback(async () => {
+    console.log("🔄 Updating task...");
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
       if (!userData) {
+        console.error("❌ No user data found");
         return;
       }
 
@@ -154,22 +194,27 @@ function TaskDetail() {
       });
 
       const data = await response.json();
+      console.log("🔄 Update response:", data);
 
       if (data.success) {
-        // console.log("Updating task with new data:", task);
         setOriginalTask(JSON.parse(JSON.stringify(task)));
         setHasChanges(false);
         alert("Task updated successfully!");
+        console.log("✅ Task updated successfully");
       }
     } catch (error) {
-      console.error("Error update task:", error);
+      console.error("💥 Error update task:", error);
     }
   }, [task, originalTask]);
 
+  console.log("🎨 About to render. Task:", task ? "exists" : "null", "Loading:", loading);
+
   if (!task) {
+    console.log("⏳ Rendering loading state");
     return <PageLayout isLoading={true} />;
   }
 
+  console.log("🎨 Rendering main UI");
   return (
     <div className="w-full min-h-screen flex flex-col">
       {/* Fixed Navbar with workspace role */}
