@@ -47,8 +47,8 @@ const formatDate = (dateStr) => {
   return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
 };
 function compareSubtasks(originalTask, updatedTask) {
-  const originalMap = new Map(originalTask.subtasks.map(st => [st.id, st]));
-  const updatedMap = new Map(updatedTask.subtasks.map(st => [st.id, st]));
+  const originalMap = new Map(originalTask.subtasks.map((st) => [st.id, st]));
+  const updatedMap = new Map(updatedTask.subtasks.map((st) => [st.id, st]));
 
   const added = [];
   const removed = [];
@@ -74,111 +74,139 @@ function compareSubtasks(originalTask, updatedTask) {
       removed.push(originalMap.get(id));
     }
   }
-  console.log (updated)
-  if (added.length > 0) {  
-    const queryInsert = 'INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)';
-    added.forEach(sub=>{
-        pool.query (queryInsert,[sub.title, originalTask.id, sub.completed], (err, res)=>{
+  console.log(updated);
+  if (added.length > 0) {
+    const queryInsert =
+      "INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)";
+    added.forEach((sub) => {
+      pool.query(
+        queryInsert,
+        [sub.title, originalTask.id, sub.completed],
+        (err, res) => {
           if (err) {
-        console.error( err);
-        return false;
-      }
-        })
-    })
+            console.error(err);
+            return false;
+          }
+        }
+      );
+    });
   }
-    if (removed.length > 0) {  
-    const queryDelete = 'DELETE FROM SubTask WHERE SubTakId = ?';
-    removed.forEach(sub=>{
-        pool.query (queryDelete,[sub.id], (err, res)=>{
-          if (err) {
-        console.error( err);
-        return false;
-      }
-        })
-    })
+  if (removed.length > 0) {
+    const queryDelete = "DELETE FROM SubTask WHERE SubTakId = ?";
+    removed.forEach((sub) => {
+      pool.query(queryDelete, [sub.id], (err, res) => {
+        if (err) {
+          console.error(err);
+          return false;
+        }
+      });
+    });
   }
-  if (updated.length>0){
-const updateQuery = `UPDATE SubTask
+  if (updated.length > 0) {
+    const updateQuery = `UPDATE SubTask
 SET 
     subtaskName = ?,
      status = ?
-WHERE SubTakId  = ?;`
-updated.forEach(sub=>{
-        pool.query (updateQuery ,[sub.to.title, sub.to.completed, sub.to.id], (err, res)=>{
+WHERE SubTakId  = ?;`;
+    updated.forEach((sub) => {
+      pool.query(
+        updateQuery,
+        [sub.to.title, sub.to.completed, sub.to.id],
+        (err, res) => {
           if (err) {
-        console.error( err);
-        return false;
-      }
-        })
-    })
+            console.error(err);
+            return false;
+          }
+        }
+      );
+    });
   }
   return true;
 }
 
-function updateUser (newTask, originalTask){
-  const assignedToIds = new Set(newTask.assignedTo.map(user => user.id));
-    const originalAssignedToIds = new Set(originalTask.assignedTo.map(user => user.id));
-    const addedIds = [...assignedToIds].filter(id => !originalAssignedToIds.has(id));
-    const removeIds = [...originalAssignedToIds].filter (id => !assignedToIds.has(id));
-    const addedUsers = newTask.availableMembers.filter(user => addedIds.includes(user.id));
-    const removedUsers = originalTask.assignedTo.filter(user => removeIds.includes(user.id));
-   if (addedUsers.length > 0) {    
-  const queryAdd = 'INSERT INTO AssignTask (joinWorkSpace, TaskId) VALUES (?, ?)';
-  addedUsers.forEach(user => {
-        pool.query (queryAdd,[user.joinId, newTask.id], (err, res)=>{
-          if (err) {
-        console.error( err);
-        return callback(err, null);
-        return false;
-      }
-        })
+function updateUser(newTask, originalTask) {
+  const assignedToIds = new Set(newTask.assignedTo.map((user) => user.id));
+  const originalAssignedToIds = new Set(
+    originalTask.assignedTo.map((user) => user.id)
+  );
+  const addedIds = [...assignedToIds].filter(
+    (id) => !originalAssignedToIds.has(id)
+  );
+  const removeIds = [...originalAssignedToIds].filter(
+    (id) => !assignedToIds.has(id)
+  );
+  const addedUsers = newTask.availableMembers.filter((user) =>
+    addedIds.includes(user.id)
+  );
+  const removedUsers = originalTask.assignedTo.filter((user) =>
+    removeIds.includes(user.id)
+  );
+  if (addedUsers.length > 0) {
+    const queryAdd =
+      "INSERT INTO AssignTask (joinWorkSpace, TaskId) VALUES (?, ?)";
+    addedUsers.forEach((user) => {
+      pool.query(queryAdd, [user.joinId, newTask.id], (err, res) => {
+        if (err) {
+          console.error(err);
+          return callback(err, null);
+          return false;
+        }
+      });
     });
   }
 
-    if (removedUsers.length > 0) {  
-    const queryRemove = 'DELETE FROM AssignTask WHERE AssignId = ?';
-    removedUsers.forEach(user=>{
-              pool.query (queryRemove,[user.aId], (err, res)=>{
-          if (err) {
-        console.error( err);
-        return false;
-      }
-        })
-    })
+  if (removedUsers.length > 0) {
+    const queryRemove = "DELETE FROM AssignTask WHERE AssignId = ?";
+    removedUsers.forEach((user) => {
+      pool.query(queryRemove, [user.aId], (err, res) => {
+        if (err) {
+          console.error(err);
+          return false;
+        }
+      });
+    });
   }
   return true;
 }
-function updateTaskInfo (newTask, originalTask){
-    const query = `UPDATE Task
+function updateTaskInfo(newTask, originalTask) {
+  const query = `UPDATE Task
 SET 
     taskname = ?,
     priority = ?,
     dateEnd = ?,
     StateCompletion = ?,
     description = ?
-WHERE TaskId = ?;`
-pool.query (query, [newTask.title, mapP(newTask.priority), newTask.dueDate, mapS(newTask.status), newTask.description, newTask.id], (e, r)=>{
-if (e){
-  console.log (e);
-  return false;
-}
-});
-return true;
+WHERE TaskId = ?;`;
+  pool.query(
+    query,
+    [
+      newTask.title,
+      mapP(newTask.priority),
+      newTask.dueDate,
+      mapS(newTask.status),
+      newTask.description,
+      newTask.id,
+    ],
+    (e, r) => {
+      if (e) {
+        console.log(e);
+        return false;
+      }
+    }
+  );
+  return true;
 }
 class DashBoard {
-  static updateTask(newTask, originalTask, callback){
-    const a =updateUser(newTask, originalTask);
-    const b =compareSubtasks(originalTask, newTask);
-    const c =updateTaskInfo(newTask, originalTask);
-    if (a &&b &&c){
+  static updateTask(newTask, originalTask, callback) {
+    const a = updateUser(newTask, originalTask);
+    const b = compareSubtasks(originalTask, newTask);
+    const c = updateTaskInfo(newTask, originalTask);
+    if (a && b && c) {
       callback(null, { success: true });
-    }
-    else{
+    } else {
       callback(null, { success: false });
     }
-    
-  
-}
+  }
 
   static getMemberFromWorkspace(workspaceId, callback) {
     const query =
@@ -260,10 +288,10 @@ class DashBoard {
           ];
           const bgColor =
             bgColorOptions[row.assignedUserId % bgColorOptions.length];
-            let photoLink = null;
-            if (row.photo){
-              photoLink =  `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
-            }
+          let photoLink = null;
+          if (row.photo) {
+            photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
+          }
           const user = {
             id: row.assignedUserId,
             name: row.assignedUserName,
@@ -369,28 +397,27 @@ class DashBoard {
         const members = await new Promise((resolve, reject) => {
           pool.query(queryAvaMem, [workspaceId], (err, results) => {
             if (err) return reject(err);
-              // console.log (link);
-const mappedMembers = results.map((row) => {
-  let link = null;
-  if (row.photoPath != null) {
-    link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`;
-  }
+            // console.log (link);
+            const mappedMembers = results.map((row) => {
+              let link = null;
+              if (row.photoPath != null) {
+                link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photoPath}`;
+              }
 
-  return {
-    id: row.userId,
-    joinId: row.joinWorkSpace,
-    name: row.name,
-    email: row.email,
-    photoPath: link,
-    initials: row.name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase(),
-    bgColor: bgColorOptions[row.userId % bgColorOptions.length],
-  };
-});
-
+              return {
+                id: row.userId,
+                joinId: row.joinWorkSpace,
+                name: row.name,
+                email: row.email,
+                photoPath: link,
+                initials: row.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase(),
+                bgColor: bgColorOptions[row.userId % bgColorOptions.length],
+              };
+            });
 
             resolve(mappedMembers);
           });
@@ -414,7 +441,7 @@ const mappedMembers = results.map((row) => {
           if (err) return reject(err);
 
           if (rows.length === 0) return resolve(null);
-          
+
           const row0 = rows[0];
           const task = {
             id: row0.TaskId,
@@ -433,16 +460,14 @@ const mappedMembers = results.map((row) => {
           if (row0.filePath) {
             const fileName = row0.filePath;
 
-
-              const fileExt = fileName.split(".").pop().toLowerCase();
-              task.assets.push({
-                id: 1,
-                name: fileName,
-                type: fileExt,
-                filePath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/taskfile/${fileName}`,
-              });
+            const fileExt = fileName.split(".").pop().toLowerCase();
+            task.assets.push({
+              id: 1,
+              name: fileName,
+              type: fileExt,
+              filePath: `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/taskfile/${fileName}`,
+            });
           }
-          
 
           // Populate assigned users
           const seenUsers = new Set();
@@ -456,11 +481,11 @@ const mappedMembers = results.map((row) => {
               .join("")
               .toUpperCase();
 
-              let link = null;
-              if (row.photo != null){
-                link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`
-              }
-              console.log ()
+            let link = null;
+            if (row.photo != null) {
+              link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
+            }
+            console.log();
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
@@ -514,17 +539,17 @@ const mappedMembers = results.map((row) => {
             if (err2) {
               return reject(err2);
             }
-        const assignedUsers = assignedUsersResult.map((u) => {
-          let photoLink = null;
-          if (u.photoPath) {
-            photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
-          }
-          return {
-            id:u.userId,
-            name: u.name,
-            photoPath: photoLink,
-          };
-        });
+            const assignedUsers = assignedUsersResult.map((u) => {
+              let photoLink = null;
+              if (u.photoPath) {
+                photoLink = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${u.photoPath}`;
+              }
+              return {
+                id: u.userId,
+                name: u.name,
+                photoPath: photoLink,
+              };
+            });
 
             const endDate = new Date(row.dateEnd);
             const daysLeft = Math.ceil(

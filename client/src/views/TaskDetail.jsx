@@ -3,6 +3,7 @@ import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
+
 import PageLayout from "../component/board/task-detail/PageLayout";
 import TaskHeader from "../component/board/task-detail/TaskHeader";
 import TaskDescription from "../component/board/task-detail/TaskDescription";
@@ -10,6 +11,8 @@ import SubtaskList from "../component/board/task-detail/SubtaskList";
 import AssigneesDropdown from "../component/board/task-detail/AssigneesDropdown";
 import AssetsList from "../component/board/task-detail/AssetsList";
 import { BackButton } from "../component/board/task-detail/Buttons";
+
+import { fetchManagerAndCheckRole } from "../utils/workspaceUtils"; 
 
 function TaskDetail() {
   const { workspaceId, taskId } = useParams();
@@ -28,37 +31,25 @@ function TaskDetail() {
   const [workspaceRole, setWorkspaceRole] = useState(null);
   const [isManager, setIsManager] = useState(false);
 
-  // Function to check workspace role
+  // Function to check workspace role using the new utility
   const checkWorkspaceRole = async (workspaceId) => {
     try {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      if (!userData) {
-        console.log("No user data found in localStorage");
-        return;
-      }
-
-      const response = await fetch("http://localhost:5000/checkWorkspaceRole", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: userData.userId,
-          workspaceId: workspaceId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const isUserManager = data.isManager;
-        setIsManager(isUserManager);
-        setWorkspaceRole(isUserManager ? "myWorkspace" : "assignedWorkspace");
+      const result = await fetchManagerAndCheckRole(workspaceId);
+      
+      if (result.success) {
+        setIsManager(result.isManager);
+        setWorkspaceRole(result.isManager ? "myWorkspace" : "assignedWorkspace");
       } else {
-        console.log("API returned success: false", data);
+        console.log("Failed to fetch workspace manager:", result.error);
+        // Set default values on error
+        setIsManager(false);
+        setWorkspaceRole("assignedWorkspace");
       }
     } catch (error) {
       console.error("Error checking workspace role:", error);
+      // Set default values on error
+      setIsManager(false);
+      setWorkspaceRole("assignedWorkspace");
     }
   };
 
