@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
 
-const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
+const AssigneesDropdown = ({ assignees, onAssigneesChange, isManager }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMembers, setActiveMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,8 +48,8 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
           id: member.userId,
           name: member.userName,
           photoPath: member.photoPath,
-          bgColor: getAvatarColor(member.userId), // Generate bgColor on client side using userId
-          initials: getInitials(member.userName), // Use utility function for consistency
+          bgColor: getAvatarColor(member.userId),
+          initials: getInitials(member.userName),
           role: member.role,
         }));
 
@@ -82,6 +82,48 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
     };
   }, [isOpen]);
 
+  // If not manager, only show assigned members (read-only)
+  if (!isManager) {
+    return (
+      <div>
+        <div className="w-full border border-gray-300 rounded-md !px-3 !py-2 text-sm flex items-center justify-between !mb-3 bg-gray-50">
+          <span className={assignees.length > 0 ? "" : "text-gray-500"}>
+            {assignees.length > 0
+              ? `${assignees.length} member${assignees.length !== 1 ? "s" : ""} assigned`
+              : "No members assigned"}
+          </span>
+        </div>
+
+        {/* Display currently assigned (read-only) */}
+        {assignees.length > 0 && (
+          <div className="space-y-3">
+            {assignees.map((member) => (
+              <div key={member.id} className="flex items-center">
+                <div
+                  className={`!w-8 !h-8 rounded-full flex items-center justify-center text-white font-medium !mr-2 !mb-2 ${member.bgColor}`}
+                >
+                  {member.photoPath ? (
+                    <img
+                      src={member.photoPath}
+                      alt={member.name}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    member.initials
+                  )}
+                </div>
+                <div className="font-medium text-gray-900 flex-1">
+                  {member.name}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Manager version with full functionality
   return (
     <div>
       <div className="relative" ref={dropdownRef}>

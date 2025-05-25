@@ -29,11 +29,6 @@ class Task {
         return callback(err, null);
       }
 
-      // Log the first result to debug
-      // if (results.length > 0) {
-      //   console.log("Sample database row:", results[0]);
-      // }
-
       const trashTasks = results.map((row) => {
         return {
           TaskId: row.TaskId,

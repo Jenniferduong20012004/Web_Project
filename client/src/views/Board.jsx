@@ -5,10 +5,10 @@ import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
+import { fetchManagerAndCheckRole } from "../utils/workspaceUtils";
 
 const Board = () => {
-  // const { workspaceId } = useParams();
-  // const [workspaceName, setWorkspaceName] = useState("");
+  const { workspacedId } = useParams();
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
@@ -16,38 +16,33 @@ const Board = () => {
   const [members, setMembers] = useState([]);
   const [workspaceRole, setWorkspaceRole] = useState(null);
   const [isManager, setIsManager] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // Add refresh key state
+  const [managerData, setManagerData] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const { workspacedId } = useParams();
-
-  // Function to check workspace role
+  // Function to check workspace role using workspaceUtils
   const checkWorkspaceRole = async (workspaceId) => {
     try {
-      const userData = JSON.parse(localStorage.getItem("user"));
-      if (!userData) {
-        return;
-      }
-
-      const response = await fetch("http://localhost:5000/checkWorkspaceRole", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: userData.userId,
-          workspaceId: workspaceId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const userIsManager = data.isManager;
-        setIsManager(userIsManager);
-        setWorkspaceRole(userIsManager ? "myWorkspace" : "assignedWorkspace");
+      const result = await fetchManagerAndCheckRole(workspaceId);
+      
+      if (result.success) {
+        setManagerData(result.manager);
+        setIsManager(result.isManager);
+        setWorkspaceRole(result.isManager ? "myWorkspace" : "assignedWorkspace");
+      } else {
+        // No manager found or error occurred
+        setManagerData(null);
+        setIsManager(false);
+        setWorkspaceRole("assignedWorkspace");
+        
+        if (result.error !== 'No manager found') {
+          console.error("Error checking workspace role:", result.error);
+        }
       }
     } catch (error) {
-      console.error("Error checking workspace role:", error);
+      console.error("Error in checkWorkspaceRole:", error);
+      setManagerData(null);
+      setIsManager(false);
+      setWorkspaceRole("assignedWorkspace");
     }
   };
 
@@ -258,9 +253,9 @@ const Board = () => {
                   key={task.id}
                   task={task}
                   workspaceId={workspacedId}
-                  onTrashTask={handleTrashTask} // Pass the trash function to Task component
-                  isManager={isManager} // Pass isManager to Task component so trash functionality can be controlled there too
-                  refreshBoard={refreshBoard} // Pass refreshBoard function to Task component
+                  onTrashTask={handleTrashTask}
+                  isManager={isManager}
+                  refreshBoard={refreshBoard}
                 />
               ))
             )}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../component/Sidebar";
-import Navbar from "../component/Navbar"; // ADD: Import Navbar
+import Navbar from "../component/Navbar";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import PageLayout from "../component/board/task-detail/PageLayout";
@@ -9,7 +9,6 @@ import TaskDescription from "../component/board/task-detail/TaskDescription";
 import SubtaskList from "../component/board/task-detail/SubtaskList";
 import AssigneesDropdown from "../component/board/task-detail/AssigneesDropdown";
 import AssetsList from "../component/board/task-detail/AssetsList";
-import mockTaskDetailData from "../mock-data/mockTaskDetailData";
 import { BackButton } from "../component/board/task-detail/Buttons";
 
 function TaskDetail() {
