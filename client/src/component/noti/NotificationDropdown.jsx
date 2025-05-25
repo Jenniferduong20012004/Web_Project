@@ -6,6 +6,7 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from "./notificationService";
+import { getInitials, getAvatarColor } from "../../utils/avatarUtils";
 import { toast } from "react-toastify";
 
 const NotificationDropdown = ({ refreshWorkspaces }) => {
@@ -15,18 +16,32 @@ const NotificationDropdown = ({ refreshWorkspaces }) => {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const intervalRef = useRef(null);
 
-  // Get the current user ID
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   // Fetch notifications when component mounts
   useEffect(() => {
     fetchNotifications();
 
-    // Set up polling to check for new notifications (every 30 seconds)
-    const intervalId = setInterval(fetchNotifications, 30000);
+    // Set up polling for new notifications (every 30 seconds)
+    intervalRef.current = setInterval(fetchNotifications, 30000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  // Focus-based polling - fetch when window gains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchNotifications();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const fetchNotifications = async () => {
@@ -41,6 +56,9 @@ const NotificationDropdown = ({ refreshWorkspaces }) => {
           (notification) => ({
             ...notification,
             read: storedReadStatus[notification.joinWorkSpaceId] || false,
+            // Add avatar data using utils
+            adminInitials: getInitials(notification.workspace.admin.name || "A"),
+            adminBgColor: getAvatarColor(notification.workspace.admin.userId || 0),
           })
         );
 
@@ -69,6 +87,10 @@ const NotificationDropdown = ({ refreshWorkspaces }) => {
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
+    // Fetch fresh data when dropdown opens
+    if (!isOpen) {
+      fetchNotifications();
+    }
   };
 
   const handleNotificationClick = (notification) => {
@@ -131,14 +153,44 @@ const NotificationDropdown = ({ refreshWorkspaces }) => {
     setSelectedNotification(null);
   };
 
+  // Format timestamp to show date only
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
+      year: "numeric",
     }).format(date);
+  };
+
+  // Function to render admin avatar with fallback
+  const renderAdminAvatar = (notification) => {
+    return (
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm text-white font-medium !mr-2 ${notification.adminBgColor}`}
+      >
+        {notification.workspace.admin.avatar ? (
+          <img
+            src={notification.workspace.admin.avatar}
+            alt={notification.workspace.admin.name}
+            className="w-full h-full object-cover rounded-full"
+            onError={(e) => {
+              // If image fails to load, hide it and show initials
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
+            }}
+          />
+        ) : null}
+        {/* Initials fallback - always rendered but hidden if image loads */}
+        <span
+          className={`w-full h-full flex items-center justify-center ${
+            notification.workspace.admin.avatar ? "hidden" : "flex"
+          }`}
+        >
+          {notification.adminInitials}
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -150,17 +202,24 @@ const NotificationDropdown = ({ refreshWorkspaces }) => {
       >
         <MdNotifications className="w-6 h-6 text-gray-600" />
         {notifications.some((n) => !n.read) && (
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
         )}
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute right-0 !mt-1 w-90 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-          <div className="!p-3 border-b border-gray-200">
+          <div className="!p-3 border-b border-gray-200 flex justify-between items-center">
             <h3 className="text-base font-medium text-gray-800">
               Notifications
             </h3>
+            <button
+              className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer"
+              onClick={fetchNotifications}
+              disabled={isLoading}
+            >
+              {isLoading ? "..." : "↻"}
+            </button>
           </div>
           <div className="max-h-96 overflow-y-auto">
             {isLoading ? (
@@ -177,11 +236,8 @@ const NotificationDropdown = ({ refreshWorkspaces }) => {
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start">
-                    <img
-                      src={notification.workspace.admin.avatar}
-                      alt={notification.workspace.admin.name}
-                      className="w-10 h-10 rounded-full !mr-2 object-cover"
-                    />
+                    {/* Use the new avatar render function */}
+                    {renderAdminAvatar(notification)}
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <p className="font-medium text-gray-800">
