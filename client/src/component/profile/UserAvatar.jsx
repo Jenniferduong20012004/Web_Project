@@ -17,7 +17,6 @@ const UserMenu = ({ user }) => {
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUserData(parsedUser);
-        console.log('User data:', parsedUser);
       }
     } catch (error) {
       console.error('Error parsing user data:', error);

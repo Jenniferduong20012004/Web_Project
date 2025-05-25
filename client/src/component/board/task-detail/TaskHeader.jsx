@@ -3,6 +3,8 @@ import Calendar from "./Calendar";
 import { StatusDropdown, PriorityDropdown } from "./Dropdowns";
 
 const TaskHeader = ({ task, editMode, toggleEditMode, handleSaveField, isManager }) => {
+  console.log('isManager:', isManager);
+  
   const titleInputRef = useRef(null);
   const [titleValue, setTitleValue] = useState(task.title);
 

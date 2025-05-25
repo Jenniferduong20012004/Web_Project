@@ -24,15 +24,16 @@ function TaskDetail() {
     priority: false,
   });
 
-  // ADD: Workspace role tracking (same pattern as Trash component)
+  // Workspace role tracking
   const [workspaceRole, setWorkspaceRole] = useState(null);
   const [isManager, setIsManager] = useState(false);
 
-  // ADD: Function to check workspace role (copied from Trash component)
+  // Function to check workspace role
   const checkWorkspaceRole = async (workspaceId) => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
       if (!userData) {
+        console.log("No user data found in localStorage");
         return;
       }
 
@@ -53,6 +54,8 @@ function TaskDetail() {
         const isUserManager = data.isManager;
         setIsManager(isUserManager);
         setWorkspaceRole(isUserManager ? "myWorkspace" : "assignedWorkspace");
+      } else {
+        console.log("API returned success: false", data);
       }
     } catch (error) {
       console.error("Error checking workspace role:", error);
@@ -105,8 +108,14 @@ function TaskDetail() {
   // Fetch task data
   useEffect(() => {
     fetchTaskDetail();
-    checkWorkspaceRole(workspaceId); // ADD: Check workspace role when component mounts
-  }, [taskId, workspaceId]); // ADD: workspaceId as dependency
+  }, [taskId, workspaceId]);
+
+  // Check workspace role - chỉ chạy 1 lần khi workspaceId thay đổi
+  useEffect(() => {
+    if (workspaceId) {
+      checkWorkspaceRole(workspaceId);
+    }
+  }, [workspaceId]);
 
   // Detect changes
   useEffect(() => {
@@ -156,7 +165,7 @@ function TaskDetail() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("Updating task with new data:", task);
+        // console.log("Updating task with new data:", task);
         setOriginalTask(JSON.parse(JSON.stringify(task)));
         setHasChanges(false);
         alert("Task updated successfully!");
@@ -172,17 +181,17 @@ function TaskDetail() {
 
   return (
     <div className="w-full min-h-screen flex flex-col">
-      {/* ADD: Fixed Navbar with workspace role (same pattern as Trash component) */}
+      {/* Fixed Navbar with workspace role */}
       <div className="fixed top-0 right-0 left-0 z-20">
         <Navbar activeTab={workspaceRole} />
       </div>
 
-      {/* ADD: Fixed Sidebar */}
+      {/* Fixed Sidebar */}
       <div className="fixed left-0 top-16 h-screen z-10">
         <Sidebar workspaceId={workspaceId} />
       </div>
 
-      {/* MODIFY: PageLayout to account for fixed navbar and sidebar */}
+      {/* PageLayout to account for fixed navbar and sidebar */}
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           <div className="!mb-6">
@@ -190,12 +199,13 @@ function TaskDetail() {
           </div>
 
           <div className="bg-white rounded-lg shadow !p-8 !mb-6">
-            {/* Task Header */}
+            {/* Task Header - FIXED: Added isManager prop */}
             <TaskHeader
               task={task}
               editMode={editMode}
               toggleEditMode={toggleEditMode}
               handleSaveField={handleSaveField}
+              isManager={isManager}
             />
 
             {/* Task Content */}
