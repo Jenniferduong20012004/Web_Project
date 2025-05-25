@@ -37,7 +37,7 @@ const getPriorityBg = (priority) => {
 };
 
 // Status dropdown component
-export const StatusDropdown = ({ status, isOpen, onToggle, onSelect }) => {
+export const StatusDropdown = ({ status, isOpen, onToggle, onSelect, disabled = false, canEdit = true }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -54,10 +54,21 @@ export const StatusDropdown = ({ status, isOpen, onToggle, onSelect }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onToggle]);
 
+  const handleToggle = () => {
+    if (canEdit) {
+      onToggle();
+    }
+  };
+
   const statusTrigger = (
     <div
-      className="flex items-center cursor-pointer hover:bg-gray-50 !p-1 rounded-md"
-      onClick={onToggle}
+      className={`flex items-center !p-1 rounded-md ${
+        canEdit 
+          ? "cursor-pointer hover:bg-gray-50" 
+          : "cursor-not-allowed"
+      }`}
+      onClick={handleToggle}
+      title={!canEdit ? "You don't have permission to change status" : "Click to change status"}
     >
       <span
         className={`h-2 w-2 rounded-full ${getStatusColor(status)} !mr-2`}
@@ -65,18 +76,20 @@ export const StatusDropdown = ({ status, isOpen, onToggle, onSelect }) => {
       <span className="text-sm text-gray-500 uppercase">
         {status.replace("-", " ")}
       </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 text-gray-400 !ml-1"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-          clipRule="evenodd"
-        />
-      </svg>
+      {canEdit && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-4 w-4 text-gray-400 !ml-1"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      )}
     </div>
   );
 
@@ -99,7 +112,7 @@ export const StatusDropdown = ({ status, isOpen, onToggle, onSelect }) => {
 
   return (
     <Dropdown
-      isOpen={isOpen}
+      isOpen={isOpen && canEdit}
       reference={dropdownRef}
       trigger={statusTrigger}
       menu={statusMenu}
@@ -108,7 +121,7 @@ export const StatusDropdown = ({ status, isOpen, onToggle, onSelect }) => {
 };
 
 // Priority dropdown component
-export const PriorityDropdown = ({ priority, isOpen, onToggle, onSelect }) => {
+export const PriorityDropdown = ({ priority, isOpen, onToggle, onSelect, disabled = false, canEdit = true }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -125,26 +138,39 @@ export const PriorityDropdown = ({ priority, isOpen, onToggle, onSelect }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onToggle]);
 
+  const handleToggle = () => {
+    if (canEdit) {
+      onToggle();
+    }
+  };
+
   const priorityTrigger = (
     <div
-      className={`text-xs !px-2 !py-1 rounded-full cursor-pointer flex items-center ${getPriorityBg(
+      className={`text-xs !px-2 !py-1 rounded-full flex items-center ${getPriorityBg(
         priority
-      )}`}
-      onClick={onToggle}
+      )} ${
+        canEdit 
+          ? "cursor-pointer hover:opacity-80" 
+          : "cursor-not-allowed"
+      }`}
+      onClick={handleToggle}
+      title={!canEdit ? "You don't have permission to change priority" : "Click to change priority"}
     >
       {priority}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-3 w-3 ml-1"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-          clipRule="evenodd"
-        />
-      </svg>
+      {canEdit && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-3 w-3 ml-1"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      )}
     </div>
   );
 
@@ -168,7 +194,7 @@ export const PriorityDropdown = ({ priority, isOpen, onToggle, onSelect }) => {
 
   return (
     <Dropdown
-      isOpen={isOpen}
+      isOpen={isOpen && canEdit}
       reference={dropdownRef}
       trigger={priorityTrigger}
       menu={priorityMenu}

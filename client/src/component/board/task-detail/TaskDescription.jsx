@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 
-const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveField }) => {
+const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveField, isManager }) => {
   const descriptionInputRef = useRef(null);
   const [localDescription, setLocalDescription] = useState(description);
 
@@ -26,6 +26,13 @@ const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveFiel
   // Save the description when user finishes editing
   const handleSave = () => {
     handleSaveField(localDescription);
+  };
+
+  // Handle click for non-managers
+  const handleDescriptionClick = () => {
+    if (isManager) {
+      toggleEditMode();
+    }
   };
 
   return (
@@ -56,8 +63,13 @@ const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveFiel
         </div>
       ) : (
         <p
-          className="text-gray-600 cursor-pointer hover:bg-gray-50 !p-2 rounded-md"
-          onClick={toggleEditMode}
+          className={`text-gray-600 !p-2 rounded-md ${
+            isManager 
+              ? "cursor-pointer hover:bg-gray-50" 
+              : "cursor-not-allowed"
+          }`}
+          onClick={handleDescriptionClick}
+          title={!isManager ? "Only managers can edit task description" : "Click to edit description"}
         >
           {description || "No description added. Click to add one."}
         </p>

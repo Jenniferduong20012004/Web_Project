@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
 
-const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
+const AssigneesDropdown = ({ assignees, onAssigneesChange, isManager }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMembers, setActiveMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,8 +48,8 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
           id: member.userId,
           name: member.userName,
           photoPath: member.photoPath,
-          bgColor: getAvatarColor(member.userId), // Generate bgColor on client side using userId
-          initials: getInitials(member.userName), // Use utility function for consistency
+          bgColor: getAvatarColor(member.userId),
+          initials: getInitials(member.userName),
           role: member.role,
         }));
 
@@ -82,12 +82,50 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
     };
   }, [isOpen]);
 
+  // Handle dropdown click - only open if manager
+  const handleDropdownClick = () => {
+    if (isManager) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  // Handle member selection - only if manager
+  const handleMemberSelection = (member) => {
+    if (!isManager) return;
+
+    const isSelected = assignees.some((m) => m.id === member.id);
+    let newAssignees;
+
+    if (isSelected) {
+      // Remove member if already selected
+      newAssignees = assignees.filter((m) => m.id !== member.id);
+    } else {
+      // Add member if not selected
+      newAssignees = [...assignees, member];
+    }
+
+    onAssigneesChange(newAssignees);
+  };
+
+  // Handle member removal - only if manager
+  const handleMemberRemoval = (memberId) => {
+    if (!isManager) return;
+
+    const newAssignees = assignees.filter((m) => m.id !== memberId);
+    onAssigneesChange(newAssignees);
+  };
+
   return (
     <div>
       <div className="relative" ref={dropdownRef}>
         <div
-          className="w-full border border-gray-300 rounded-md !px-3 !py-2 text-sm flex items-center justify-between cursor-pointer !mb-3"
-          onClick={() => setIsOpen(!isOpen)}
+          className={`w-full border border-gray-300 rounded-md !px-3 !py-2 text-sm flex items-center justify-between !mb-3 ${
+            isManager 
+              ? "cursor-pointer hover:border-gray-400" 
+              : "cursor-not-allowed bg-gray-50"
+          }`}
+          onClick={handleDropdownClick}
+          title={!isManager ? "Only managers can modify task assignees" : "Click to modify assignees"}
         >
           <span className={assignees.length > 0 ? "" : "text-gray-500"}>
             {isLoading
@@ -100,7 +138,7 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
           </span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-gray-400"
+            className={`h-4 w-4 ${isManager ? "text-gray-400" : "text-gray-300"}`}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -112,7 +150,7 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
           </svg>
         </div>
 
-        {isOpen && (
+        {isOpen && isManager && (
           <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
             {isLoading ? (
               <div className="flex justify-center items-center py-4">
@@ -134,25 +172,7 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
                 <div
                   key={member.id}
                   className="flex items-center !px-3 !py-2 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => {
-                    // Toggle member selection
-                    const isSelected = assignees.some(
-                      (m) => m.id === member.id
-                    );
-                    let newAssignees;
-
-                    if (isSelected) {
-                      // Remove member if already selected
-                      newAssignees = assignees.filter(
-                        (m) => m.id !== member.id
-                      );
-                    } else {
-                      // Add member if not selected
-                      newAssignees = [...assignees, member];
-                    }
-
-                    onAssigneesChange(newAssignees);
-                  }}
+                  onClick={() => handleMemberSelection(member)}
                 >
                   <div className="flex items-center flex-1">
                     <div
@@ -216,29 +236,29 @@ const AssigneesDropdown = ({ assignees, onAssigneesChange }) => {
               <div className="font-medium text-gray-900 flex-1">
                 {member.name}
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const newAssignees = assignees.filter(
-                    (m) => m.id !== member.id
-                  );
-                  onAssigneesChange(newAssignees);
-                }}
-                className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+              {isManager && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMemberRemoval(member.id);
+                  }}
+                  className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remove assignee"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
         </div>

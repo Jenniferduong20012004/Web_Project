@@ -2,9 +2,22 @@ import React, { useRef, useState } from "react";
 import Calendar from "./Calendar";
 import { StatusDropdown, PriorityDropdown } from "./Dropdowns";
 
-const TaskHeader = ({ task, editMode, toggleEditMode, handleSaveField }) => {
+const TaskHeader = ({
+  task,
+  editMode,
+  toggleEditMode,
+  handleSaveField,
+  isManager,
+  isAssignee,
+}) => {
   const titleInputRef = useRef(null);
   const [titleValue, setTitleValue] = useState(task.title);
+
+  // Permission checks
+  const canEditTitle = isManager;
+  const canEditDueDate = isManager;
+  const canEditStatus = isManager || isAssignee;
+  const canEditPriority = isManager;
 
   const handleKeyDown = (e, field) => {
     if (e.key === "Enter") {
@@ -22,6 +35,34 @@ const TaskHeader = ({ task, editMode, toggleEditMode, handleSaveField }) => {
       setTitleValue(task.title);
     }
   }, [editMode.title, task.title]);
+
+  // Handle title click with permission check
+  const handleTitleClick = () => {
+    if (canEditTitle) {
+      toggleEditMode("title");
+    }
+  };
+
+  // Handle status toggle with permission check
+  const handleStatusToggle = () => {
+    if (canEditStatus) {
+      toggleEditMode("status");
+    }
+  };
+
+  // Handle priority toggle with permission check
+  const handlePriorityToggle = () => {
+    if (canEditPriority) {
+      toggleEditMode("priority");
+    }
+  };
+
+  // Handle date change with permission check
+  const handleDateChange = (date) => {
+    if (canEditDueDate) {
+      handleSaveField("dueDate", date);
+    }
+  };
 
   return (
     <div className="!mb-2 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -45,8 +86,17 @@ const TaskHeader = ({ task, editMode, toggleEditMode, handleSaveField }) => {
           </div>
         ) : (
           <h1
-            className="text-2xl font-bold text-gray-900 cursor-pointer hover:bg-gray-50 py-1 px-2 rounded-md transition-colors"
-            onClick={() => toggleEditMode("title")}
+            className={`text-2xl font-bold text-gray-900 py-1 px-2 rounded-md transition-colors ${
+              canEditTitle
+                ? "cursor-pointer hover:bg-gray-50"
+                : "cursor-not-allowed"
+            }`}
+            onClick={handleTitleClick}
+            title={
+              !canEditTitle
+                ? "Only managers can edit task title"
+                : "Click to edit title"
+            }
           >
             {task.title}
           </h1>
@@ -56,7 +106,9 @@ const TaskHeader = ({ task, editMode, toggleEditMode, handleSaveField }) => {
         <div className="!mt-2">
           <Calendar
             selectedDate={task.dueDate}
-            onDateChange={(date) => handleSaveField("dueDate", date)}
+            onDateChange={handleDateChange}
+            disabled={!canEditDueDate}
+            isManager={isManager}
           />
         </div>
       </div>
@@ -68,16 +120,20 @@ const TaskHeader = ({ task, editMode, toggleEditMode, handleSaveField }) => {
           <StatusDropdown
             status={task.status}
             isOpen={editMode.status}
-            onToggle={() => toggleEditMode("status")}
+            onToggle={handleStatusToggle}
             onSelect={(status) => handleSaveField("status", status)}
+            disabled={!canEditStatus}
+            canEdit={canEditStatus}
           />
 
           {/* Priority with dropdown */}
           <PriorityDropdown
             priority={task.priority}
             isOpen={editMode.priority}
-            onToggle={() => toggleEditMode("priority")}
+            onToggle={handlePriorityToggle}
             onSelect={(priority) => handleSaveField("priority", priority)}
+            disabled={!canEditPriority}
+            canEdit={canEditPriority}
           />
         </div>
       </div>
