@@ -83,7 +83,11 @@ function TaskDetail() {
           assignedTo: data.task.assignedTo,
           assets: data.task.assets,
           availableMembers: data.task.availableMembers,
-          subtasks: data.task.subtasks,
+          // Convert numeric completed values to boolean
+          subtasks: data.task.subtasks.map((subtask) => ({
+            ...subtask,
+            completed: Boolean(subtask.completed),
+          })),
         };
         setTask(task);
         setOriginalTask(JSON.parse(JSON.stringify(task)));
