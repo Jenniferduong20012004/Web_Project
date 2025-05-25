@@ -1,11 +1,10 @@
 import { useState } from "react";
 
-const SubtaskList = ({ subtasks, onSubtasksChange, isManager }) => {
+const SubtaskList = ({ subtasks, onSubtasksChange }) => {
   const [newSubtask, setNewSubtask] = useState("");
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 
   const handleToggleSubtask = (subtaskId) => {
-    // Everyone can check/uncheck subtasks
     const updatedSubtasks = subtasks.map((subtask) =>
       subtask.id === subtaskId
         ? { ...subtask, completed: !subtask.completed }
@@ -16,9 +15,6 @@ const SubtaskList = ({ subtasks, onSubtasksChange, isManager }) => {
   };
 
   const handleRemoveSubtask = (subtaskId) => {
-    // Only managers can remove subtasks
-    if (!isManager) return;
-    
     const updatedSubtasks = subtasks.filter(
       (subtask) => subtask.id !== subtaskId
     );
@@ -26,8 +22,7 @@ const SubtaskList = ({ subtasks, onSubtasksChange, isManager }) => {
   };
 
   const handleAddSubtask = () => {
-    // Only managers can add subtasks
-    if (!isManager || newSubtask.trim() === "") return;
+    if (newSubtask.trim() === "") return;
 
     const newSubtaskObj = {
       id: Math.floor(Math.random() * 10000), // Simple ID generation
@@ -65,18 +60,34 @@ const SubtaskList = ({ subtasks, onSubtasksChange, isManager }) => {
               } flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 !mr-3 transition-colors`}
               onClick={() => handleToggleSubtask(subtask.id)}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-3 w-3"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              {/* {subtask.completed && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )} */}
+                            {
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              }
             </button>
             <span
               className={`flex-1 ${
@@ -87,87 +98,80 @@ const SubtaskList = ({ subtasks, onSubtasksChange, isManager }) => {
             >
               {subtask.title}
             </span>
-            {/* Only show remove button for managers */}
-            {isManager && (
-              <button
-                onClick={() => handleRemoveSubtask(subtask.id)}
-                className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                type="button"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      {/* Add new subtask option - only for managers */}
-      {isManager && (
-        <>
-          {!isAddingSubtask ? (
             <button
-              onClick={() => setIsAddingSubtask(true)}
-              className="flex items-center text-[#2b7fff] hover:text-blue-700 !mt-4 text-sm cursor-pointer"
+              onClick={() => handleRemoveSubtask(subtask.id)}
+              className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
               type="button"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="!h-5 !w-5 !mr-1"
+                className="h-4 w-4"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
                 <path
                   fillRule="evenodd"
-                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
                   clipRule="evenodd"
                 />
               </svg>
-              Add subtask
             </button>
-          ) : (
-            <div className="flex items-center !mt-4">
-              <input
-                type="text"
-                value={newSubtask}
-                onChange={(e) => setNewSubtask(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Enter subtask title"
-                className="flex-1 border border-gray-300 rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                autoFocus
-              />
-              <div className="flex !ml-2">
-                <button
-                  onClick={handleAddSubtask}
-                  className="bg-blue-500 hover:bg-blue-600 text-white !py-2 !px-3 rounded-md text-sm font-medium"
-                  type="button"
-                >
-                  Add
-                </button>
-                <button
-                  onClick={() => {
-                    setIsAddingSubtask(false);
-                    setNewSubtask("");
-                  }}
-                  className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 !py-2 !px-3 rounded-md text-sm font-medium !ml-2"
-                  type="button"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+          </li>
+        ))}
+      </ul>
+
+      {/* Add new subtask option */}
+      {!isAddingSubtask ? (
+        <button
+          onClick={() => setIsAddingSubtask(true)}
+          className="flex items-center text-[#2b7fff] hover:text-blue-700 !mt-4 text-sm cursor-pointer"
+          type="button"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="!h-5 !w-5 !mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Add subtask
+        </button>
+      ) : (
+        <div className="flex items-center !mt-4">
+          <input
+            type="text"
+            value={newSubtask}
+            onChange={(e) => setNewSubtask(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter subtask title"
+            className="flex-1 border border-gray-300 rounded-md !px-3 !py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            autoFocus
+          />
+          <div className="flex !ml-2">
+            <button
+              onClick={handleAddSubtask}
+              className="bg-blue-500 hover:bg-blue-600 text-white !py-2 !px-3 rounded-md text-sm font-medium"
+              type="button"
+            >
+              Add
+            </button>
+            <button
+              onClick={() => {
+                setIsAddingSubtask(false);
+                setNewSubtask("");
+              }}
+              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 !py-2 !px-3 rounded-md text-sm font-medium !ml-2"
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

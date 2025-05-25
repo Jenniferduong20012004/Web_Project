@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 
-const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveField, isManager }) => {
+const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveField }) => {
   const descriptionInputRef = useRef(null);
   const [localDescription, setLocalDescription] = useState(description);
 
@@ -34,7 +34,7 @@ const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveFiel
         Task description:
       </h3>
 
-      {editMode && isManager ? (
+      {editMode ? (
         <div className="flex flex-col gap-2">
           <textarea
             ref={descriptionInputRef}
@@ -56,14 +56,10 @@ const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveFiel
         </div>
       ) : (
         <p
-          className={`text-gray-600 ${
-            isManager 
-              ? "cursor-pointer hover:bg-gray-50" 
-              : ""
-          } !p-2 rounded-md`}
-          onClick={isManager ? toggleEditMode : undefined}
+          className="text-gray-600 cursor-pointer hover:bg-gray-50 !p-2 rounded-md"
+          onClick={toggleEditMode}
         >
-          {description || (isManager ? "No description added. Click to add one." : "No description added.")}
+          {description || "No description added. Click to add one."}
         </p>
       )}
     </div>
