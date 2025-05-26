@@ -19,14 +19,14 @@ const TaskItem = ({ task, workspaceId }) => {
       );
     } else if (task.daysLeft === 0) {
       return (
-        <p className="text-xs text-[#E5252A] tracking-wide truncate">
+        <p className="inline-flex items-center !px-2 !py-1 rounded-full text-xs bg-yellow-100 text-red-700 tracking-wide">
           Due Today
         </p>
       );
     } else {
       // Expired task - với background badge
       return (
-        <span className="inline-flex items-center !px-2 !py-1 rounded-full text-xs bg-red-100 text-red-700 tracking-wide">
+        <span className="inline-flex items-center !px-2 !py-1 rounded-full text-xs bg-red-50 text-red-700 tracking-wide">
           Expired
         </span>
       );
