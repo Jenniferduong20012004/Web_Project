@@ -4,7 +4,10 @@ const multer  = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage })
 const userProfileController = require("../controllers/userProfileController");
+
 router.post("/getProfile", userProfileController.userProfileControl);
 router.post ("/updateProfile", userProfileController.updateUsername)
 router.post ("/addProfilePicture", upload.single("uploaded_file") ,userProfileController.updatePicture);
+router.post("/changePassword", userProfileController.changePassword);
+
 module.exports = router;
