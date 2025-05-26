@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calendar from "./task-detail/Calendar";
 
+import { getAvatarColor, getInitials } from "../../utils/avatarUtils";
+
 const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   const fileInputRef = useRef(null);
   const formRef = useRef(null);
@@ -77,21 +79,13 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
         console.log("Raw API Response:", response.data.members);
 
         const formattedMembers = response.data.members.map((member) => {
-          console.log("Raw member from API:", member);
-          console.log(
-            "member.joinWorkSpace (ID from DB):",
-            member.joinWorkSpace
-          );
-
           return {
             id: member.userId,
             joinWorkSpaceId: member.joinWorkSpace,
             name: member.userName,
             photoPath: member.photoPath,
-            bgColor: member.bgColor || "bg-blue-500",
-            initials: member.userName
-              ? member.userName.charAt(0).toUpperCase()
-              : "U",
+            bgColor: getAvatarColor(member.userId),
+            initials: getInitials(member.userName),
             role: member.role,
           };
         });
