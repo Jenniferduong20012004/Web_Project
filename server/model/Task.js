@@ -29,7 +29,7 @@ function mapS(state) {
 
 const mapPriority = {
   1: "High",
-  2: "Medium", 
+  2: "Medium",
   3: "Low",
 };
 
@@ -46,16 +46,36 @@ function mapP(state) {
   }
 }
 
+// Mapping for createTask
+const priorityMapCreate = {
+  High: 1,
+  Medium: 2,
+  Low: 3,
+};
+
+const statusMapCreate = {
+  TODO: 1,
+  "IN-PROGRESS": 2,
+  COMPLETED: 3,
+};
+
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
-  date.setDate(date.getDate() + 1);
+  date.setDate(date.getDate());
   return date.toISOString().split("T")[0];
+};
+
+// Format date for createTask (fix: no +1 day)
+const formatDateForCreate = (dateStr) => {
+  // Frontend đã gửi ISO format, return luôn
+  const result = dateStr;
+  return result;
 };
 
 // Subtask management functions
 function compareSubtasks(originalTask, updatedTask) {
-  const originalMap = new Map(originalTask.subtasks.map(st => [st.id, st]));
-  const updatedMap = new Map(updatedTask.subtasks.map(st => [st.id, st]));
+  const originalMap = new Map(originalTask.subtasks.map((st) => [st.id, st]));
+  const updatedMap = new Map(updatedTask.subtasks.map((st) => [st.id, st]));
 
   const added = [];
   const removed = [];
@@ -83,21 +103,26 @@ function compareSubtasks(originalTask, updatedTask) {
 
   // Insert new subtasks
   if (added.length > 0) {
-    const queryInsert = 'INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)';
-    added.forEach(sub => {
-      pool.query(queryInsert, [sub.title, originalTask.id, sub.completed], (err, res) => {
-        if (err) {
-          console.error(err);
-          return false;
+    const queryInsert =
+      "INSERT INTO SubTask (subtaskName, TaskId, status) VALUES (?, ?, ?)";
+    added.forEach((sub) => {
+      pool.query(
+        queryInsert,
+        [sub.title, originalTask.id, sub.completed],
+        (err, res) => {
+          if (err) {
+            console.error(err);
+            return false;
+          }
         }
-      });
+      );
     });
   }
 
   // Delete removed subtasks
   if (removed.length > 0) {
-    const queryDelete = 'DELETE FROM SubTask WHERE SubTakId = ?';
-    removed.forEach(sub => {
+    const queryDelete = "DELETE FROM SubTask WHERE SubTakId = ?";
+    removed.forEach((sub) => {
       pool.query(queryDelete, [sub.id], (err, res) => {
         if (err) {
           console.error(err);
@@ -114,13 +139,17 @@ function compareSubtasks(originalTask, updatedTask) {
         subtaskName = ?,
         status = ?
     WHERE SubTakId = ?;`;
-    updated.forEach(sub => {
-      pool.query(updateQuery, [sub.to.title, sub.to.completed, sub.to.id], (err, res) => {
-        if (err) {
-          console.error(err);
-          return false;
+    updated.forEach((sub) => {
+      pool.query(
+        updateQuery,
+        [sub.to.title, sub.to.completed, sub.to.id],
+        (err, res) => {
+          if (err) {
+            console.error(err);
+            return false;
+          }
         }
-      });
+      );
     });
   }
   return true;
@@ -128,16 +157,27 @@ function compareSubtasks(originalTask, updatedTask) {
 
 // User assignment management
 function updateUser(newTask, originalTask) {
-  const assignedToIds = new Set(newTask.assignedTo.map(user => user.id));
-  const originalAssignedToIds = new Set(originalTask.assignedTo.map(user => user.id));
-  const addedIds = [...assignedToIds].filter(id => !originalAssignedToIds.has(id));
-  const removeIds = [...originalAssignedToIds].filter(id => !assignedToIds.has(id));
-  const addedUsers = newTask.availableMembers.filter(user => addedIds.includes(user.id));
-  const removedUsers = originalTask.assignedTo.filter(user => removeIds.includes(user.id));
+  const assignedToIds = new Set(newTask.assignedTo.map((user) => user.id));
+  const originalAssignedToIds = new Set(
+    originalTask.assignedTo.map((user) => user.id)
+  );
+  const addedIds = [...assignedToIds].filter(
+    (id) => !originalAssignedToIds.has(id)
+  );
+  const removeIds = [...originalAssignedToIds].filter(
+    (id) => !assignedToIds.has(id)
+  );
+  const addedUsers = newTask.availableMembers.filter((user) =>
+    addedIds.includes(user.id)
+  );
+  const removedUsers = originalTask.assignedTo.filter((user) =>
+    removeIds.includes(user.id)
+  );
 
   if (addedUsers.length > 0) {
-    const queryAdd = 'INSERT INTO AssignTask (joinWorkSpace, TaskId) VALUES (?, ?)';
-    addedUsers.forEach(user => {
+    const queryAdd =
+      "INSERT INTO AssignTask (joinWorkSpace, TaskId) VALUES (?, ?)";
+    addedUsers.forEach((user) => {
       pool.query(queryAdd, [user.joinId, newTask.id], (err, res) => {
         if (err) {
           console.error(err);
@@ -148,8 +188,8 @@ function updateUser(newTask, originalTask) {
   }
 
   if (removedUsers.length > 0) {
-    const queryRemove = 'DELETE FROM AssignTask WHERE AssignId = ?';
-    removedUsers.forEach(user => {
+    const queryRemove = "DELETE FROM AssignTask WHERE AssignId = ?";
+    removedUsers.forEach((user) => {
       pool.query(queryRemove, [user.aId], (err, res) => {
         if (err) {
           console.error(err);
@@ -171,24 +211,102 @@ function updateTaskInfo(newTask, originalTask) {
       StateCompletion = ?,
       description = ?
   WHERE TaskId = ?;`;
-  
-  pool.query(query, [
-    newTask.title,
-    mapP(newTask.priority),
-    newTask.dueDate,
-    mapS(newTask.status),
-    newTask.description,
-    newTask.id,
-  ], (e, r) => {
-    if (e) {
-      console.log(e);
-      return false;
+
+  pool.query(
+    query,
+    [
+      newTask.title,
+      mapP(newTask.priority),
+      newTask.dueDate,
+      mapS(newTask.status),
+      newTask.description,
+      newTask.id,
+    ],
+    (e, r) => {
+      if (e) {
+        console.log(e);
+        return false;
+      }
     }
-  });
+  );
   return true;
 }
 
 class Task {
+  // NEW: Create task method (moved from WorkSpace.js)
+  static createTask(TaskData, callback) {
+    console.log('🔍 TaskData received:', TaskData);
+    
+    const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
+    const query2 = "INSERT INTO AssignTask (joinWorkSpace, TaskId) values (?, ?)";
+
+    const priority = priorityMapCreate[TaskData.priority];
+    const dateEnd = formatDateForCreate(TaskData.dateEnd); // Fix: không +1 ngày
+    const status = statusMapCreate[TaskData.StateCompletion];
+
+    console.log('💾 DB values:', {
+      taskname: TaskData.taskname,
+      workspaceId: TaskData.workspaceId,
+      priority,
+      dateBegin: TaskData.dateBegin,
+      dateEnd,
+      status,
+      description: TaskData.description
+    });
+
+    pool.query(
+      query,
+      [
+        TaskData.taskname,
+        TaskData.workspaceId,
+        priority,
+        TaskData.dateBegin,
+        dateEnd,
+        false,
+        status,
+        TaskData.description,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error("Error creating Task:", err);
+          return callback(err, null);
+        }
+
+        const taskId = result.insertId;
+        console.log('✅ Task created with ID:', taskId, 'dateEnd:', dateEnd);
+
+        // Nếu không có assigned members, return luôn
+        if (!TaskData.assignedTo || TaskData.assignedTo.length === 0) {
+          return callback(null, { id: taskId });
+        }
+
+        // Assign members
+        let assignedCount = 0;
+        let hasError = false;
+
+        TaskData.assignedTo.forEach((member, index) => {
+          console.log(`Assigning member ${index}:`, member);
+          
+          pool.query(query2, [member.joinWorkSpace, taskId], (er, res) => {
+            if (er && !hasError) {
+              hasError = true;
+              console.error("Error add member to task:", er);
+              return callback(er, null);
+            }
+
+            assignedCount++;
+            
+            // Nếu đã assign hết members và không có lỗi
+            if (assignedCount === TaskData.assignedTo.length && !hasError) {
+              console.log('✅ All members assigned successfully');
+              return callback(null, { id: taskId });
+            }
+          });
+        });
+      }
+    );
+  }
+
   // Existing trash functions...
   static moveToTrash(taskId, callback) {
     const query = "UPDATE Task SET trash = TRUE WHERE TaskId = ?";
@@ -265,13 +383,13 @@ class Task {
     });
   }
 
-  // NEW: Task detail and update functions
+  // Task detail and update functions
   static updateTask(newTask, originalTask, callback) {
     try {
       const a = updateUser(newTask, originalTask);
       const b = compareSubtasks(originalTask, newTask);
       const c = updateTaskInfo(newTask, originalTask);
-      
+
       if (a && b && c) {
         callback(null, { success: true });
       } else {
@@ -306,8 +424,6 @@ class Task {
     WHERE t.TaskId = ?;
   `;
 
-    // FIX: Sửa tên cột SubTaskId
-    // FIX: Sửa tên cột SubTaskId
     const queryGetSubtask = `Select * from SubTask where TaskId = ?`;
 
     const queryAvaMem = `
@@ -318,7 +434,7 @@ class Task {
 
     const bgColorOptions = [
       "bg-blue-700",
-      "bg-orange-500", 
+      "bg-orange-500",
       "bg-purple-600",
       "bg-green-600",
       "bg-red-600",
@@ -330,7 +446,7 @@ class Task {
         const members = await new Promise((resolve, reject) => {
           pool.query(queryAvaMem, [workspaceId], (err, results) => {
             if (err) return reject(err);
-            
+
             const mappedMembers = results.map((row) => {
               let link = null;
               if (row.photoPath != null) {
@@ -362,7 +478,7 @@ class Task {
             if (err) return reject(err);
 
             const mappedSubtask = results.map((row) => ({
-              id: row.SubTakId, // Giữ nguyên SubTakId
+              id: row.SubTakId,
               title: row.subtaskName,
               completed: row.status,
             }));
@@ -405,7 +521,8 @@ class Task {
           // Populate assigned users
           const seenUsers = new Set();
           rows.forEach((row) => {
-            if (!row.assignedUserId || seenUsers.has(row.assignedUserId)) return;
+            if (!row.assignedUserId || seenUsers.has(row.assignedUserId))
+              return;
 
             const initials = row.assignedUserName
               .split(" ")
@@ -426,7 +543,8 @@ class Task {
               aId: row.aId,
               initials,
               joinId: row.joiny,
-              bgColor: bgColorOptions[row.assignedUserId % bgColorOptions.length],
+              bgColor:
+                bgColorOptions[row.assignedUserId % bgColorOptions.length],
             });
 
             seenUsers.add(row.assignedUserId);

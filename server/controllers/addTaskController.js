@@ -1,10 +1,6 @@
-const Workspace = require("../model/WorkSpace");
+const Task = require("../model/Task");
 
 exports.addTask = (req, res) => {
-  console.log("=== DEBUG BACKEND RECEIVED ===");
-  console.log("Full req.body:", JSON.stringify(req.body, null, 2));
-  console.log("assignedTo:", req.body.assignedTo);
-
   const {
     taskname,
     description,
@@ -15,14 +11,6 @@ exports.addTask = (req, res) => {
     dateEnd,
     assignedTo,
   } = req.body;
-
-  if (assignedTo && assignedTo.length > 0) {
-    assignedTo.forEach((member, index) => {
-      console.log(`Member ${index}:`, member);
-      console.log(`joinWorkSpace value:`, member.joinWorkSpace);
-      console.log(`typeof joinWorkSpace:`, typeof member.joinWorkSpace);
-    });
-  }
 
   const TaskData = {
     taskname,
@@ -35,9 +23,7 @@ exports.addTask = (req, res) => {
     assignedTo,
   };
 
-  console.log("Calling Workspace.createTask with:", TaskData);
-
-  Workspace.createTask(TaskData, (err, result) => {
+  Task.createTask(TaskData, (err, result) => {
     if (err) {
       console.error("Error creating task", err);
       return res
@@ -45,7 +31,6 @@ exports.addTask = (req, res) => {
         .json({ error: true, message: "Error creating task" });
     }
 
-    console.log("Task created successfully with result:", result);
     res.status(201).json({ success: true, taskId: result.id });
   });
 };

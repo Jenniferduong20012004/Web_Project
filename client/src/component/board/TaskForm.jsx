@@ -75,8 +75,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
       );
 
       if (response.data.success) {
-        console.log("=== DEBUG GET ACTIVE MEMBERS ===");
-        console.log("Raw API Response:", response.data.members);
+        // console.log("Raw API Response:", response.data.members);
 
         const formattedMembers = response.data.members.map((member) => {
           return {
@@ -90,7 +89,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
           };
         });
 
-        console.log("Formatted members:", formattedMembers);
+        // console.log("Formatted members:", formattedMembers);
         setActiveMembers(formattedMembers);
       }
     } catch (error) {
@@ -129,6 +128,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
 
   // Updated to use the Calendar component
   const handleDateChange = (formattedDate) => {
+    // console.log("📋 Form due date:", formattedDate);
     setFormData({
       ...formData,
       dueDate: formattedDate,
@@ -178,13 +178,8 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     setLoading(true);
     const dateCreate = new Date().toISOString().split("T")[0];
 
-    console.log("=== DEBUG BEFORE SUBMIT ===");
-    console.log("formData.assignedMembers:", formData.assignedMembers);
-
     // Validation
     const validMembers = formData.assignedMembers.filter((member) => {
-      console.log("Checking member:", member);
-      console.log("member.joinWorkSpaceId:", member.joinWorkSpaceId);
       return (
         member.joinWorkSpaceId != null && member.joinWorkSpaceId !== undefined
       );
@@ -199,14 +194,10 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     }
 
     const assignedToArray = validMembers.map((member) => {
-      console.log("Processing member for submit:", member);
-      console.log("member.joinWorkSpaceId:", member.joinWorkSpaceId);
       return {
-        joinWorkSpace: member.joinWorkSpaceId, // ✅ ĐÚNG: Gửi joinWorkSpace ID
+        joinWorkSpace: member.joinWorkSpaceId,
       };
     });
-
-    console.log("Final assignedTo array:", assignedToArray);
 
     const activeWorkspaceId =
       workspaceId ||
@@ -222,6 +213,8 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
       return;
     }
 
+    // console.log('🚀 API dateEnd:', formData.dueDate);
+
     try {
       const requestData = {
         taskname: formData.title,
@@ -233,11 +226,6 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
         dateEnd: formData.dueDate,
         assignedTo: assignedToArray,
       };
-
-      console.log(
-        "Request data being sent:",
-        JSON.stringify(requestData, null, 2)
-      );
 
       const response = await axios.post(
         "http://localhost:5000/addTask",

@@ -37,7 +37,7 @@ const TaskDescription = ({ description, editMode, toggleEditMode, handleSaveFiel
 
   return (
     <div>
-      <h3 className="font-medium text-gray-900 !mb-2">
+      <h3 className="font-semibold text-gray-900 !mb-2">
         Task description:
       </h3>
 

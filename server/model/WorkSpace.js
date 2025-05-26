@@ -1,20 +1,6 @@
 const pool = require("../db/connect");
 const supabase = require("../db/superbaseClient");
-const priorityMap = {
-  High: 1,
-  Medium: 2,
-  Low: 3,
-};
-const statusMap = {
-  TODO: 1,
-  "IN-PROGRESS": 2,
-  COMPLETED: 3,
-};
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
-};
+
 const generateRandomString = (length = 7) => {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -113,58 +99,6 @@ class WorkSpace {
         },
       });
     });
-  }
-
-  static createTask(TaskData, callback) {
-    const query =
-      "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
-    const query2 =
-      "INSERT INTO AssignTask (joinWorkSpace, TaskId) values (?, ?)";
-
-    const priority = priorityMap[TaskData.priority];
-    const dateEnd = formatDate(TaskData.dateEnd);
-    const status = statusMap[TaskData.StateCompletion];
-
-    pool.query(
-      query,
-      [
-        TaskData.taskname,
-        TaskData.workspaceId,
-        priority,
-        TaskData.dateBegin,
-        dateEnd,
-        false,
-        status,
-        TaskData.description,
-      ],
-      (err, result) => {
-        if (err) {
-          console.error("Error creating Task:", err);
-          return callback(err, null);
-        }
-
-        const taskId = result.insertId;
-
-        // Nếu không có assigned members, return luôn
-        if (!TaskData.assignedTo || TaskData.assignedTo.length === 0) {
-          return callback(null, { id: taskId });
-        }
-
-        // Assign members
-        for (const member of TaskData.assignedTo) {
-          console.log("Assigning member:", member);
-          pool.query(query2, [member.joinWorkSpace, taskId], (er, res) => {
-            // ✅ FIX: member.joinWorkSpace
-            if (er) {
-              console.error("Error add member to task:", er);
-              return callback(er, null);
-            }
-          });
-        }
-
-        return callback(null, { id: taskId });
-      }
-    );
   }
 
   static createForManager(userId, workSpaceData, callback) {
