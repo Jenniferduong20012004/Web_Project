@@ -5,7 +5,7 @@ function mapState(state) {
     case 1:
       return "TODO";
     case 2:
-      return "IN-PROGRESS"; 
+      return "IN-PROGRESS";
     case 3:
       return "COMPLETED";
     default:
@@ -120,7 +120,7 @@ class DashBoard {
             initials,
             bgColor,
           };
-          // console.log (mapPriority[row.priority]);
+
           if (!tasksMap.has(taskId)) {
             tasksMap.set(taskId, {
               id: taskId,
@@ -171,6 +171,7 @@ class DashBoard {
       });
     });
   }
+
   static getTaskDetail = async (taskId, workspaceId) => {
     const query = `
     SELECT 
@@ -212,11 +213,9 @@ class DashBoard {
 
     return new Promise(async (resolve, reject) => {
       try {
-        // Get available members
         const members = await new Promise((resolve, reject) => {
           pool.query(queryAvaMem, [workspaceId], (err, results) => {
             if (err) return reject(err);
-            // console.log (link);
             const mappedMembers = results.map((row) => {
               let link = null;
               if (row.photoPath != null) {
@@ -241,6 +240,7 @@ class DashBoard {
             resolve(mappedMembers);
           });
         });
+        
         const subtasks = await new Promise((resolve, reject) => {
           pool.query(queryGetSubtask, [taskId], (err, results) => {
             if (err) return reject(err);
@@ -255,7 +255,6 @@ class DashBoard {
           });
         });
 
-        // Get task details
         pool.query(query, [taskId], async (err, rows) => {
           if (err) return reject(err);
 
@@ -275,10 +274,8 @@ class DashBoard {
             availableMembers: members,
           };
 
-          // Handle file if present
           if (row0.filePath) {
             const fileName = row0.filePath;
-
             const fileExt = fileName.split(".").pop().toLowerCase();
             task.assets.push({
               id: 1,
@@ -288,7 +285,6 @@ class DashBoard {
             });
           }
 
-          // Populate assigned users
           const seenUsers = new Set();
           rows.forEach((row) => {
             if (!row.assignedUserId || seenUsers.has(row.assignedUserId))
@@ -304,7 +300,7 @@ class DashBoard {
             if (row.photo != null) {
               link = `https://kdjkcdkapjgimrnugono.supabase.co/storage/v1/object/public/images/${row.photo}`;
             }
-            console.log();
+            
             task.assignedTo.push({
               id: row.assignedUserId,
               name: row.assignedUserName,
@@ -358,6 +354,7 @@ class DashBoard {
             if (err2) {
               return reject(err2);
             }
+
             const assignedUsers = assignedUsersResult.map((u) => {
               let photoLink = null;
               if (u.photoPath) {
@@ -375,9 +372,7 @@ class DashBoard {
               (endDate - currentDate) / (1000 * 60 * 60 * 24)
             );
 
-            // Count status
             const status = row.StateCompletion;
-            // console.log (status);
 
             resolve({
               task: {
@@ -405,17 +400,14 @@ class DashBoard {
             inProgress = 0,
             completed = 0;
           const tasks = [];
+          
           taskDataArray.forEach(({ task }) => {
-            if (task.daysLeft >= 0 && task.daysLeft < 7) {
-              tasks.push(task);
-            }
-            // console.log(task.daysLeft);
-            // Status counters
+            tasks.push(task);
+
             if (task.status === 1) todo++;
             else if (task.status === 2) inProgress++;
             else if (task.status === 3) completed++;
           });
-          // console.log(todo);
 
           const summary = {
             totalTasks: results.length,

@@ -59,15 +59,7 @@ const statusMapCreate = {
   COMPLETED: 3,
 };
 
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  date.setDate(date.getDate());
-  return date.toISOString().split("T")[0];
-};
-
-// Format date for createTask (fix: no +1 day)
 const formatDateForCreate = (dateStr) => {
-  // Frontend đã gửi ISO format, return luôn
   const result = dateStr;
   return result;
 };
@@ -241,16 +233,6 @@ class Task {
     const dateEnd = formatDateForCreate(TaskData.dateEnd);
     const status = statusMapCreate[TaskData.StateCompletion];
 
-    console.log('💾 DB values:', {
-      taskname: TaskData.taskname,
-      workspaceId: TaskData.workspaceId,
-      priority,
-      dateBegin: TaskData.dateBegin,
-      dateEnd,
-      status,
-      description: TaskData.description
-    });
-
     pool.query(
       query,
       [
@@ -270,9 +252,7 @@ class Task {
         }
 
         const taskId = result.insertId;
-        console.log('✅ Task created with ID:', taskId, 'dateEnd:', dateEnd);
 
-        // Nếu không có assigned members, return luôn
         if (!TaskData.assignedTo || TaskData.assignedTo.length === 0) {
           return callback(null, { id: taskId });
         }
@@ -295,7 +275,6 @@ class Task {
             
             // Nếu đã assign hết members và không có lỗi
             if (assignedCount === TaskData.assignedTo.length && !hasError) {
-              console.log('✅ All members assigned successfully');
               return callback(null, { id: taskId });
             }
           });
@@ -406,7 +385,7 @@ class Task {
       t.StateCompletion,
       t.priority,
       t.filePath,
-      t.dateEnd,
+      DATE_FORMAT(t.dateEnd, '%Y-%m-%d') as dateEnd,
       t.WorkSpace,
       u.userId AS assignedUserId,
       u.name AS assignedUserName,
@@ -496,7 +475,7 @@ class Task {
             description: row0.description,
             status: mapState(row0.StateCompletion),
             priority: mapPriority[row0.priority],
-            dueDate: formatDate(row0.dateEnd),
+            dueDate: row0.dateEnd,
             assignedTo: [],
             assets: [],
             subtasks: subtasks,
