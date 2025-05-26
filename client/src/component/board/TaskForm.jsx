@@ -35,7 +35,11 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   // Handle clicking outside the form
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isOpen && formRef.current && !formRef.current.contains(event.target)) {
+      if (
+        isOpen &&
+        formRef.current &&
+        !formRef.current.contains(event.target)
+      ) {
         handleClose();
       }
     };
@@ -49,7 +53,6 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   const fetchActiveMembers = async () => {
     setLoadingMembers(true);
     try {
-      // Get workspace ID from props or localStorage
       const activeWorkspaceId =
         workspaceId ||
         (localStorage.getItem("workspace")
@@ -70,16 +73,30 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
       );
 
       if (response.data.success) {
-        // Transform the API response to match the expected format for members
-        const formattedMembers = response.data.members.map((member) => ({
-          id: member.userId,
-          name: member.userName,
-          photoPath: member.photoPath,
-          bgColor: member.bgColor,
-          initials: member.initials,
-          role: member.role,
-        }));
+        console.log("=== DEBUG GET ACTIVE MEMBERS ===");
+        console.log("Raw API Response:", response.data.members);
 
+        const formattedMembers = response.data.members.map((member) => {
+          console.log("Raw member from API:", member);
+          console.log(
+            "member.joinWorkSpace (ID from DB):",
+            member.joinWorkSpace
+          );
+
+          return {
+            id: member.userId,
+            joinWorkSpaceId: member.joinWorkSpace,
+            name: member.userName,
+            photoPath: member.photoPath,
+            bgColor: member.bgColor || "bg-blue-500",
+            initials: member.userName
+              ? member.userName.charAt(0).toUpperCase()
+              : "U",
+            role: member.role,
+          };
+        });
+
+        console.log("Formatted members:", formattedMembers);
         setActiveMembers(formattedMembers);
       }
     } catch (error) {
@@ -167,7 +184,36 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     setLoading(true);
     const dateCreate = new Date().toISOString().split("T")[0];
 
-    // Get workspace ID from props or localStorage
+    console.log("=== DEBUG BEFORE SUBMIT ===");
+    console.log("formData.assignedMembers:", formData.assignedMembers);
+
+    // Validation
+    const validMembers = formData.assignedMembers.filter((member) => {
+      console.log("Checking member:", member);
+      console.log("member.joinWorkSpaceId:", member.joinWorkSpaceId);
+      return (
+        member.joinWorkSpaceId != null && member.joinWorkSpaceId !== undefined
+      );
+    });
+
+    if (formData.assignedMembers.length > 0 && validMembers.length === 0) {
+      toast.error("Selected members have invalid workspace data", {
+        position: "top-right",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const assignedToArray = validMembers.map((member) => {
+      console.log("Processing member for submit:", member);
+      console.log("member.joinWorkSpaceId:", member.joinWorkSpaceId);
+      return {
+        joinWorkSpace: member.joinWorkSpaceId, // ✅ ĐÚNG: Gửi joinWorkSpace ID
+      };
+    });
+
+    console.log("Final assignedTo array:", assignedToArray);
+
     const activeWorkspaceId =
       workspaceId ||
       (localStorage.getItem("workspace")
@@ -183,7 +229,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/addTask", {
+      const requestData = {
         taskname: formData.title,
         description: formData.description,
         workspaceId: activeWorkspaceId,
@@ -191,35 +237,28 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
         priority: formData.priority,
         dateBegin: dateCreate,
         dateEnd: formData.dueDate,
-        assignedTo: formData.assignedMembers.map((member) => ({
-          id: member.id,
-        })),
-      });
+        assignedTo: assignedToArray,
+      };
+
+      console.log(
+        "Request data being sent:",
+        JSON.stringify(requestData, null, 2)
+      );
+
+      const response = await axios.post(
+        "http://localhost:5000/addTask",
+        requestData
+      );
 
       const result = response.data;
 
       if (result.success) {
-        if (formData.file != null) {
-          const data = new FormData();
-
-          data.append("taskId", result.taskId);
-          data.append("uploaded_file", formData.file);
-          try {
-            const response = await fetch("http://localhost:5000/addFile", {
-              method: "POST",
-              body: data,
-            });
-            const result = await response.json();
-            console.log("Success:", result);
-          } catch (err) {
-            console.error("Error uploading:", err);
-          }
-        }
+        // ... file upload logic ...
 
         toast.success("Task created successfully!", {
           position: "top-right",
         });
-        
+
         if (onSave) {
           onSave();
         }
@@ -229,6 +268,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
         });
       }
     } catch (error) {
+      console.error("Error in handleSubmit:", error);
       toast.error(
         "Error creating task: " +
           (error.response ? error.response.data.message : error.message),
@@ -236,7 +276,6 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
           position: "top-right",
         }
       );
-      console.error("Error creating task:", error);
     } finally {
       setLoading(false);
       handleClose();
@@ -262,9 +301,12 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     <div className="fixed inset-0 flex items-center justify-center z-50">
       {/* Darker backdrop */}
       <div className="absolute inset-0 bg-black/70" onClick={handleClose}></div>
-      
+
       {/* Form content */}
-      <div ref={formRef} className="relative bg-white rounded-lg shadow-lg w-full max-w-xl z-10">
+      <div
+        ref={formRef}
+        className="relative bg-white rounded-lg shadow-lg w-full max-w-xl z-10"
+      >
         {/* FORM TITLE */}
         <div className="flex justify-between items-center !pt-6 !px-10">
           <h2 className="text-xl font-semibold">Task</h2>

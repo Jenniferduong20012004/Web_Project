@@ -119,11 +119,12 @@ class WorkSpace {
     const query =
       "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
     const query2 =
-      "INSERT INTO AssignTask  (joinWorkSpace, TaskId) values (?, ?)";
+      "INSERT INTO AssignTask (joinWorkSpace, TaskId) values (?, ?)";
+
     const priority = priorityMap[TaskData.priority];
     const dateEnd = formatDate(TaskData.dateEnd);
-    console.log(dateEnd);
     const status = statusMap[TaskData.StateCompletion];
+
     pool.query(
       query,
       [
@@ -141,15 +142,26 @@ class WorkSpace {
           console.error("Error creating Task:", err);
           return callback(err, null);
         }
+
         const taskId = result.insertId;
+
+        // Nếu không có assigned members, return luôn
+        if (!TaskData.assignedTo || TaskData.assignedTo.length === 0) {
+          return callback(null, { id: taskId });
+        }
+
+        // Assign members
         for (const member of TaskData.assignedTo) {
-          pool.query(query2, [member.id, taskId], (er, res) => {
+          console.log("Assigning member:", member);
+          pool.query(query2, [member.joinWorkSpace, taskId], (er, res) => {
+            // ✅ FIX: member.joinWorkSpace
             if (er) {
               console.error("Error add member to task:", er);
               return callback(er, null);
             }
           });
         }
+
         return callback(null, { id: taskId });
       }
     );
