@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "../component/Navbar";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ProfileUpdateSuccessModal from "../component/profile/ProfileUpdateSuccessfulModal";
+import ChangePasswordModal from "../component/profile/ChangePasswordModal";
 import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 
 const Profile = () => {
@@ -11,6 +13,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -42,7 +45,7 @@ const Profile = () => {
       if (data.success && data.userInformation) {
         const userInfo = {
           id: userData.userId,
-          username: data.userInformation.name, // Map 'name' from API to 'username'
+          username: data.userInformation.name,
           email: data.userInformation.email,
           password: data.userInformation.password,
           photoPath: data.userInformation.photoPath || null,
@@ -242,6 +245,14 @@ const Profile = () => {
     fileInputRef.current.click();
   };
 
+  const handleOpenChangePasswordModal = () => {
+    setShowChangePasswordModal(true);
+  };
+
+  const handleCloseChangePasswordModal = () => {
+    setShowChangePasswordModal(false);
+  };
+
   // Add a loading state while userData is null
   if (!userData) {
     return (
@@ -260,6 +271,11 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-50 !py-8 !px-4">
+       <ToastContainer
+              pauseOnFocusLoss={false}
+              pauseOnHover={false}
+              draggable={false}
+            />
       <div className="fixed top-0 right-0 left-0 z-20">
         <Navbar />
       </div>
@@ -401,11 +417,7 @@ const Profile = () => {
             <div className="flex justify-end">
               <button
                 className="!ml-2 text-blue-500 text-sm hover:text-blue-700 cursor-pointer"
-                onClick={() => {
-                  toast.info("Change password feature coming soon!", {
-                    position: "top-right",
-                  });
-                }}
+                onClick={handleOpenChangePasswordModal}
               >
                 Change Password
               </button>
@@ -432,6 +444,15 @@ const Profile = () => {
         <ProfileUpdateSuccessModal
           onClose={handleCloseSuccessModal}
           onRefresh={handleRefreshProfile}
+        />
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          isOpen={showChangePasswordModal}
+          onClose={handleCloseChangePasswordModal}
+          userData={userData}
         />
       )}
     </div>

@@ -68,7 +68,68 @@ exports.updateUsername = (req, res) => {
       success: true,
       message: "Update successful!",
     });
+  });
+};
 
-    // });
+exports.changePassword = (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body;
+  
+  // Validation
+  if (!userId) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "User ID is required" 
+    });
+  }
+  
+  if (!currentPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Current password is required" 
+    });
+  }
+  
+  if (!newPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "New password is required" 
+    });
+  }
+  
+  if (newPassword.length < 6) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "New password must be at least 6 characters long" 
+    });
+  }
+  
+  if (currentPassword === newPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "New password must be different from current password" 
+    });
+  }
+  
+  // Gọi method changePassword từ User model
+  User.changePassword(userId, currentPassword, newPassword, (err, result) => {
+    if (err) {
+      console.error("Error changing password:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Database error occurred"
+      });
+    }
+    
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully"
+    });
   });
 };
