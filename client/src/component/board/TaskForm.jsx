@@ -15,6 +15,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   const [loading, setLoading] = useState(false);
   const [activeMembers, setActiveMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
+  const [errors, setErrors] = useState({});
 
   const initialFormState = {
     title: "",
@@ -75,8 +76,6 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
       );
 
       if (response.data.success) {
-        // console.log("Raw API Response:", response.data.members);
-
         const formattedMembers = response.data.members.map((member) => {
           return {
             id: member.userId,
@@ -89,7 +88,6 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
           };
         });
 
-        // console.log("Formatted members:", formattedMembers);
         setActiveMembers(formattedMembers);
       }
     } catch (error) {
@@ -105,6 +103,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   const resetForm = () => {
     setFormData({ ...initialFormState });
     setIsDropdownOpen(false);
+    setErrors({});
   };
 
   const handleClose = () => {
@@ -118,21 +117,64 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     }
   }, [isOpen]);
 
+  // Validation function
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Title validation
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    }
+
+    // Description validation
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    }
+
+    // Assigned members validation
+    if (!formData.assignedMembers || formData.assignedMembers.length === 0) {
+      newErrors.assignedMembers = "At least one member must be assigned";
+    }
+
+    // Due date validation
+    if (!formData.dueDate) {
+      newErrors.dueDate = "Due date is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
   };
 
   // Updated to use the Calendar component
   const handleDateChange = (formattedDate) => {
-    // console.log("📋 Form due date:", formattedDate);
     setFormData({
       ...formData,
       dueDate: formattedDate,
     });
+
+    // Clear date error when user selects a date
+    if (errors.dueDate) {
+      setErrors({
+        ...errors,
+        dueDate: "",
+      });
+    }
   };
 
   const handleFileChange = (e) => {
@@ -147,34 +189,61 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
   const handleSelectMember = (member) => {
     const isSelected = formData.assignedMembers.some((m) => m.id === member.id);
 
+    let updatedMembers;
     if (isSelected) {
       // if chosen member -> erase member from list
-      setFormData({
-        ...formData,
-        assignedMembers: formData.assignedMembers.filter(
-          (m) => m.id !== member.id
-        ),
-      });
+      updatedMembers = formData.assignedMembers.filter(
+        (m) => m.id !== member.id
+      );
     } else {
       // if not chosen member -> add member to list
-      setFormData({
-        ...formData,
-        assignedMembers: [...formData.assignedMembers, member],
+      updatedMembers = [...formData.assignedMembers, member];
+    }
+
+    setFormData({
+      ...formData,
+      assignedMembers: updatedMembers,
+    });
+
+    // Clear assignedMembers error if at least one member is selected
+    if (updatedMembers.length > 0 && errors.assignedMembers) {
+      setErrors({
+        ...errors,
+        assignedMembers: "",
       });
     }
   };
 
   const handleRemoveMember = (memberId) => {
+    const updatedMembers = formData.assignedMembers.filter(
+      (m) => m.id !== memberId
+    );
+    
     setFormData({
       ...formData,
-      assignedMembers: formData.assignedMembers.filter(
-        (m) => m.id !== memberId
-      ),
+      assignedMembers: updatedMembers,
     });
+
+    // Show error if no members left after removal
+    if (updatedMembers.length === 0) {
+      setErrors({
+        ...errors,
+        assignedMembers: "At least one member must be assigned",
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields", {
+        position: "top-right",
+      });
+      return;
+    }
+
     setLoading(true);
     const dateCreate = new Date().toISOString().split("T")[0];
 
@@ -212,8 +281,6 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
       setLoading(false);
       return;
     }
-
-    // console.log('🚀 API dateEnd:', formData.dueDate);
 
     try {
       const requestData = {
@@ -308,16 +375,24 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
         >
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
-              <label className="block text-sm font-medium !mb-1">Title</label>
+              <label className="block text-sm font-medium !mb-1">
+                Title <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Task title"
-                className="w-full border border-gray-400 rounded-md !p-2 text-sm focus:outline-none focus:border-1 focus:border-blue-500"
-                required
+                className={`w-full border rounded-md !p-2 text-sm focus:outline-none focus:border-1 ${
+                  errors.title
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-gray-400 focus:border-blue-500"
+                }`}
               />
+              {errors.title && (
+                <p className="text-red-500 text-xs !mt-1">{errors.title}</p>
+              )}
             </div>
 
             <div>
@@ -337,15 +412,23 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
 
           <div className="!mb-4">
             <label className="block text-sm font-medium !mb-1">
-              Description
+              Description <span className="text-red-500">*</span>
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               placeholder="Task description"
-              className="w-full border border-gray-400 rounded-md !p-2 text-sm focus:outline-none focus:border-1 focus:border-blue-500"
+              className={`w-full border rounded-md !p-2 text-sm focus:outline-none focus:border-1 ${
+                errors.description
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-400 focus:border-blue-500"
+              }`}
+              rows="3"
             ></textarea>
+            {errors.description && (
+              <p className="text-red-500 text-xs !mt-1">{errors.description}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4 !mb-4">
@@ -368,12 +451,16 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
             {/* dropdown container */}
             <div className="dropdown-container">
               <label className="block text-sm font-medium !mb-1">
-                Assigned to
+                Assigned to <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 {/* Dropdown toggle button */}
                 <div
-                  className="w-full border border-gray-400 rounded-md !p-2 text-sm focus:outline-none focus:border-blue-500 flex items-center justify-between cursor-pointer"
+                  className={`w-full border rounded-md !p-2 text-sm focus:outline-none flex items-center justify-between cursor-pointer ${
+                    errors.assignedMembers
+                      ? "border-red-500"
+                      : "border-gray-400 focus:border-blue-500"
+                  }`}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
                   {formData.assignedMembers &&
@@ -414,6 +501,11 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
                     />
                   </svg>
                 </div>
+                {errors.assignedMembers && (
+                  <p className="text-red-500 text-xs !mt-1">
+                    {errors.assignedMembers}
+                  </p>
+                )}
 
                 {/* Dropdown options */}
                 {isDropdownOpen && (
@@ -479,11 +571,17 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
 
           <div className="grid grid-cols-2 gap-4 !mb-4">
             <div>
-              <label className="block text-sm font-medium !mb-1">Due to</label>
+              <label className="block text-sm font-medium !mb-1">
+                Due to <span className="text-red-500">*</span>
+              </label>
               <Calendar
                 selectedDate={formData.dueDate}
                 onDateChange={handleDateChange}
+                hasError={!!errors.dueDate}
               />
+              {errors.dueDate && (
+                <p className="text-red-500 text-xs !mt-1">{errors.dueDate}</p>
+              )}
             </div>
 
             <div className="flex flex-col items-center">
@@ -530,7 +628,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
             </button>
             <button
               type="submit"
-              className="!px-7 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 cursor-pointer"
+              className="!px-7 !py-2 bg-[#6299ec] text-white font-medium rounded-md hover:bg-blue-900 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? "ADDING..." : "ADD"}

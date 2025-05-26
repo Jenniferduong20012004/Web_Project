@@ -233,15 +233,12 @@ function updateTaskInfo(newTask, originalTask) {
 }
 
 class Task {
-  // NEW: Create task method (moved from WorkSpace.js)
   static createTask(TaskData, callback) {
-    console.log('🔍 TaskData received:', TaskData);
-    
     const query = "INSERT INTO Task (taskname, WorkSpace, priority, dateBegin, dateEnd, trash, StateCompletion, description) values (?, ?,?, ?,?, ?, ?, ?)";
     const query2 = "INSERT INTO AssignTask (joinWorkSpace, TaskId) values (?, ?)";
 
     const priority = priorityMapCreate[TaskData.priority];
-    const dateEnd = formatDateForCreate(TaskData.dateEnd); // Fix: không +1 ngày
+    const dateEnd = formatDateForCreate(TaskData.dateEnd);
     const status = statusMapCreate[TaskData.StateCompletion];
 
     console.log('💾 DB values:', {
