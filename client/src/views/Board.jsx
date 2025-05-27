@@ -5,12 +5,14 @@ import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
+import FilterBar from "../component/board/FilterBar"; // Import new FilterBar component
 import { fetchManagerAndCheckRole } from "../utils/workspaceUtils";
 import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 
 const Board = () => {
   const { workspacedId } = useParams();
   const [activeFilter, setActiveFilter] = useState("ALL");
+  const [priorityFilter, setPriorityFilter] = useState("ALL");
   const [tasks, setTasks] = useState([]);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -156,18 +158,21 @@ const Board = () => {
     checkWorkspaceRole(workspacedId);
   }, [workspacedId, refreshKey]);
 
-  const filters = [
-    { id: "ALL", label: "ALL" },
-    { id: "TODO", label: "TODO" },
-    { id: "IN-PROGRESS", label: "IN-PROGRESS" },
-    { id: "COMPLETED", label: "COMPLETED" },
-  ];
-
+  // Function to filter tasks by both status and priority
   const getFilteredTasks = () => {
-    if (activeFilter === "ALL") {
-      return tasks;
+    let filteredTasks = tasks;
+
+    // Filter by status
+    if (activeFilter !== "ALL") {
+      filteredTasks = filteredTasks.filter((task) => task.status === activeFilter);
     }
-    return tasks.filter((task) => task.status === activeFilter);
+
+    // Filter by priority
+    if (priorityFilter !== "ALL") {
+      filteredTasks = filteredTasks.filter((task) => task.priority === priorityFilter);
+    }
+
+    return filteredTasks;
   };
 
   const handleTaskCreated = () => {
@@ -201,57 +206,26 @@ const Board = () => {
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           {/* BOARD CONTENT */}
-          <div className="!mb-6">
-            {/* FILTER BAR */}
-            <div className="flex items-center justify-between border-b border-gray-300 !pb-1">
-              <div className="flex !space-x-6">
-                {filters.map((filter) => (
-                  <button
-                    key={filter.id}
-                    className={`!py-2 !px-1 font-medium text-sm relative flex items-center ${
-                      activeFilter === filter.id
-                        ? "text-blue-800"
-                        : "text-gray-500 hover:text-gray-900 cursor-pointer"
-                    }`}
-                    onClick={() => setActiveFilter(filter.id)}
-                  >
-                    <div className="w-5 flex items-center justify-center">
-                      {filter.id === "TODO" && (
-                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      )}
-                      {filter.id === "IN-PROGRESS" && (
-                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                      )}
-                      {filter.id === "COMPLETED" && (
-                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      )}
-                    </div>
-
-                    {/* Label text */}
-                    <span>{filter.label}</span>
-                  </button>
-                ))}
-              </div>
-              {isManager && (
-                <button
-                  className="bg-blue-400 hover:bg-blue-900 text-white !py-2 !px-4 rounded-md text-sm font-medium cursor-pointer"
-                  onClick={openTaskForm}
-                >
-                  + Add task
-                </button>
-              )}
-            </div>
-          </div>
+          
+          {/* FILTER BAR */}
+          <FilterBar 
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+            isManager={isManager}
+            openTaskForm={openTaskForm}
+          />
 
           {/* TASK CONTAINER */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 !mt-8">
             {isLoading ? (
-              <div className="col-span-3 flex justify-center items-center py-10">
+              <div className="col-span-3 flex justify-center items-center !py-10">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
               </div>
             ) : getFilteredTasks().length === 0 ? (
               <div className="col-span-3 text-center py-10 text-gray-500">
-                No tasks found.{" "}
+                No tasks found with the selected filters.{" "}
                 {isManager && "Click on '+ Add task' to create a new task."}
               </div>
             ) : (
