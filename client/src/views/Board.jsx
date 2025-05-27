@@ -6,6 +6,7 @@ import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
 import { fetchManagerAndCheckRole } from "../utils/workspaceUtils";
+import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 
 const Board = () => {
   const { workspacedId } = useParams();
@@ -23,18 +24,20 @@ const Board = () => {
   const checkWorkspaceRole = async (workspaceId) => {
     try {
       const result = await fetchManagerAndCheckRole(workspaceId);
-      
+
       if (result.success) {
         setManagerData(result.manager);
         setIsManager(result.isManager);
-        setWorkspaceRole(result.isManager ? "myWorkspace" : "assignedWorkspace");
+        setWorkspaceRole(
+          result.isManager ? "myWorkspace" : "assignedWorkspace"
+        );
       } else {
         // No manager found or error occurred
         setManagerData(null);
         setIsManager(false);
         setWorkspaceRole("assignedWorkspace");
-        
-        if (result.error !== 'No manager found') {
+
+        if (result.error !== "No manager found") {
           console.error("Error checking workspace role:", result.error);
         }
       }
@@ -100,6 +103,7 @@ const Board = () => {
 
       const data = await response.json();
       if (data.success) {
+        // Process tasks and add initials/bgColor on frontend
         const tasks = data.task.tasks.map((taski) => ({
           ...taski,
           id: taski.id,
@@ -108,17 +112,23 @@ const Board = () => {
           description: taski.description,
           priority: taski.priority,
           backgroundGradient: "bg-gradient-to-br from-pink-300 to-blue-400",
-          assignedTo: taski.assignedTo,
+          assignedTo: taski.assignedTo.map((user) => ({
+            ...user,
+            initials: getInitials(user.name),
+            bgColor: getAvatarColor(user.id),
+          })),
           dueDate: taski.dueDate,
         }));
 
+        // Process members and add initials/bgColor on frontend
         const members = data.task.user.map((useri) => ({
           ...useri,
           id: useri.id,
           name: useri.name,
           email: useri.email,
           photoPath: useri.photoPath || null,
-          bgColor: useri.bgColor,
+          initials: getInitials(useri.name),
+          bgColor: getAvatarColor(useri.userId),
         }));
 
         setMembers([...members]);
@@ -161,7 +171,7 @@ const Board = () => {
   };
 
   const handleTaskCreated = () => {
-    setRefreshKey(prevKey => prevKey + 1);
+    setRefreshKey((prevKey) => prevKey + 1);
     closeTaskForm();
   };
 
@@ -181,10 +191,7 @@ const Board = () => {
         draggable={false}
       />
       <div className="fixed top-0 right-0 left-0 z-20">
-        <Navbar 
-          activeTab={workspaceRole} 
-          refreshBoard={refreshBoard}
-        />
+        <Navbar activeTab={workspaceRole} refreshBoard={refreshBoard} />
       </div>
 
       <div className="fixed left-0 top-16 h-screen z-10">

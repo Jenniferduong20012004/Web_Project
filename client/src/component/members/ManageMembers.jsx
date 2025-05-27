@@ -250,7 +250,7 @@ const ManageMembers = () => {
                   <td className="!py-4 !px-8 text-gray-800">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold ${getAvatarColor(
+                        className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-semibold ${getAvatarColor(
                           member.userId
                         )}`}
                       >

@@ -9,6 +9,36 @@ const TaskItem = ({ task, workspaceId }) => {
     navigate(`/board/${workspaceId}/task/${task.id}`);
   };
 
+  // Function to map status number to text and styling
+  const getStatusInfo = (status) => {
+    switch (status) {
+      case 1:
+        return {
+          text: "TODO",
+          textColor: "text-gray-600",
+          dotColor: "bg-blue-500"
+        };
+      case 2:
+        return {
+          text: "IN-PROGRESS",
+          textColor: "text-gray-600",
+          dotColor: "bg-yellow-500"
+        };
+      case 3:
+        return {
+          text: "COMPLETED",
+          textColor: "text-gray-600",
+          dotColor: "bg-green-500"
+        };
+      default:
+        return {
+          text: "UNKNOWN",
+          textColor: "text-gray-600",
+          dotColor: "bg-gray-500"
+        };
+    }
+  };
+
   // Function to render due date with suitable styling
   const renderDueDate = () => {
     if (task.daysLeft > 0) {
@@ -24,7 +54,7 @@ const TaskItem = ({ task, workspaceId }) => {
         </p>
       );
     } else {
-      // Expired task - với background badge
+      // Expired task - background badge
       return (
         <span className="inline-flex items-center !px-2 !py-1 rounded-full text-xs bg-red-50 text-red-700 tracking-wide">
           Expired
@@ -32,6 +62,8 @@ const TaskItem = ({ task, workspaceId }) => {
       );
     }
   };
+
+  const statusInfo = getStatusInfo(task.status);
 
   return (
     <div
@@ -42,18 +74,30 @@ const TaskItem = ({ task, workspaceId }) => {
         <p className="text-3sm font-semibold text-blue-900 tracking-wide truncate">
           {task.title}
         </p>
-        <span
-          className={`!px-3 !py-1 text-xs rounded-full font-medium ${
-            task.priority === "High"
-              ? "bg-[#FFDBD8] text-[#D04226]"
-              : task.priority === "Medium"
-              ? "bg-[#FEF9C3] text-[#E37F0A]"
-              : "bg-green-100 text-green-700"
-          }`}
-        >
-          {task.priority}
-        </span>
+
+        {/* Status and Priority container */}
+        <div className="flex items-center gap-5">
+          {/* Status element */}
+          <span className={`inline-flex items-center text-xs ${statusInfo.textColor}`}>
+            <span className={`w-2 h-2 rounded-full ${statusInfo.dotColor} !mr-2`}></span>
+            {statusInfo.text}
+          </span>
+          
+          {/* Priority element */}
+          <span
+            className={`!px-3 !py-1 text-xs rounded-full ${
+              task.priority === "High"
+                ? "bg-[#FFDBD8] text-[#D04226]"
+                : task.priority === "Medium"
+                ? "bg-[#FEF9C3] text-[#E37F0A]"
+                : "bg-green-100 text-green-700"
+            }`}
+          >
+            {task.priority}
+          </span>
+        </div>
       </div>
+      
       <p className="text-sm text-gray-600 !mb-2 truncate">{task.description}</p>
 
       <div className="flex justify-between items-center !mt-4">
@@ -112,8 +156,8 @@ const UpcomingTaskBoard = ({ tasks }) => {
   const { workspacedId } = useParams();
 
   const upcomingTasks = tasks.filter((task) => {
-    const isCompleted =
-      task.status === 3 
+    // check if isCompleted => not show in UpcomingTaskBoard
+    const isCompleted = task.status === 3;
 
     if (isCompleted) return false;
     if (task.daysLeft >= 7) return false;
