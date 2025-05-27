@@ -113,7 +113,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
       }
     } catch (error) {
       console.error("Error fetching manager and checking role:", error);
-      
+
       setIsManager(false);
       setManagerData(null);
     }
@@ -176,6 +176,10 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           title: editedWorkspaceName,
         };
         onUpdate(updatedWorkspace);
+      }
+
+      if (onFetchWorkspaces) {
+        onFetchWorkspaces();
       }
 
       toast.success("Workspace updated successfully!", {
