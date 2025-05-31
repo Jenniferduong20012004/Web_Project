@@ -93,14 +93,13 @@ const Board = () => {
     localStorage.setItem("lastMainTab", "Board");
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:5000/getBoard", {
-        method: "POST",
+      
+      // Thay đổi từ POST sang GET và sử dụng URL params
+      const response = await fetch(`http://localhost:5000/getBoard/${workspaceId}`, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          workspace: workspacedId,
-        }),
       });
 
       const data = await response.json();
@@ -130,7 +129,7 @@ const Board = () => {
           email: useri.email,
           photoPath: useri.photoPath || null,
           initials: getInitials(useri.name),
-          bgColor: getAvatarColor(useri.userId),
+          bgColor: getAvatarColor(useri.id), // Sử dụng useri.id thay vì useri.userId
         }));
 
         setMembers([...members]);

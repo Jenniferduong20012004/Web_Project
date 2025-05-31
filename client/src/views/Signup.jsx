@@ -22,6 +22,7 @@ const SignUp = ({ onNavigate, standalone = true }) => {
     register,
     handleSubmit,
     watch,
+    reset, // Thêm reset function
     formState: { errors },
   } = useForm({
     mode: "onChange",
@@ -51,6 +52,13 @@ const SignUp = ({ onNavigate, standalone = true }) => {
           position: "top-right",
           autoClose: 2000,
         });
+
+        // Reset form sau khi đăng ký thành công
+        reset();
+        
+        // Reset password visibility states
+        setShowPassword(false);
+        setShowConfirmPassword(false);
 
         setTimeout(() => {
           if (onNavigate) {

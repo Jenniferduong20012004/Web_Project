@@ -7,7 +7,7 @@ import Calendar from "./task-detail/Calendar";
 
 import { getAvatarColor, getInitials } from "../../utils/avatarUtils";
 
-const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
+const TaskForm = ({ isOpen, onClose, onSave, workspaceId }) => {
   const fileInputRef = useRef(null);
   const formRef = useRef(null);
   const { workspacedId } = useParams();
@@ -218,7 +218,7 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     const updatedMembers = formData.assignedMembers.filter(
       (m) => m.id !== memberId
     );
-    
+
     setFormData({
       ...formData,
       assignedMembers: updatedMembers,
@@ -283,27 +283,44 @@ const TaskForm = ({ isOpen, onClose, onSave, workspaceId, members }) => {
     }
 
     try {
-      const requestData = {
-        taskname: formData.title,
-        description: formData.description,
-        workspaceId: activeWorkspaceId,
-        StateCompletion: formData.status,
-        priority: formData.priority,
-        dateBegin: dateCreate,
-        dateEnd: formData.dueDate,
-        assignedTo: assignedToArray,
-      };
+      // Tạo FormData để gửi cả data và file
+      const formDataToSend = new FormData();
+
+      // Append tất cả dữ liệu text
+      formDataToSend.append("taskname", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("workspaceId", activeWorkspaceId);
+      formDataToSend.append("StateCompletion", formData.status);
+      formDataToSend.append("priority", formData.priority);
+      formDataToSend.append("dateBegin", dateCreate);
+      formDataToSend.append("dateEnd", formData.dueDate);
+      formDataToSend.append("assignedTo", JSON.stringify(assignedToArray));
+
+      // Append file nếu có
+      if (formData.file) {
+        formDataToSend.append("file", formData.file);
+      }
 
       const response = await axios.post(
         "http://localhost:5000/addTask",
-        requestData
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          // Có thể add progress tracking nếu cần
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            console.log(`Upload Progress: ${percentCompleted}%`);
+          },
+        }
       );
 
       const result = response.data;
 
       if (result.success) {
-        // ... file upload logic ...
-
         toast.success("Task created successfully!", {
           position: "top-right",
         });
