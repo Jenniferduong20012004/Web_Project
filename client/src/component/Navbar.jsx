@@ -62,15 +62,15 @@ const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
   return (
     <div className="flex items-center justify-between !px-4 !py-4 bg-white border-b border-gray-200 w-full">
       {/* Logo and Tabs */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 cursor-pointer">
         <img
           src={logo}
           alt="Logo"
-          className="w-8 h-8 object-contain cursor-pointer"
+          className="w-8 h-8 object-contain"
           onClick={() => navigate("/homepage")}
         />
         <h2
-          className="text-xl bg-gradient-to-r from-[#435090] to-[#3885c4] text-transparent bg-clip-text inline-block font-bold cursor-pointer"
+          className="text-xl bg-gradient-to-r from-[#435090] to-[#3885c4] text-transparent bg-clip-text inline-block font-bold"
           onClick={() => navigate("/homepage")}
         >
           TaskUP
@@ -85,17 +85,17 @@ const Navbar = ({ workspaces, activeTab, onTabChange, refreshWorkspaces }) => {
         />
       </nav>
 
-      {/* Search bar */}
+      {/* Noti dropdown + Avatar */}
       <div className="flex items-center gap-5">
-        <div className="relative">
+        {/* <div className="relative">
           <input
             type="text"
             placeholder="Search..."
             className="!pl-3 !pr-20 !py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
           />
-        </div>
+        </div> */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
           {/* Notification Dropdown */}
           <NotificationDropdown refreshWorkspaces={refreshWorkspaces} />
 

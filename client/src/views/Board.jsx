@@ -5,7 +5,7 @@ import Sidebar from "../component/Sidebar";
 import Navbar from "../component/Navbar";
 import Task from "../component/board/Task";
 import TaskForm from "../component/board/TaskForm";
-import FilterBar from "../component/board/FilterBar"; // Import new FilterBar component
+import FilterBar from "../component/board/FilterBar";
 import { fetchManagerAndCheckRole } from "../utils/workspaceUtils";
 import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 
@@ -22,7 +22,6 @@ const Board = () => {
   const [managerData, setManagerData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Function to check workspace role using workspaceUtils
   const checkWorkspaceRole = async (workspaceId) => {
     try {
       const result = await fetchManagerAndCheckRole(workspaceId);
@@ -60,30 +59,36 @@ const Board = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/trashTask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          taskId: taskId,
-          workspaceId: workspacedId,
-          userId: userData.userId,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/tasks/${taskId}/trash`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workspaceId: workspacedId,
+            userId: userData.userId,
+          }),
+        }
+      );
 
       const data = await response.json();
+
       if (data.success) {
         // Remove task from the current view
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-        toast.success("Task moved to trash", { position: "top-right" });
+        toast.success(data.message || "Task moved to trash", {
+          position: "top-right",
+        });
       } else {
         toast.error(data.message || "Failed to move task to trash", {
           position: "top-right",
         });
       }
     } catch (error) {
-      toast.error("Error: " + (error.message || "Unknown error"), {
+      console.error("Error moving task to trash:", error);
+      toast.error("Network error. Please try again.", {
         position: "top-right",
       });
     }
@@ -93,14 +98,16 @@ const Board = () => {
     localStorage.setItem("lastMainTab", "Board");
     try {
       setIsLoading(true);
-      
-      // Thay đổi từ POST sang GET và sử dụng URL params
-      const response = await fetch(`http://localhost:5000/getBoard/${workspaceId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+
+      const response = await fetch(
+        `http://localhost:5000/board/${workspaceId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -129,7 +136,7 @@ const Board = () => {
           email: useri.email,
           photoPath: useri.photoPath || null,
           initials: getInitials(useri.name),
-          bgColor: getAvatarColor(useri.id), // Sử dụng useri.id thay vì useri.userId
+          bgColor: getAvatarColor(useri.id),
         }));
 
         setMembers([...members]);
@@ -163,12 +170,16 @@ const Board = () => {
 
     // Filter by status
     if (activeFilter !== "ALL") {
-      filteredTasks = filteredTasks.filter((task) => task.status === activeFilter);
+      filteredTasks = filteredTasks.filter(
+        (task) => task.status === activeFilter
+      );
     }
 
     // Filter by priority
     if (priorityFilter !== "ALL") {
-      filteredTasks = filteredTasks.filter((task) => task.priority === priorityFilter);
+      filteredTasks = filteredTasks.filter(
+        (task) => task.priority === priorityFilter
+      );
     }
 
     return filteredTasks;
@@ -205,9 +216,9 @@ const Board = () => {
       <div className="flex-1 flex flex-col !mt-16 bg-gray-50">
         <div className="flex-1 !p-8 md:p-6 overflow-auto !ml-50">
           {/* BOARD CONTENT */}
-          
+
           {/* FILTER BAR */}
-          <FilterBar 
+          <FilterBar
             activeFilter={activeFilter}
             setActiveFilter={setActiveFilter}
             priorityFilter={priorityFilter}
