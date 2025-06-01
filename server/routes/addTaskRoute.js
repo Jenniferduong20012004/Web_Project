@@ -10,7 +10,6 @@ const upload = multer({
 const router = express.Router();
 const addTaskController = require("../controllers/addTaskController");
 
-// THÊM upload middleware cho addTask
 router.post("/addTask", upload.single("file"), addTaskController.addTask);
 router.post("/addFile", upload.single("uploaded_file"), addTaskController.addFile);
 
