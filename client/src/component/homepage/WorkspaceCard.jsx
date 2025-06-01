@@ -336,42 +336,6 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
     setIsEditFormOpen(true);
   };
 
-  // Render member avatar using utils functions
-  const renderMemberAvatar = (member, idx) => {
-    return (
-      <div
-        key={member.joinWorkSpace || member.id || idx}
-        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${member.bgColor}`}
-        style={{
-          marginRight: idx < activeMembers.length - 1 ? "-3px" : "0",
-          zIndex: activeMembers.length - idx,
-        }}
-        title={member.userName || member.name}
-      >
-        {member.photoPath ? (
-          <img
-            src={member.photoPath}
-            alt={member.userName || member.name}
-            className="w-full h-full object-cover rounded-full"
-            onError={(e) => {
-              // If image fails to load, hide it and show initials
-              e.target.style.display = "none";
-              e.target.nextSibling.style.display = "flex";
-            }}
-          />
-        ) : null}
-        {/* Initials fallback - always rendered but hidden if image loads */}
-        <span
-          className={`w-full h-full flex items-center justify-center ${
-            member.photoPath ? "hidden" : "flex"
-          }`}
-        >
-          {member.initials}
-        </span>
-      </div>
-    );
-  };
-
   const getAvatarData = () => {
     if (managerData) {
       // Use actual manager data from API
@@ -412,28 +376,24 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-medium ${avatarData.bgColor}`}
+              className={`relative w-6 h-6 min-w-[24px] min-h-[24px] flex-shrink-0 rounded-full flex items-center justify-center text-xs text-white font-medium ${avatarData.bgColor} overflow-hidden`}
             >
-              {avatarData.photoPath ? (
+              {/* Avatar initials fallback */}
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium">
+                {avatarData.initials}
+              </span>
+              
+              {/* Manager avatar image overlay */}
+              {avatarData.photoPath && (
                 <img
                   src={avatarData.photoPath}
                   alt={avatarData.displayName}
-                  className="w-full h-full object-cover rounded-full"
+                  className="absolute inset-0 w-full h-full object-cover rounded-full"
                   onError={(e) => {
-                    // If image fails to load, hide it and show initials
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
+                    e.target.style.display = 'none';
                   }}
                 />
-              ) : null}
-              {/* Avatar initials fallback */}
-              <span
-                className={`w-full h-full flex items-center justify-center ${
-                  avatarData.photoPath ? "hidden" : "flex"
-                }`}
-              >
-                {avatarData.initials}
-              </span>
+              )}
             </div>
             <div>
               <div className="text-sm font-medium">
@@ -550,7 +510,7 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           </div>
         </div>
 
-        {/* Member avatars container - now using utils-generated data */}
+        {/* Member avatars container - Fixed version without hooks in map */}
         <div
           className="flex justify-end !pr-2"
           style={{ marginBottom: "10px" }}
@@ -558,7 +518,34 @@ const WorkspaceCard = ({ workspace, onClick, onUpdate, onFetchWorkspaces }) => {
           {isLoading ? (
             <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse"></div>
           ) : activeMembers.length > 0 ? (
-            activeMembers.map((member, idx) => renderMemberAvatar(member, idx))
+            activeMembers.map((member, idx) => (
+              <div
+                key={member.joinWorkSpace || member.id || idx}
+                className={`relative w-6 h-6 min-w-[24px] min-h-[24px] flex-shrink-0 rounded-full flex items-center justify-center text-xs text-white font-medium ${member.bgColor} overflow-hidden`}
+                style={{
+                  marginRight: idx < activeMembers.length - 1 ? "-3px" : "0",
+                  zIndex: activeMembers.length - idx,
+                }}
+                title={member.userName || member.name}
+              >
+                {/* Background initials - always shown */}
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium">
+                  {member.initials}
+                </span>
+                
+                {/* Image overlay - hides initials when loaded */}
+                {member.photoPath && (
+                  <img
+                    src={member.photoPath}
+                    alt={member.userName || member.name}
+                    className="absolute inset-0 w-full h-full object-cover rounded-full"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
+              </div>
+            ))
           ) : (
             <div className="text-xs text-gray-400">No active members</div>
           )}
